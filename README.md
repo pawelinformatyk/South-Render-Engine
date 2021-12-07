@@ -6,3 +6,5 @@ raytracer to postprocess (or some shit) pixelart
 multiple viewports
 
 Deferred Rendering
+
+material output
