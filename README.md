@@ -8,3 +8,5 @@ multiple viewports
 Deferred Rendering
 
 material output
+
+https://en.wikipedia.org/wiki/Metaballs
