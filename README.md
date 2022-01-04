@@ -10,3 +10,7 @@ Deferred Rendering
 material output
 
 https://en.wikipedia.org/wiki/Metaballs
+
+blender integration - object import first ? 
+
+maybe focus on rendering side and create bigger application with nodes like blender using this engine? 
