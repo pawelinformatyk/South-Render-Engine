@@ -4,30 +4,30 @@
 
 namespace South
 {
-	AppWindow::AppWindow()
-	{
-		glfwInit();
+    AppWindow::AppWindow()
+    {
+        glfwInit();
 
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		pWindow = glfwCreateWindow(Width, Height, "SouthRenderEngine", nullptr, nullptr);
-	}
+        pWindow = glfwCreateWindow(Width, Height, "SouthRenderEngine", nullptr, nullptr);
+    }
 
-	AppWindow::~AppWindow()
-	{
-		glfwDestroyWindow(pWindow);
+    AppWindow::~AppWindow()
+    {
+        glfwDestroyWindow(pWindow);
 
-		glfwTerminate();
-	}
+        glfwTerminate();
+    }
 
-	void AppWindow::tick()
-	{
-		glfwPollEvents();
-	}
+    void AppWindow::Tick()
+    {
+        glfwPollEvents();
+    }
 
-	AppWindow* AppWindow::Create()
-	{
-		return new AppWindow;
-	}
-}
+    AppWindow* AppWindow::Create()
+    {
+        return new AppWindow;
+    }
+} // namespace South

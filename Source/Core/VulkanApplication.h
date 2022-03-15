@@ -17,12 +17,14 @@ namespace South
         void Run();
 
       private:
+        // #TODO : Change to vulkan/opengl context
         // Vulkan
         void CreateInstance();
-        void PickGraphicCard();
+        void CreateDevices();
 
-        VkInstance instance;
-        VkPhysicalDevice graphicCard = VK_NULL_HANDLE;
+        VkInstance instance         = VK_NULL_HANDLE;
+        VkPhysicalDevice physDevice = VK_NULL_HANDLE;
+        VkDevice logicDevice        = VK_NULL_HANDLE;
         // ~Vulkan
 
         AppWindow* pWindow = nullptr;

@@ -3,7 +3,9 @@
 #include "Core/Window.h"
 
 #include <GLFW/glfw3.h>
+#include <iostream>
 #include <map>
+#include <optional>
 #include <vector>
 
 namespace South
@@ -14,13 +16,14 @@ namespace South
         bRunning = true;
 
         CreateInstance();
-        PickGraphicCard();
+        CreateDevices();
     }
 
     VulkanApplication::~VulkanApplication()
     {
         delete pWindow;
         vkDestroyInstance(instance, nullptr);
+        vkDestroyDevice(logicDevice, nullptr);
     }
 
     void VulkanApplication::Run()
@@ -29,7 +32,7 @@ namespace South
         {
             if (pWindow)
             {
-                pWindow->tick();
+                pWindow->Tick();
             }
         }
     }
@@ -63,7 +66,7 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &instance);
     }
 
-    void VulkanApplication::PickGraphicCard()
+    void VulkanApplication::CreateDevices()
     {
         uint32_t devicesCount = 0;
         vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
@@ -71,26 +74,33 @@ namespace South
         std::vector<VkPhysicalDevice> devices(devicesCount);
         vkEnumeratePhysicalDevices(instance, &devicesCount, devices.data());
 
-        auto RateDevice = [](const VkPhysicalDevice& device)
+        auto FindQueueFamiliesIndex = [](const VkPhysicalDevice& device)
         {
-            // Reject devices without VK_QUEUE_GRAPHICS_BIT.
+            uint32_t queueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+            for (uint32_t i = 0; i < queueFamilyCount; ++i)
             {
-                uint32_t queueFamilyCount = 0;
-                vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-                std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-                vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-                for (const VkQueueFamilyProperties& prop : queueFamilies)
+                if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 {
-                    if (!(prop.queueFlags & VK_QUEUE_GRAPHICS_BIT))
-                    {
-                        return -1;
-                    }
+                    return std::optional<uint32_t>(i);
                 }
             }
 
-            // Rate based on features.
+            return std::optional<uint32_t>();
+        };
+
+        auto RateDevice = [FindQueueFamiliesIndex](const VkPhysicalDevice& device)
+        {
+            if (!FindQueueFamiliesIndex(device).has_value())
+            {
+                return -1;
+            }
+
+            // Rate based on features and properties.
             int score = 0;
             {
                 VkPhysicalDeviceProperties deviceProperties;
@@ -112,7 +122,6 @@ namespace South
             return score;
         };
 
-        // Graphic card candidates.
         std::multimap<int, VkPhysicalDevice> candidates;
         for (const auto& dev : devices)
         {
@@ -121,10 +130,34 @@ namespace South
 
         if (candidates.rbegin()->first > 0)
         {
-            graphicCard = candidates.rbegin()->second;
+            physDevice = candidates.rbegin()->second;
         }
         else
         {
+            // Throw error?
         }
+
+        const float queuePrio = 1.f;
+        VkDeviceQueueCreateInfo sQCreateInfo{
+            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .pNext            = nullptr,
+            .queueFamilyIndex = FindQueueFamiliesIndex(physDevice).value(),
+            .queueCount       = 1,
+            .pQueuePriorities = &queuePrio,
+        };
+
+        VkPhysicalDeviceFeatures sDeviceFeatures{};
+
+        VkDeviceCreateInfo sCreateInfo{
+            .sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .pNext                 = nullptr,
+            .queueCreateInfoCount  = 1,
+            .pQueueCreateInfos     = &sQCreateInfo,
+            .enabledLayerCount     = 0,
+            .enabledExtensionCount = 0,
+            .pEnabledFeatures      = &sDeviceFeatures,
+        };
+
+        vkCreateDevice(physDevice, &sCreateInfo, nullptr, &logicDevice);
     }
 } // namespace South
