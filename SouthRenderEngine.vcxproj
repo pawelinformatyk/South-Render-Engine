@@ -76,8 +76,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,8 +96,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,8 +116,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,8 +136,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ExternalLibraries\glm;$(ProjectDir)ExternalLibraries\GLFW\include;$(ProjectDir)ExternalLibraries\Vulkan\Include;$(ProjectDir)ExternalLibraries\imgui;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Core\VulkanApplication.cpp" />
+    <ClCompile Include="Source\Core\Main.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_demo.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_draw.cpp" />
@@ -159,6 +160,7 @@
     <ClCompile Include="ExternalLibraries\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_tables.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Source\Core\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExternalLibraries\imgui\imconfig.h" />
@@ -169,7 +171,9 @@
     <ClInclude Include="ExternalLibraries\imgui\imstb_rectpack.h" />
     <ClInclude Include="ExternalLibraries\imgui\imstb_textedit.h" />
     <ClInclude Include="ExternalLibraries\imgui\imstb_truetype.h" />
+    <ClInclude Include="Source\Core\VulkanApplication.h" />
     <ClInclude Include="Source\GUI.h" />
+    <ClInclude Include="Source\Core\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
