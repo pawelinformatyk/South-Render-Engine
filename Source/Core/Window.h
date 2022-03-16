@@ -19,6 +19,11 @@ namespace South
 
         static AppWindow* Create();
 
+        GLFWwindow* GetGLFWWindow()
+        {
+            return pWindow;
+        };
+
       private:
         GLFWwindow* pWindow = nullptr;
 

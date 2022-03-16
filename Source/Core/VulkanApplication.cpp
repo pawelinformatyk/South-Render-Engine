@@ -6,7 +6,8 @@
 #include <iostream>
 #include <map>
 #include <optional>
-#include <vector>
+#include <set>
+#include <utility>
 
 namespace South
 {
@@ -16,6 +17,7 @@ namespace South
         bRunning = true;
 
         CreateInstance();
+        CreateSurface();
         CreateDevices();
     }
 
@@ -24,6 +26,7 @@ namespace South
         delete pWindow;
         vkDestroyInstance(instance, nullptr);
         vkDestroyDevice(logicDevice, nullptr);
+        vkDestroySurfaceKHR(instance, surface, nullptr);
     }
 
     void VulkanApplication::Run()
@@ -66,25 +69,51 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &instance);
     }
 
+    void VulkanApplication::CreateSurface()
+    {
+        if (!pWindow || !glfwCreateWindowSurface(instance, pWindow->GetGLFWWindow(), nullptr, &surface))
+        {
+            return /*error*/;
+        }
+    }
+
     void VulkanApplication::CreateDevices()
     {
-        uint32_t devicesCount = 0;
-        vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
-
-        std::vector<VkPhysicalDevice> devices(devicesCount);
-        vkEnumeratePhysicalDevices(instance, &devicesCount, devices.data());
-
-        auto FindQueueFamiliesIndex = [](const VkPhysicalDevice& device)
+        // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
+        auto IsDeviceSuitable = [&deviceExtensions = deviceExtensions, &surface = surface](const VkPhysicalDevice& dev)
         {
+            // Check if device supports swap chain.
+            uint32_t extensionCount;
+            vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, nullptr);
+
+            std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+            vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, availableExtensions.data());
+
+            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+            for (const auto& extension : availableExtensions)
+            {
+                requiredExtensions.erase(extension.extensionName);
+            }
+
+            if (!requiredExtensions.empty())
+            {
+                return std::optional<uint32_t>();
+            }
+
+            // Check if device has needed queue family.
             uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+            vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, nullptr);
 
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+            vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, queueFamilies.data());
 
             for (uint32_t i = 0; i < queueFamilyCount; ++i)
             {
-                if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                VkBool32 presentSupport = false;
+                vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface, &presentSupport);
+
+                if (presentSupport && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 {
                     return std::optional<uint32_t>(i);
                 }
@@ -93,55 +122,70 @@ namespace South
             return std::optional<uint32_t>();
         };
 
-        auto RateDevice = [FindQueueFamiliesIndex](const VkPhysicalDevice& device)
+        // Lambda to rate device based on our needs.
+        auto RateDevice = [](const VkPhysicalDevice& device)
         {
-            if (!FindQueueFamiliesIndex(device).has_value())
-            {
-                return -1;
-            }
-
             // Rate based on features and properties.
             int score = 0;
-            {
-                VkPhysicalDeviceProperties deviceProperties;
-                VkPhysicalDeviceFeatures deviceFeatures;
-                vkGetPhysicalDeviceProperties(device, &deviceProperties);
-                vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-                // Discrete GPUs have a significant performance advantage
-                if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-                {
-                    score += 1000;
-                }
-                if (deviceFeatures.multiViewport)
-                {
-                    score += 1000;
-                }
+            VkPhysicalDeviceProperties deviceProperties;
+            VkPhysicalDeviceFeatures deviceFeatures;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+            // Discrete GPUs have a significant performance advantage
+            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            {
+                score += 1000;
+            }
+            if (deviceFeatures.multiViewport)
+            {
+                score += 1000;
             }
 
             return score;
         };
 
-        std::multimap<int, VkPhysicalDevice> candidates;
-        for (const auto& dev : devices)
+        // Get vector of devices.
+        uint32_t devicesCount = 0;
+        vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
+
+        std::vector<VkPhysicalDevice> devices(devicesCount);
+        vkEnumeratePhysicalDevices(instance, &devicesCount, devices.data());
+
+        // Find best gpu available. Reject those without correct queue and rate the rest.
+        std::multimap<int, std::pair<VkPhysicalDevice, uint32_t>> devicesScoreboard;
+
+        for (const VkPhysicalDevice& dev : devices)
         {
-            candidates.emplace(RateDevice(dev), dev);
+            std::optional<uint32_t> qFamIndex = IsDeviceSuitable(dev);
+            if (!qFamIndex.has_value())
+            {
+                continue;
+            }
+
+            devicesScoreboard.emplace(RateDevice(dev), std::make_pair(dev, qFamIndex.value()));
         }
 
-        if (candidates.rbegin()->first > 0)
+        // Get device if it was found.
+        if (devicesScoreboard.size())
         {
-            physDevice = candidates.rbegin()->second;
+            physDevice       = devicesScoreboard.rbegin()->second.first;
+            QueueFamilyIndex = devicesScoreboard.rbegin()->second.second;
         }
         else
         {
+            std::cout << "physDevice Not found." << std::endl;
             // Throw error?
         }
 
+        // Set logical device and queue.
         const float queuePrio = 1.f;
+
         VkDeviceQueueCreateInfo sQCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
-            .queueFamilyIndex = FindQueueFamiliesIndex(physDevice).value(),
+            .queueFamilyIndex = QueueFamilyIndex,
             .queueCount       = 1,
             .pQueuePriorities = &queuePrio,
         };
@@ -149,15 +193,19 @@ namespace South
         VkPhysicalDeviceFeatures sDeviceFeatures{};
 
         VkDeviceCreateInfo sCreateInfo{
-            .sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .pNext                 = nullptr,
-            .queueCreateInfoCount  = 1,
-            .pQueueCreateInfos     = &sQCreateInfo,
-            .enabledLayerCount     = 0,
-            .enabledExtensionCount = 0,
-            .pEnabledFeatures      = &sDeviceFeatures,
+            .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .pNext                   = nullptr,
+            .queueCreateInfoCount    = 1,
+            .pQueueCreateInfos       = &sQCreateInfo,
+            .enabledLayerCount       = 0,
+            .enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size()),
+            .ppEnabledExtensionNames = deviceExtensions.data(),
+            .pEnabledFeatures        = &sDeviceFeatures,
         };
 
         vkCreateDevice(physDevice, &sCreateInfo, nullptr, &logicDevice);
+
+        vkGetDeviceQueue(logicDevice, QueueFamilyIndex, 0, &graphicsQueue);
     }
+
 } // namespace South

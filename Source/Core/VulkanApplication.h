@@ -2,6 +2,8 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <vector>
+
 namespace South
 {
     class AppWindow;
@@ -20,11 +22,20 @@ namespace South
         // #TODO : Change to vulkan/opengl context
         // Vulkan
         void CreateInstance();
+        void CreateSurface();
         void CreateDevices();
 
+        const std::vector<const char*> deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        };
+
         VkInstance instance         = VK_NULL_HANDLE;
+        VkSurfaceKHR surface        = VK_NULL_HANDLE;
         VkPhysicalDevice physDevice = VK_NULL_HANDLE;
+        uint32_t QueueFamilyIndex   = 0;
         VkDevice logicDevice        = VK_NULL_HANDLE;
+        VkQueue graphicsQueue       = VK_NULL_HANDLE;
+
         // ~Vulkan
 
         AppWindow* pWindow = nullptr;
