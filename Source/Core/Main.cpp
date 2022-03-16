@@ -1,11 +1,12 @@
+#include "Core/Application.h"
+
 #include <iostream>
-#include "Core/VulkanApplication.h"
 
 int main(int argc, char** argv)
 {
-	South::VulkanApplication App(argc, argv);
+    South::Application App(argc, argv);
 
-	App.Run();
+    App.Run();
 
-	return 0;
+    return 0;
 }

@@ -1,6 +1,6 @@
-#include "Core/VulkanApplication.h"
+#include "Core/VulkanContext.h"
 
-#include "Core/Window.h"
+#include "Core/Application.h"
 
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -11,41 +11,26 @@
 
 namespace South
 {
-    VulkanApplication::VulkanApplication(int argc, char** argv)
+    void VulkanContext::Init(GLFWwindow& window)
     {
-        pWindow  = AppWindow::Create();
-        bRunning = true;
-
         CreateInstance();
-        CreateSurface();
+        CreateSurface(window);
         CreateDevices();
     }
 
-    VulkanApplication::~VulkanApplication()
+    void VulkanContext::DeInit()
     {
-        delete pWindow;
         vkDestroyInstance(instance, nullptr);
         vkDestroyDevice(logicDevice, nullptr);
         vkDestroySurfaceKHR(instance, surface, nullptr);
     }
 
-    void VulkanApplication::Run()
-    {
-        while (bRunning)
-        {
-            if (pWindow)
-            {
-                pWindow->Tick();
-            }
-        }
-    }
-
-    void VulkanApplication::CreateInstance()
+    void VulkanContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
             .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext              = nullptr,
-            .pApplicationName   = "SouthRenderEngine",
+            .pApplicationName   = GetAppName(),
             .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
             .pEngineName        = "None",
             .engineVersion      = VK_MAKE_VERSION(0, 0, 0),
@@ -55,7 +40,6 @@ namespace South
         // Extensions
         uint32_t extensionCount = 0;
         const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
-        // #TODO : Check for exenstesions support.
 
         VkInstanceCreateInfo sCreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -69,18 +53,19 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &instance);
     }
 
-    void VulkanApplication::CreateSurface()
+    void VulkanContext::CreateSurface(GLFWwindow& window)
     {
-        if (!pWindow || !glfwCreateWindowSurface(instance, pWindow->GetGLFWWindow(), nullptr, &surface))
+        if (!glfwCreateWindowSurface(instance, &window, nullptr, &surface))
         {
             return /*error*/;
         }
     }
 
-    void VulkanApplication::CreateDevices()
+    void VulkanContext::CreateDevices()
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
-        auto IsDeviceSuitable = [&deviceExtensions = deviceExtensions, &surface = surface](const VkPhysicalDevice& dev)
+        auto IsDeviceSuitable =
+            [&requiredDeviceExtensions = requiredDeviceExtensions, &surface = surface](const VkPhysicalDevice& dev)
         {
             // Check if device supports swap chain.
             uint32_t extensionCount;
@@ -89,14 +74,15 @@ namespace South
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, availableExtensions.data());
 
-            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+            std::set<std::string> requiredExtensionsSet(requiredDeviceExtensions.begin(),
+                                                        requiredDeviceExtensions.end());
 
             for (const auto& extension : availableExtensions)
             {
-                requiredExtensions.erase(extension.extensionName);
+                requiredExtensionsSet.erase(extension.extensionName);
             }
 
-            if (!requiredExtensions.empty())
+            if (!requiredExtensionsSet.empty())
             {
                 return std::optional<uint32_t>();
             }
@@ -198,8 +184,8 @@ namespace South
             .queueCreateInfoCount    = 1,
             .pQueueCreateInfos       = &sQCreateInfo,
             .enabledLayerCount       = 0,
-            .enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size()),
-            .ppEnabledExtensionNames = deviceExtensions.data(),
+            .enabledExtensionCount   = static_cast<uint32_t>(requiredDeviceExtensions.size()),
+            .ppEnabledExtensionNames = requiredDeviceExtensions.data(),
             .pEnabledFeatures        = &sDeviceFeatures,
         };
 
@@ -207,5 +193,4 @@ namespace South
 
         vkGetDeviceQueue(logicDevice, QueueFamilyIndex, 0, &graphicsQueue);
     }
-
 } // namespace South

@@ -1,5 +1,7 @@
 #include "Core/Window.h"
 
+#include "Core/Application.h"
+
 #include <GLFW/glfw3.h>
 
 namespace South
@@ -11,7 +13,7 @@ namespace South
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        pWindow = glfwCreateWindow(Width, Height, "SouthRenderEngine", nullptr, nullptr);
+        pWindow = glfwCreateWindow(Width, Height, GetAppName(), nullptr, nullptr);
     }
 
     AppWindow::~AppWindow()
@@ -26,8 +28,18 @@ namespace South
         glfwPollEvents();
     }
 
+    GLFWwindow* AppWindow::GetNativeWindow() const
+    {
+        return pWindow;
+    }
+
     AppWindow* AppWindow::Create()
     {
-        return new AppWindow;
+        auto ptr = new AppWindow;
+        if (ptr)
+        {
+            return ptr->pWindow ? ptr : nullptr;
+        }
+        return nullptr;
     }
 } // namespace South

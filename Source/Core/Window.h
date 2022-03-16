@@ -17,17 +17,14 @@ namespace South
 
         void Tick();
 
-        static AppWindow* Create();
+        GLFWwindow* GetNativeWindow() const;
 
-        GLFWwindow* GetGLFWWindow()
-        {
-            return pWindow;
-        };
+        static AppWindow* Create();
 
       private:
         GLFWwindow* pWindow = nullptr;
 
         uint32_t Width  = 1600;
-        uint32_t Height = 1600;
+        uint32_t Height = 960;
     };
 } // namespace South

@@ -151,7 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Core\VulkanApplication.cpp" />
+    <ClCompile Include="Source\Core\Context.cpp" />
+    <ClCompile Include="Source\Core\Application.cpp" />
     <ClCompile Include="Source\Core\Main.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_demo.cpp" />
@@ -161,8 +162,10 @@
     <ClCompile Include="ExternalLibraries\imgui\imgui_tables.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Source\Core\Window.cpp" />
+    <ClCompile Include="Source\Core\VulkanContext.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Context.h" />
     <ClInclude Include="ExternalLibraries\imgui\imconfig.h" />
     <ClInclude Include="ExternalLibraries\imgui\imgui.h" />
     <ClInclude Include="ExternalLibraries\imgui\imgui_impl_glfw.h" />
@@ -171,9 +174,10 @@
     <ClInclude Include="ExternalLibraries\imgui\imstb_rectpack.h" />
     <ClInclude Include="ExternalLibraries\imgui\imstb_textedit.h" />
     <ClInclude Include="ExternalLibraries\imgui\imstb_truetype.h" />
-    <ClInclude Include="Source\Core\VulkanApplication.h" />
+    <ClInclude Include="Source\Core\Application.h" />
     <ClInclude Include="Source\GUI.h" />
     <ClInclude Include="Source\Core\Window.h" />
+    <ClInclude Include="Source\Core\VulkanContext.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
