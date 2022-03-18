@@ -18,6 +18,7 @@ namespace South
         void Run();
 
       private:
+        // Renderer?
         Context* GraphicalContext = nullptr;
 
         AppWindow* pWindow = nullptr;

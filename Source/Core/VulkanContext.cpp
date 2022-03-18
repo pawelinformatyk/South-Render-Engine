@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -16,6 +17,7 @@ namespace South
         CreateInstance();
         CreateSurface(window);
         CreateDevices();
+        CreateSwapChain(window);
     }
 
     void VulkanContext::DeInit()
@@ -23,6 +25,11 @@ namespace South
         vkDestroyInstance(instance, nullptr);
         vkDestroyDevice(logicDevice, nullptr);
         vkDestroySurfaceKHR(instance, surface, nullptr);
+        vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
+        for (auto imageView : swapChainImageViews)
+        {
+            vkDestroyImageView(logicDevice, imageView, nullptr);
+        }
     }
 
     void VulkanContext::CreateInstance()
@@ -65,14 +72,14 @@ namespace South
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
         auto IsDeviceSuitable =
-            [&requiredDeviceExtensions = requiredDeviceExtensions, &surface = surface](const VkPhysicalDevice& dev)
+            [&requiredDeviceExtensions = requiredDeviceExtensions, &surface = surface](const VkPhysicalDevice& device)
         {
             // Check if device supports swap chain.
             uint32_t extensionCount;
-            vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, nullptr);
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-            vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, availableExtensions.data());
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
             std::set<std::string> requiredExtensionsSet(requiredDeviceExtensions.begin(),
                                                         requiredDeviceExtensions.end());
@@ -87,17 +94,32 @@ namespace South
                 return std::optional<uint32_t>();
             }
 
+            // #TODO : Look for specific gpu??
+            uint32_t formatCount;
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+            if (!formatCount)
+            {
+                return std::optional<uint32_t>();
+            }
+
+            uint32_t presentModesCount;
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
+            if (!presentModesCount)
+            {
+                return std::optional<uint32_t>();
+            }
+
             // Check if device has needed queue family.
             uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, nullptr);
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, queueFamilies.data());
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
             for (uint32_t i = 0; i < queueFamilyCount; ++i)
             {
                 VkBool32 presentSupport = false;
-                vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface, &presentSupport);
+                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
                 if (presentSupport && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 {
@@ -193,4 +215,116 @@ namespace South
 
         vkGetDeviceQueue(logicDevice, QueueFamilyIndex, 0, &graphicsQueue);
     }
+
+    void VulkanContext::CreateSwapChain(GLFWwindow& window)
+    {
+        VkSwapchainCreateInfoKHR sCreateInfo{
+            .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+            .pNext                 = nullptr,
+            .surface               = surface,
+            .imageArrayLayers      = 1,
+            .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 1,
+            .pQueueFamilyIndices   = &QueueFamilyIndex,
+            .preTransform          = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+            .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            .clipped               = VK_TRUE,
+            .oldSwapchain          = VK_NULL_HANDLE,
+        };
+
+        // Swap extent - Image size.
+
+        // Presentation mode.
+        uint32_t presentModesCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModesCount, nullptr);
+
+        std::vector<VkPresentModeKHR> availablePresentModes(presentModesCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModesCount,
+                                                  availablePresentModes.data());
+
+        sCreateInfo.presentMode = /*Default*/ VK_PRESENT_MODE_FIFO_KHR;
+        for (const auto& mode : availablePresentModes)
+        {
+            if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                sCreateInfo.presentMode = mode;
+            }
+        }
+
+        // Surface format.
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
+
+        std::vector<VkSurfaceFormatKHR> availableFormats(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, availableFormats.data());
+
+        sCreateInfo.imageFormat     = availableFormats[0].format;
+        sCreateInfo.imageColorSpace = availableFormats[0].colorSpace;
+        for (const auto& format : availableFormats)
+        {
+            if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                sCreateInfo.imageFormat     = VK_FORMAT_B8G8R8A8_SRGB;
+                sCreateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+            }
+        }
+
+        VkSurfaceCapabilitiesKHR capabilities;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
+
+        int width, height;
+        glfwGetFramebufferSize(&window, &width, &height);
+
+        sCreateInfo.imageExtent =
+            VkExtent2D(std::clamp(static_cast<uint32_t>(width), capabilities.minImageExtent.width,
+                                  capabilities.maxImageExtent.width),
+                       std::clamp(static_cast<uint32_t>(height), capabilities.minImageExtent.width,
+                                  capabilities.maxImageExtent.width));
+
+        sCreateInfo.minImageCount = (capabilities.minImageCount + 1 > capabilities.maxImageCount)
+                                        ? capabilities.minImageCount
+                                        : capabilities.minImageCount + 1;
+
+        vkCreateSwapchainKHR(logicDevice, &sCreateInfo, nullptr, &swapChain);
+
+        uint32_t imageCount;
+        vkGetSwapchainImagesKHR(logicDevice, swapChain, &imageCount, nullptr);
+
+        swapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(logicDevice, swapChain, &imageCount, swapChainImages.data());
+
+        swapChainImageFormat = sCreateInfo.imageFormat;
+        swapChainExtent      = sCreateInfo.imageExtent;
+    }
+
+    void VulkanContext::CreateImageViews()
+    {
+        swapChainImageViews.reserve(swapChainImages.size());
+
+        VkImageSubresourceRange subresourceRange{
+            .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel   = 0,
+            .levelCount     = 1,
+            .baseArrayLayer = 0,
+            .layerCount     = 1,
+        };
+
+        for (size_t i = 0; i < swapChainImages.size(); i++)
+        {
+            VkImageViewCreateInfo sCreateInfo{
+                .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .pNext            = nullptr,
+                .image            = swapChainImages[i],
+                .viewType         = VK_IMAGE_VIEW_TYPE_2D,
+                .format           = swapChainImageFormat,
+                .components       = VkComponentMapping(VK_COMPONENT_SWIZZLE_IDENTITY),
+                .subresourceRange = subresourceRange,
+            };
+
+            vkCreateImageView(logicDevice, &sCreateInfo, nullptr, &swapChainImageViews[i]);
+        }
+    }
+
 } // namespace South

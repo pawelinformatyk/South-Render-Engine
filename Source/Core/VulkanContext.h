@@ -18,6 +18,8 @@ namespace South
         void CreateInstance();
         void CreateSurface(GLFWwindow& window);
         void CreateDevices();
+        void CreateSwapChain(GLFWwindow& window);
+        void CreateImageViews();
 
         const std::vector<const char*> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -25,9 +27,14 @@ namespace South
 
         VkInstance instance         = VK_NULL_HANDLE;
         VkSurfaceKHR surface        = VK_NULL_HANDLE;
-        VkPhysicalDevice physDevice = VK_NULL_HANDLE;
         uint32_t QueueFamilyIndex   = 0;
+        VkPhysicalDevice physDevice = VK_NULL_HANDLE;
         VkDevice logicDevice        = VK_NULL_HANDLE;
         VkQueue graphicsQueue       = VK_NULL_HANDLE;
+        VkSwapchainKHR swapChain    = VK_NULL_HANDLE;
+        std::vector<VkImage> swapChainImages;
+        VkFormat swapChainImageFormat;
+        VkExtent2D swapChainExtent;
+        std::vector<VkImageView> swapChainImageViews;
     };
 }; // namespace South
