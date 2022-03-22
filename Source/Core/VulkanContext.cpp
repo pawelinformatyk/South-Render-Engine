@@ -4,6 +4,7 @@
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -325,6 +326,117 @@ namespace South
 
             vkCreateImageView(logicDevice, &sCreateInfo, nullptr, &swapChainImageViews[i]);
         }
+    }
+
+    void VulkanContext::CreateGraphicsPipeline()
+    {
+        auto readFile = [](const std::string& fileName)
+        {
+            std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+
+            if (!file.is_open())
+            {
+                throw std::runtime_error("failed to open file!");
+            }
+
+            size_t fileSize = (size_t)file.tellg();
+
+            std::vector<char> buffer(fileSize);
+
+            file.seekg(0);
+            file.read(buffer.data(), fileSize);
+
+            file.close();
+
+            return buffer;
+        };
+
+        auto CreateShaderModule = [&device = logicDevice](const std::vector<char>& code)
+        {
+            VkShaderModuleCreateInfo createInfo{
+                .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                .pNext    = nullptr,
+                .codeSize = code.size(),
+                .pCode    = reinterpret_cast<const uint32_t*>(code.data()),
+            };
+
+            VkShaderModule shaderModule;
+            if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create shader module!");
+            }
+
+            return shaderModule;
+        };
+
+        std::vector<char> vertShaderCode = readFile("shaders/vert.spv");
+        std::vector<char> fragShaderCode = readFile("shaders/frag.spv");
+
+        VkShaderModule vertShaderMod = CreateShaderModule(vertShaderCode);
+        VkShaderModule fragShaderMod = CreateShaderModule(fragShaderCode);
+
+        // Assign shaders to specific pipeline
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo{
+            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext  = nullptr,
+            .stage  = VK_SHADER_STAGE_VERTEX_BIT,
+            .module = vertShaderMod,
+            .pName  = "main",
+        };
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo{
+            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext  = nullptr,
+            .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .module = fragShaderMod,
+            .pName  = "main",
+        };
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+        // Inputs to vertext shader.
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+            .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            .pNext                           = nullptr,
+            .vertexBindingDescriptionCount   = 0,
+            .pVertexBindingDescriptions      = nullptr,
+            .vertexAttributeDescriptionCount = 0,
+            .pVertexAttributeDescriptions    = nullptr,
+        };
+
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+            .sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            .pNext                  = nullptr,
+            .topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            .primitiveRestartEnable = VK_FALSE,
+        };
+
+        // Viewport and scissors.
+        VkViewport viewport{
+            .x        = 0.0f,
+            .y        = 0.0f,
+            .width    = (float)swapChainExtent.width,
+            .height   = (float)swapChainExtent.height,
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f,
+        };
+
+        VkRect2D scissor{
+            .offset = { 0, 0 },
+            .extent = swapChainExtent,
+        };
+
+        VkPipelineViewportStateCreateInfo viewportState{
+            .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+            .pNext         = nullptr,
+            .viewportCount = 1,
+            .pViewports    = &viewport,
+            .scissorCount  = 1,
+            .pScissors     = &scissor,
+        };
+
+        vkDestroyShaderModule(logicDevice, vertShaderMod, nullptr);
+        vkDestroyShaderModule(logicDevice, fragShaderMod, nullptr);
     }
 
 } // namespace South

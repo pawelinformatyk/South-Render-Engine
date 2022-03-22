@@ -30,6 +30,7 @@ namespace South
 
     // I want to have multiple viewports. How do I do it. Do I need layers or just
     // two imgui windows with rendered scenes with different camera.
+    // VkPipelineViewportStateCreateInfo - > viewport count?
 
     // Multiple viewports -> multiple textures rendered and shown from different VIEW matrix.
     // I thjink I need to implement vulcan code so i can then decide how to do it.

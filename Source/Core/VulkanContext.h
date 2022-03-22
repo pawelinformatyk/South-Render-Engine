@@ -20,6 +20,7 @@ namespace South
         void CreateDevices();
         void CreateSwapChain(GLFWwindow& window);
         void CreateImageViews();
+        void CreateGraphicsPipeline();
 
         const std::vector<const char*> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
