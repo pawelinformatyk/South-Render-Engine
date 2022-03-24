@@ -4,6 +4,7 @@
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -19,18 +20,24 @@ namespace South
         CreateSurface(window);
         CreateDevices();
         CreateSwapChain(window);
+        CreateImageViews();
+        CreateRenderPass();
+        CreateGraphicsPipeline();
     }
 
     void VulkanContext::DeInit()
     {
-        vkDestroyInstance(instance, nullptr);
-        vkDestroyDevice(logicDevice, nullptr);
+        // #TODO : Order?
+
         vkDestroySurfaceKHR(instance, surface, nullptr);
-        vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
         for (auto imageView : swapChainImageViews)
         {
             vkDestroyImageView(logicDevice, imageView, nullptr);
         }
+        vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
+        vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
+        vkDestroyDevice(logicDevice, nullptr);
+        vkDestroyInstance(instance, nullptr);
     }
 
     void VulkanContext::CreateInstance()
@@ -302,7 +309,7 @@ namespace South
 
     void VulkanContext::CreateImageViews()
     {
-        swapChainImageViews.reserve(swapChainImages.size());
+        swapChainImageViews.resize(swapChainImages.size());
 
         VkImageSubresourceRange subresourceRange{
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -328,13 +335,19 @@ namespace South
         }
     }
 
+    void VulkanContext::CreateRenderPass()
+    {
+    }
+
     void VulkanContext::CreateGraphicsPipeline()
     {
+        std::cout << std::filesystem::current_path() << std::endl;
+
         auto readFile = [](const std::string& fileName)
         {
             std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
-            if (!file.is_open())
+            if (file.fail() || !file.is_open())
             {
                 throw std::runtime_error("failed to open file!");
             }
@@ -369,8 +382,8 @@ namespace South
             return shaderModule;
         };
 
-        std::vector<char> vertShaderCode = readFile("shaders/vert.spv");
-        std::vector<char> fragShaderCode = readFile("shaders/frag.spv");
+        std::vector<char> vertShaderCode = readFile("Source/Shaders/vert.spv");
+        std::vector<char> fragShaderCode = readFile("Source/Shaders/frag.spv");
 
         VkShaderModule vertShaderMod = CreateShaderModule(vertShaderCode);
         VkShaderModule fragShaderMod = CreateShaderModule(fragShaderCode);
@@ -434,6 +447,82 @@ namespace South
             .scissorCount  = 1,
             .pScissors     = &scissor,
         };
+
+        // Rasterizer.
+        VkPipelineRasterizationStateCreateInfo rasterizer{
+            .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            .pNext                   = nullptr,
+            .depthClampEnable        = VK_FALSE,
+            .rasterizerDiscardEnable = VK_FALSE,
+            .polygonMode             = VK_POLYGON_MODE_FILL,
+            .cullMode                = VK_CULL_MODE_BACK_BIT,
+            .frontFace               = VK_FRONT_FACE_CLOCKWISE,
+            .depthBiasEnable         = VK_FALSE,
+            .depthBiasConstantFactor = 0.0f,
+            .depthBiasClamp          = 0.0f,
+            .depthBiasSlopeFactor    = 0.0f,
+            .lineWidth               = 1.0f,
+        };
+
+        // Multisampling - antialiasing
+        VkPipelineMultisampleStateCreateInfo multisampling{
+            .sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+            .pNext                 = nullptr,
+            .rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT,
+            .sampleShadingEnable   = VK_FALSE,
+            .minSampleShading      = 1.0f,
+            .pSampleMask           = nullptr,
+            .alphaToCoverageEnable = VK_FALSE,
+            .alphaToOneEnable      = VK_FALSE,
+        };
+
+        // #TODO : Depth and stecncil testing.
+
+
+        // Color blending
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{
+            .blendEnable         = VK_TRUE,
+            .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+            .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .colorBlendOp        = VK_BLEND_OP_ADD,
+            .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+            .alphaBlendOp        = VK_BLEND_OP_ADD,
+            .colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                              VK_COLOR_COMPONENT_A_BIT,
+        };
+
+        VkPipelineColorBlendStateCreateInfo colorBlending{
+            .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            .pNext           = nullptr,
+            .logicOpEnable   = VK_FALSE,
+            .logicOp         = VK_LOGIC_OP_COPY,
+            .attachmentCount = 1,
+            .pAttachments    = &colorBlendAttachment,
+            .blendConstants  = { 0.0f, 0.0f, 0.0f, 0.0f },
+        };
+
+        // Dynamic state - dynamically change pipeline paremeters.
+        std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
+
+        VkPipelineDynamicStateCreateInfo dynamicState{
+            .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            .pNext             = nullptr,
+            .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+            .pDynamicStates    = dynamicStates.data(),
+        };
+
+        // Pipeline layout - uniforms in shaders.
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+            .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .pNext                  = nullptr,
+            .setLayoutCount         = 0,
+            .pSetLayouts            = nullptr,
+            .pushConstantRangeCount = 0,
+            .pPushConstantRanges    = nullptr,
+        };
+
+        vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
 
         vkDestroyShaderModule(logicDevice, vertShaderMod, nullptr);
         vkDestroyShaderModule(logicDevice, fragShaderMod, nullptr);

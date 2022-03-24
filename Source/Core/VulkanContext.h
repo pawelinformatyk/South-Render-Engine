@@ -20,6 +20,7 @@ namespace South
         void CreateDevices();
         void CreateSwapChain(GLFWwindow& window);
         void CreateImageViews();
+        void CreateRenderPass();
         void CreateGraphicsPipeline();
 
         const std::vector<const char*> requiredDeviceExtensions = {
@@ -37,5 +38,7 @@ namespace South
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
         std::vector<VkImageView> swapChainImageViews;
+
+        VkPipelineLayout pipelineLayout;
     };
 }; // namespace South
