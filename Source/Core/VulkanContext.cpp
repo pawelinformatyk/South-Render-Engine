@@ -35,7 +35,13 @@ namespace South
             vkDestroyImageView(logicDevice, imageView, nullptr);
         }
         vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
+
         vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
+        vkDestroyRenderPass(logicDevice, renderPass, nullptr);
+
+        vkDestroyPipeline(logicDevice, graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
+
         vkDestroyDevice(logicDevice, nullptr);
         vkDestroyInstance(instance, nullptr);
     }
@@ -276,6 +282,7 @@ namespace South
             {
                 sCreateInfo.imageFormat     = VK_FORMAT_B8G8R8A8_SRGB;
                 sCreateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+                break;
             }
         }
 
@@ -337,12 +344,42 @@ namespace South
 
     void VulkanContext::CreateRenderPass()
     {
+        VkAttachmentDescription colorAttachment{
+            .format         = swapChainImageFormat,
+            .samples        = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        };
+
+        VkAttachmentReference colorAttachmentRef{
+            .attachment = 0,
+            .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        };
+
+        VkSubpassDescription subpass{
+            .pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .colorAttachmentCount = 1,
+            .pColorAttachments    = &colorAttachmentRef,
+        };
+
+        VkRenderPassCreateInfo renderPassInfo{
+            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            .pNext           = nullptr,
+            .attachmentCount = 1,
+            .pAttachments    = &colorAttachment,
+            .subpassCount    = 1,
+            .pSubpasses      = &subpass,
+        };
+
+        vkCreateRenderPass(logicDevice, &renderPassInfo, nullptr, &renderPass);
     }
 
     void VulkanContext::CreateGraphicsPipeline()
     {
-        std::cout << std::filesystem::current_path() << std::endl;
-
         auto readFile = [](const std::string& fileName)
         {
             std::ifstream file(fileName, std::ios::ate | std::ios::binary);
@@ -523,6 +560,29 @@ namespace South
         };
 
         vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+
+        VkGraphicsPipelineCreateInfo pipelineInfo{
+            .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .pNext               = nullptr,
+            .stageCount          = 2,
+            .pStages             = shaderStages,
+            .pVertexInputState   = &vertexInputInfo,
+            .pInputAssemblyState = &inputAssembly,
+            .pTessellationState  = nullptr,
+            .pViewportState      = &viewportState,
+            .pRasterizationState = &rasterizer,
+            .pMultisampleState   = &multisampling,
+            .pDepthStencilState  = nullptr,
+            .pColorBlendState    = &colorBlending,
+            .pDynamicState       = &dynamicState,
+            .layout              = pipelineLayout,
+            .renderPass          = renderPass,
+            .subpass             = 0,
+            .basePipelineHandle  = VK_NULL_HANDLE,
+            .basePipelineIndex   = -1,
+        };
+
+        vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
 
         vkDestroyShaderModule(logicDevice, vertShaderMod, nullptr);
         vkDestroyShaderModule(logicDevice, fragShaderMod, nullptr);
