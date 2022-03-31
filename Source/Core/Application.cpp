@@ -43,10 +43,8 @@ namespace South
     {
         while (bRunning)
         {
-            if (pWindow)
-            {
-                pWindow->Tick();
-            }
+            pWindow->Tick();
+            GraphicalContext->Tick();
         }
     }
 

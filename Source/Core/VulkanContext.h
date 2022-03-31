@@ -13,6 +13,7 @@ namespace South
       public:
         virtual void Init(GLFWwindow& window) override;
         virtual void DeInit() override;
+        virtual void Tick() override;
 
       private:
         void CreateInstance();
@@ -22,6 +23,10 @@ namespace South
         void CreateImageViews();
         void CreateRenderPass();
         void CreateGraphicsPipeline();
+        void CreateFramebuffers();
+        void CreateCommands();
+
+        void RecordCommandBuffer(const VkCommandBuffer& buffer, uint32_t imageIndex);
 
         const std::vector<const char*> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -42,5 +47,10 @@ namespace South
         VkRenderPass renderPass;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
+
+        std::vector<VkFramebuffer> swapChainFramebuffers;
+
+        VkCommandPool commandPool;
+        VkCommandBuffer commandBuffer;
     };
 }; // namespace South

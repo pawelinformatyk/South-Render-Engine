@@ -23,6 +23,8 @@ namespace South
         CreateImageViews();
         CreateRenderPass();
         CreateGraphicsPipeline();
+        CreateFramebuffers();
+        CreateCommands();
     }
 
     void VulkanContext::DeInit()
@@ -42,8 +44,26 @@ namespace South
         vkDestroyPipeline(logicDevice, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
 
+        for (auto framebuffer : swapChainFramebuffers)
+        {
+            vkDestroyFramebuffer(logicDevice, framebuffer, nullptr);
+        }
+
+        vkDestroyCommandPool(logicDevice, commandPool, nullptr);
+
         vkDestroyDevice(logicDevice, nullptr);
         vkDestroyInstance(instance, nullptr);
+    }
+
+    void VulkanContext::Tick()
+    {
+        /*
+        - Wait for the previous frame to finish
+        - Acquire an image from the swap chain
+        - Record a command buffer which draws the scene onto that image
+        - Submit the recorded command buffer
+        - Present the swap chain image
+        */
     }
 
     void VulkanContext::CreateInstance()
@@ -586,6 +606,89 @@ namespace South
 
         vkDestroyShaderModule(logicDevice, vertShaderMod, nullptr);
         vkDestroyShaderModule(logicDevice, fragShaderMod, nullptr);
+    }
+
+    void VulkanContext::CreateFramebuffers()
+    {
+        swapChainFramebuffers.resize(swapChainImageViews.size());
+
+        for (auto i = 0; i < swapChainImageViews.size(); i++)
+        {
+            VkImageView attachments[] = { swapChainImageViews[i] };
+
+            VkFramebufferCreateInfo framebufferInfo{
+                .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                .pNext           = nullptr,
+                .renderPass      = renderPass,
+                .attachmentCount = 1,
+                .pAttachments    = attachments,
+                .width           = swapChainExtent.width,
+                .height          = swapChainExtent.height,
+                .layers          = 1,
+            };
+
+            vkCreateFramebuffer(logicDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]);
+        }
+    }
+
+    void VulkanContext::CreateCommands()
+    {
+        VkCommandPoolCreateInfo poolInfo{
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .pNext            = nullptr,
+            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            .queueFamilyIndex = QueueFamilyIndex,
+        };
+
+        vkCreateCommandPool(logicDevice, &poolInfo, nullptr, &commandPool);
+
+
+        VkCommandBufferAllocateInfo allocInfo{
+            .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext              = nullptr,
+            .commandPool        = commandPool,
+            .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1,
+        };
+
+        vkAllocateCommandBuffers(logicDevice, &allocInfo, &commandBuffer);
+    }
+
+    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, uint32_t imageIndex)
+    {
+        VkCommandBufferBeginInfo beginInfo{
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .pNext            = nullptr,
+            .flags            = 0,
+            .pInheritanceInfo = nullptr,
+        };
+
+        vkBeginCommandBuffer(buffer, &beginInfo);
+
+        VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
+
+        VkRenderPassBeginInfo renderPassInfo{
+            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .pNext           = nullptr,
+            .renderPass      = renderPass,
+            .framebuffer     = swapChainFramebuffers[imageIndex],
+            .renderArea      = VkRect2D({ 0, 0 }, swapChainExtent),
+            .clearValueCount = 1,
+            .pClearValues    = &clearColor,
+        };
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+        // Drawing???
+        {
+            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        }
+
+        vkCmdEndRenderPass(commandBuffer);
+
+        vkEndCommandBuffer(commandBuffer);
     }
 
 } // namespace South
