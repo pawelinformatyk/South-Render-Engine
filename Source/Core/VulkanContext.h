@@ -25,8 +25,9 @@ namespace South
         void CreateGraphicsPipeline();
         void CreateFramebuffers();
         void CreateCommands();
+        void CreateSyncObjects();
 
-        void RecordCommandBuffer(const VkCommandBuffer& buffer, uint32_t imageIndex);
+        void RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex);
 
         const std::vector<const char*> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -52,5 +53,9 @@ namespace South
 
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
+
+        VkSemaphore imageAvailableSemaphore;
+        VkSemaphore renderFinishedSemaphore;
+        VkFence inFlightFence;
     };
 }; // namespace South

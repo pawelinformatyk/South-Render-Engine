@@ -25,6 +25,7 @@ namespace South
         CreateGraphicsPipeline();
         CreateFramebuffers();
         CreateCommands();
+        CreateSyncObjects();
     }
 
     void VulkanContext::DeInit()
@@ -51,19 +52,98 @@ namespace South
 
         vkDestroyCommandPool(logicDevice, commandPool, nullptr);
 
+        vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
+        vkDestroyFence(logicDevice, inFlightFence, nullptr);
+
         vkDestroyDevice(logicDevice, nullptr);
         vkDestroyInstance(instance, nullptr);
     }
 
     void VulkanContext::Tick()
     {
-        /*
-        - Wait for the previous frame to finish
-        - Acquire an image from the swap chain
-        - Record a command buffer which draws the scene onto that image
-        - Submit the recorded command buffer
-        - Present the swap chain image
-        */
+        // Wait for the previous frame to finish
+        vkWaitForFences(logicDevice, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(logicDevice, 1, &inFlightFence);
+
+        // Acquire an image from the swap chain
+        uint32_t imageIndex = 0;
+        vkAcquireNextImageKHR(logicDevice, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+        // Submit the recorded command buffer
+        vkResetCommandBuffer(commandBuffer, 0);
+        RecordCommandBuffer(commandBuffer, imageIndex);
+
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        VkSemaphore waitSemaphores[]      = { imageAvailableSemaphore };
+        VkSemaphore signalSemaphores[]    = { renderFinishedSemaphore };
+
+        VkSubmitInfo submitInfo{
+            .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .pNext                = nullptr,
+            .waitSemaphoreCount   = 1,
+            .pWaitSemaphores      = waitSemaphores,
+            .pWaitDstStageMask    = waitStages,
+            .commandBufferCount   = 1,
+            .pCommandBuffers      = &commandBuffer,
+            .signalSemaphoreCount = 1,
+            .pSignalSemaphores    = signalSemaphores,
+        };
+
+        vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence);
+
+        VkSwapchainKHR swapChains[] = { swapChain };
+
+        // Present the swap chain image
+        VkPresentInfoKHR presentInfo{
+            .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .pNext              = nullptr,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores    = signalSemaphores,
+            .swapchainCount     = 1,
+            .pSwapchains        = swapChains,
+            .pImageIndices      = &imageIndex,
+            .pResults           = nullptr,
+        };
+
+        vkQueuePresentKHR(graphicsQueue, &presentInfo);
+    }
+
+    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex)
+    {
+        VkCommandBufferBeginInfo beginInfo{
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .pNext            = nullptr,
+            .flags            = 0,
+            .pInheritanceInfo = nullptr,
+        };
+
+        vkBeginCommandBuffer(buffer, &beginInfo);
+
+        VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
+
+        VkRenderPassBeginInfo renderPassInfo{
+            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .pNext           = nullptr,
+            .renderPass      = renderPass,
+            .framebuffer     = swapChainFramebuffers[imageIndex],
+            .renderArea      = VkRect2D({ 0, 0 }, swapChainExtent),
+            .clearValueCount = 1,
+            .pClearValues    = &clearColor,
+        };
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+        // Drawing???
+        {
+            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        }
+
+        vkCmdEndRenderPass(commandBuffer);
+
+        vkEndCommandBuffer(commandBuffer);
     }
 
     void VulkanContext::CreateInstance()
@@ -386,6 +466,15 @@ namespace South
             .pColorAttachments    = &colorAttachmentRef,
         };
 
+        VkSubpassDependency dependency{
+            .srcSubpass    = VK_SUBPASS_EXTERNAL,
+            .dstSubpass    = 0,
+            .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        };
+
         VkRenderPassCreateInfo renderPassInfo{
             .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
             .pNext           = nullptr,
@@ -393,6 +482,8 @@ namespace South
             .pAttachments    = &colorAttachment,
             .subpassCount    = 1,
             .pSubpasses      = &subpass,
+            .dependencyCount = 1,
+            .pDependencies   = &dependency,
         };
 
         vkCreateRenderPass(logicDevice, &renderPassInfo, nullptr, &renderPass);
@@ -654,41 +745,22 @@ namespace South
         vkAllocateCommandBuffers(logicDevice, &allocInfo, &commandBuffer);
     }
 
-    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, uint32_t imageIndex)
+    void VulkanContext::CreateSyncObjects()
     {
-        VkCommandBufferBeginInfo beginInfo{
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .pNext            = nullptr,
-            .flags            = 0,
-            .pInheritanceInfo = nullptr,
+        VkSemaphoreCreateInfo semaphoreInfo{
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            .pNext = nullptr,
         };
 
-        vkBeginCommandBuffer(buffer, &beginInfo);
-
-        VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
-
-        VkRenderPassBeginInfo renderPassInfo{
-            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext           = nullptr,
-            .renderPass      = renderPass,
-            .framebuffer     = swapChainFramebuffers[imageIndex],
-            .renderArea      = VkRect2D({ 0, 0 }, swapChainExtent),
-            .clearValueCount = 1,
-            .pClearValues    = &clearColor,
+        VkFenceCreateInfo fenceInfo{
+            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-        // Drawing???
-        {
-            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-        }
-
-        vkCmdEndRenderPass(commandBuffer);
-
-        vkEndCommandBuffer(commandBuffer);
+        vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
+        vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphore);
+        vkCreateFence(logicDevice, &fenceInfo, nullptr, &inFlightFence);
     }
 
 } // namespace South
