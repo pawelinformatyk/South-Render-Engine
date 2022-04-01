@@ -7,7 +7,6 @@
 
 namespace South
 {
-
     class VulkanContext : public Context
     {
       public:
@@ -26,6 +25,10 @@ namespace South
         void CreateFramebuffers();
         void CreateCommands();
         void CreateSyncObjects();
+
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const VkPhysicalDevice& inDevice, const VkSurfaceKHR& inSurface);
+        VkPresentModeKHR ChooseSwapPresentMode(const VkPhysicalDevice& inDevice, const VkSurfaceKHR& inSurface);
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
         void RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex);
 

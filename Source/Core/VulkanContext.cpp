@@ -109,43 +109,6 @@ namespace South
         vkQueuePresentKHR(graphicsQueue, &presentInfo);
     }
 
-    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex)
-    {
-        VkCommandBufferBeginInfo beginInfo{
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .pNext            = nullptr,
-            .flags            = 0,
-            .pInheritanceInfo = nullptr,
-        };
-
-        vkBeginCommandBuffer(buffer, &beginInfo);
-
-        VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
-
-        VkRenderPassBeginInfo renderPassInfo{
-            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext           = nullptr,
-            .renderPass      = renderPass,
-            .framebuffer     = swapChainFramebuffers[imageIndex],
-            .renderArea      = VkRect2D({ 0, 0 }, swapChainExtent),
-            .clearValueCount = 1,
-            .pClearValues    = &clearColor,
-        };
-
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-        // Drawing???
-        {
-            vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-        }
-
-        vkCmdEndRenderPass(commandBuffer);
-
-        vkEndCommandBuffer(commandBuffer);
-    }
-
     void VulkanContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
@@ -332,10 +295,27 @@ namespace South
 
     void VulkanContext::CreateSwapChain(GLFWwindow& window)
     {
-        VkSwapchainCreateInfoKHR sCreateInfo{
+        VkSurfaceCapabilitiesKHR capabilities;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
+
+        uint32_t imageCount = capabilities.minImageCount + 1;
+        if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
+        {
+            imageCount = capabilities.maxImageCount;
+        }
+
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, surface);
+        VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, surface);
+        VkExtent2D extent                = ChooseSwapExtent(capabilities, window);
+
+        VkSwapchainCreateInfoKHR createInfo{
             .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext                 = nullptr,
             .surface               = surface,
+            .minImageCount         = imageCount,
+            .imageFormat           = surfaceFormat.format,
+            .imageColorSpace       = surfaceFormat.colorSpace,
+            .imageExtent           = extent,
             .imageArrayLayers      = 1,
             .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
@@ -343,75 +323,20 @@ namespace South
             .pQueueFamilyIndices   = &QueueFamilyIndex,
             .preTransform          = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
             .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            .presentMode           = presentMode,
             .clipped               = VK_TRUE,
             .oldSwapchain          = VK_NULL_HANDLE,
         };
 
-        // Swap extent - Image size.
+        vkCreateSwapchainKHR(logicDevice, &createInfo, nullptr, &swapChain);
 
-        // Presentation mode.
-        uint32_t presentModesCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModesCount, nullptr);
-
-        std::vector<VkPresentModeKHR> availablePresentModes(presentModesCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModesCount,
-                                                  availablePresentModes.data());
-
-        sCreateInfo.presentMode = /*Default*/ VK_PRESENT_MODE_FIFO_KHR;
-        for (const auto& mode : availablePresentModes)
-        {
-            if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
-            {
-                sCreateInfo.presentMode = mode;
-            }
-        }
-
-        // Surface format.
-
-        uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
-
-        std::vector<VkSurfaceFormatKHR> availableFormats(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, availableFormats.data());
-
-        sCreateInfo.imageFormat     = availableFormats[0].format;
-        sCreateInfo.imageColorSpace = availableFormats[0].colorSpace;
-        for (const auto& format : availableFormats)
-        {
-            if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-            {
-                sCreateInfo.imageFormat     = VK_FORMAT_B8G8R8A8_SRGB;
-                sCreateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-                break;
-            }
-        }
-
-        VkSurfaceCapabilitiesKHR capabilities;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
-
-        int width, height;
-        glfwGetFramebufferSize(&window, &width, &height);
-
-        sCreateInfo.imageExtent =
-            VkExtent2D(std::clamp(static_cast<uint32_t>(width), capabilities.minImageExtent.width,
-                                  capabilities.maxImageExtent.width),
-                       std::clamp(static_cast<uint32_t>(height), capabilities.minImageExtent.width,
-                                  capabilities.maxImageExtent.width));
-
-        sCreateInfo.minImageCount = (capabilities.minImageCount + 1 > capabilities.maxImageCount)
-                                        ? capabilities.minImageCount
-                                        : capabilities.minImageCount + 1;
-
-        vkCreateSwapchainKHR(logicDevice, &sCreateInfo, nullptr, &swapChain);
-
-        uint32_t imageCount;
         vkGetSwapchainImagesKHR(logicDevice, swapChain, &imageCount, nullptr);
 
         swapChainImages.resize(imageCount);
         vkGetSwapchainImagesKHR(logicDevice, swapChain, &imageCount, swapChainImages.data());
 
-        swapChainImageFormat = sCreateInfo.imageFormat;
-        swapChainExtent      = sCreateInfo.imageExtent;
+        swapChainImageFormat = createInfo.imageFormat;
+        swapChainExtent      = createInfo.imageExtent;
     }
 
     void VulkanContext::CreateImageViews()
@@ -685,12 +610,12 @@ namespace South
             .pMultisampleState   = &multisampling,
             .pDepthStencilState  = nullptr,
             .pColorBlendState    = &colorBlending,
-            .pDynamicState       = &dynamicState,
-            .layout              = pipelineLayout,
-            .renderPass          = renderPass,
-            .subpass             = 0,
-            .basePipelineHandle  = VK_NULL_HANDLE,
-            .basePipelineIndex   = -1,
+            //.pDynamicState       = &dynamicState,
+            .layout             = pipelineLayout,
+            .renderPass         = renderPass,
+            .subpass            = 0,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex  = -1,
         };
 
         vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
@@ -733,7 +658,6 @@ namespace South
 
         vkCreateCommandPool(logicDevice, &poolInfo, nullptr, &commandPool);
 
-
         VkCommandBufferAllocateInfo allocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
@@ -761,6 +685,104 @@ namespace South
         vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
         vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphore);
         vkCreateFence(logicDevice, &fenceInfo, nullptr, &inFlightFence);
+    }
+
+    VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(const VkPhysicalDevice& inDevice,
+                                                              const VkSurfaceKHR& inSurface)
+    {
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &formatCount, nullptr);
+
+        std::vector<VkSurfaceFormatKHR> availableFormats(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &formatCount, availableFormats.data());
+
+        for (const auto& format : availableFormats)
+        {
+            if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                return format;
+            }
+        }
+
+        return availableFormats[0];
+    }
+
+    VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(const VkPhysicalDevice& inDevice,
+                                                          const VkSurfaceKHR& inSurface)
+    {
+        // Presentation mode.
+        uint32_t presentModesCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &presentModesCount, nullptr);
+
+        std::vector<VkPresentModeKHR> availablePresentModes(presentModesCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &presentModesCount,
+                                                  availablePresentModes.data());
+
+        for (const auto& availablePresentMode : availablePresentModes)
+        {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                return availablePresentMode;
+            }
+        }
+
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window)
+    {
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+        {
+            return capabilities.currentExtent;
+        }
+        else
+        {
+            int width, height;
+            glfwGetFramebufferSize(&window, &width, &height);
+
+            VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+
+            actualExtent.width =
+                std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            actualExtent.height =
+                std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+            return actualExtent;
+        }
+    }
+
+    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex)
+    {
+        VkCommandBufferBeginInfo beginInfo{
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .pNext            = nullptr,
+            .flags            = 0,
+            .pInheritanceInfo = nullptr,
+        };
+
+        vkBeginCommandBuffer(buffer, &beginInfo);
+
+        VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
+
+        VkRenderPassBeginInfo renderPassInfo{
+            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .pNext           = nullptr,
+            .renderPass      = renderPass,
+            .framebuffer     = swapChainFramebuffers[imageIndex],
+            .renderArea      = VkRect2D({ 0, 0 }, swapChainExtent),
+            .clearValueCount = 1,
+            .pClearValues    = &clearColor,
+        };
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffer);
+
+        vkEndCommandBuffer(commandBuffer);
     }
 
 } // namespace South

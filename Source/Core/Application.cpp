@@ -1,6 +1,5 @@
 #include "Core/Application.h"
 
-#include "Core/Tutorial.h"
 #include "Core/VulkanContext.h"
 #include "Core/Window.h"
 
@@ -22,7 +21,7 @@ namespace South
             return;
         }
 
-        GraphicalContext = new TutorialContext;
+        GraphicalContext = new VulkanContext;
         if (!GraphicalContext)
         {
             return;

@@ -161,6 +161,7 @@
     <ClCompile Include="ExternalLibraries\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_tables.cpp" />
     <ClCompile Include="ExternalLibraries\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Source\Core\OpenglContext.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
     <ClCompile Include="Source\Core\Window.cpp" />
     <ClCompile Include="Source\Core\VulkanContext.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="ExternalLibraries\imgui\imstb_textedit.h" />
     <ClInclude Include="ExternalLibraries\imgui\imstb_truetype.h" />
     <ClInclude Include="Source\Core\Application.h" />
+    <ClInclude Include="Source\Core\OpenglContext.h" />
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\GUI.h" />
     <ClInclude Include="Source\Core\Window.h" />
