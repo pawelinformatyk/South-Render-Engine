@@ -22,7 +22,8 @@ namespace South
         Context* GraphicalContext = nullptr;
 
         AppWindow* pWindow = nullptr;
-        bool bRunning      = false;
+
+        bool bRunning = false;
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

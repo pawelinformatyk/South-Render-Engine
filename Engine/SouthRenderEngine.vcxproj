@@ -49,9 +49,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\Vulkan\include\;C:\Dev\Programming\South-Render-Engine\ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Source;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\Vulkan\include\;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -71,9 +71,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\Vulkan\include\;C:\Dev\Programming\South-Render-Engine\ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Source;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\Vulkan\include\;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>

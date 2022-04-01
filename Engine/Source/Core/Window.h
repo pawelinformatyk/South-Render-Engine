@@ -8,7 +8,7 @@ namespace South
 {
     // Target of graphics rendering and inputs.
     // Events need to be picked up by this window
-    //
+    // #TODO : I think there should be swap chain here.
     class AppWindow
     {
       public:
