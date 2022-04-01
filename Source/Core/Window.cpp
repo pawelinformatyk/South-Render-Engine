@@ -1,5 +1,6 @@
-#include "Core/Window.h"
+#include "sthpch.h"
 
+#include "Core/Window.h"
 #include "Core/Application.h"
 
 #include <GLFW/glfw3.h>

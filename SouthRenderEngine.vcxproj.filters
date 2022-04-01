@@ -57,6 +57,9 @@
     <ClCompile Include="Source\Core\OpenglContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\sthpch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExternalLibraries\imgui\imconfig.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\OpenglContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\sthpch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -33,7 +33,7 @@ MaxEmptyLinesToKeep: '4'
 NamespaceIndentation: All
 ObjCBlockIndentWidth: '4'
 PointerAlignment: Left
-SortIncludes: 'true'
+SortIncludes: 'false'
 SortUsingDeclarations: 'true'
 SpaceAfterCStyleCast: 'false'
 SpaceAfterLogicalNot: 'false'

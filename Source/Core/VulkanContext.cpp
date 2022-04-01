@@ -1,16 +1,12 @@
+#include "sthpch.h"
+
 #include "Core/VulkanContext.h"
 
 #include "Core/Application.h"
 
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
-#include <map>
-#include <optional>
-#include <set>
-#include <utility>
 
 namespace South
 {

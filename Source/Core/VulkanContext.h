@@ -1,9 +1,8 @@
 #pragma once
 
+
 #include "Core/Context.h"
 #include "vulkan/vulkan_core.h"
-
-#include <vector>
 
 namespace South
 {

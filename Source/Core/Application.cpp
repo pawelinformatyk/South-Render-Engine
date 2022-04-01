@@ -1,3 +1,5 @@
+#include "sthpch.h"
+
 #include "Core/Application.h"
 
 #include "Core/VulkanContext.h"

@@ -1,20 +1,12 @@
-#include "Core/Application.h"
+#include "sthpch.h"
 
-#include <iostream>
+#include "Core/Application.h"
 
 int main(int argc, char** argv)
 {
     South::Application App(argc, argv);
 
-    try
-    {
-        App.Run();
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+    App.Run();
 
     return 0;
 }
