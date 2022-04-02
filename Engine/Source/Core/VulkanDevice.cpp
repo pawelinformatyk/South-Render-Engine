@@ -1,5 +1,6 @@
 #include "sthpch.h"
 #include "Core/VulkanDevice.h"
+#include "Core/VulkanContext.h"
 #include <optional>
 
 namespace South
@@ -15,7 +16,7 @@ namespace South
         return new VulkanDevice;
     }
 
-    void VulkanDevice::Init(const VkInstance& instance, const VkSurfaceKHR& surface)
+    void VulkanDevice::Init(VkSurfaceKHR surface)
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
         auto IsDeviceSuitable =
@@ -101,6 +102,8 @@ namespace South
             return score;
         };
 
+        VkInstance instance = VulkanContext::GetInstance();
+
         // Get vector of devices.
         uint32_t devicesCount = 0;
         vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
@@ -160,27 +163,27 @@ namespace South
 
         vkCreateDevice(physicalDevice, &sCreateInfo, nullptr, &logicalDevice);
 
-        vkGetDeviceQueue(logicalDevice, QueueFamilyIndex, 0, &graphicsQueue);
+        vkGetDeviceQueue(logicalDevice, QueueFamilyIndex, 0, &Queue);
     }
 
-    const VkPhysicalDevice& VulkanDevice::GetPhysicalDevice() const
+    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const
     {
         return physicalDevice;
     }
 
-    const VkDevice& VulkanDevice::GetDevice() const
+    VkDevice VulkanDevice::GetDevice() const
     {
         return logicalDevice;
     }
 
-    const uint32_t& VulkanDevice::GetQFamilyIndex() const
+    uint32_t VulkanDevice::GetQFamilyIndex() const
     {
         return QueueFamilyIndex;
     }
 
-    const VkQueue& VulkanDevice::GetQ() const
+    VkQueue VulkanDevice::GetQ() const
     {
-        return graphicsQueue;
+        return Queue;
     }
 
 } // namespace South

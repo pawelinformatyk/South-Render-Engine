@@ -4,6 +4,9 @@
 
 namespace South
 {
+
+    // Class wrapper around vulkan devices : physical and logical.
+    // Has also variables related to queues, because they are retrieved from devices.
     class VulkanDevice
     {
       public:
@@ -11,13 +14,12 @@ namespace South
 
         static VulkanDevice* Create();
 
-        void Init(const VkInstance& instance, const VkSurfaceKHR& surface);
+        void Init(VkSurfaceKHR surface);
 
-        // #TODO : are const reference make sense?
-        const VkPhysicalDevice& GetPhysicalDevice() const;
-        const VkDevice& GetDevice() const;
-        const uint32_t& GetQFamilyIndex() const;
-        const VkQueue& GetQ() const;
+        VkPhysicalDevice GetPhysicalDevice() const;
+        VkDevice GetDevice() const;
+        uint32_t GetQFamilyIndex() const;
+        VkQueue GetQ() const;
 
       private:
         const std::vector<const char*> requiredDeviceExtensions = {
@@ -27,7 +29,7 @@ namespace South
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice logicalDevice          = VK_NULL_HANDLE;
 
-        VkQueue graphicsQueue     = VK_NULL_HANDLE;
+        VkQueue Queue             = VK_NULL_HANDLE;
         uint32_t QueueFamilyIndex = 0;
     };
 

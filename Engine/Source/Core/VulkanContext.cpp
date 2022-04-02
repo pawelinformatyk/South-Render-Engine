@@ -16,7 +16,7 @@ namespace South
         CreateSurface(window);
 
         device = VulkanDevice::Create();
-        device->Init(instance, surface);
+        device->Init(surface);
 
         CreateSwapChain(window);
         CreateImageViews();
@@ -29,7 +29,7 @@ namespace South
 
     void VulkanContext::DeInit()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         // #TODO : Order?
 
@@ -64,8 +64,8 @@ namespace South
 
     void VulkanContext::Tick()
     {
-        const VkDevice& logicDevice  = device->GetDevice();
-        const VkQueue& graphicsQueue = device->GetQ();
+        VkDevice logicDevice  = device->GetDevice();
+        VkQueue graphicsQueue = device->GetQ();
 
         // Wait for the previous frame to finish
         vkWaitForFences(logicDevice, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
@@ -114,6 +114,11 @@ namespace South
         vkQueuePresentKHR(graphicsQueue, &presentInfo);
     }
 
+    VkInstance VulkanContext::GetInstance()
+    {
+        return instance;
+    }
+
     void VulkanContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
@@ -152,9 +157,9 @@ namespace South
 
     void VulkanContext::CreateSwapChain(GLFWwindow& window)
     {
-        const VkPhysicalDevice& physDevice = device->GetPhysicalDevice();
-        const VkDevice& logicDevice        = device->GetDevice();
-        const uint32_t& QueueFamilyIndex   = device->GetQFamilyIndex();
+        VkPhysicalDevice physDevice = device->GetPhysicalDevice();
+        VkDevice logicDevice        = device->GetDevice();
+        uint32_t QueueFamilyIndex   = device->GetQFamilyIndex();
 
         VkSurfaceCapabilitiesKHR capabilities;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
@@ -202,7 +207,7 @@ namespace South
 
     void VulkanContext::CreateImageViews()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         swapChainImageViews.resize(swapChainImages.size());
 
@@ -279,7 +284,7 @@ namespace South
 
     void VulkanContext::CreateGraphicsPipeline()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         auto readFile = [](const std::string& fileName)
         {
@@ -491,7 +496,7 @@ namespace South
 
     void VulkanContext::CreateFramebuffers()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         swapChainFramebuffers.resize(swapChainImageViews.size());
 
@@ -516,7 +521,7 @@ namespace South
 
     void VulkanContext::CreateCommands()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         VkCommandPoolCreateInfo poolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -540,7 +545,7 @@ namespace South
 
     void VulkanContext::CreateSyncObjects()
     {
-        const VkDevice& logicDevice = device->GetDevice();
+        VkDevice logicDevice = device->GetDevice();
 
         VkSemaphoreCreateInfo semaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -558,8 +563,7 @@ namespace South
         vkCreateFence(logicDevice, &fenceInfo, nullptr, &inFlightFence);
     }
 
-    VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(const VkPhysicalDevice& inDevice,
-                                                              const VkSurfaceKHR& inSurface)
+    VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         uint32_t formatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &formatCount, nullptr);
@@ -578,8 +582,7 @@ namespace South
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(const VkPhysicalDevice& inDevice,
-                                                          const VkSurfaceKHR& inSurface)
+    VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         // Presentation mode.
         uint32_t presentModesCount;
@@ -622,7 +625,7 @@ namespace South
         }
     }
 
-    void VulkanContext::RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex)
+    void VulkanContext::RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex)
     {
         VkCommandBufferBeginInfo beginInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,

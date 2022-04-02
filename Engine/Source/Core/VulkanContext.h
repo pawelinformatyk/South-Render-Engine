@@ -14,6 +14,8 @@ namespace South
         virtual void DeInit() override;
         virtual void Tick() override;
 
+        static VkInstance GetInstance();
+
       private:
         void CreateInstance();
         void CreateSurface(GLFWwindow& window);
@@ -25,17 +27,18 @@ namespace South
         void CreateCommands();
         void CreateSyncObjects();
 
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const VkPhysicalDevice& inDevice, const VkSurfaceKHR& inSurface);
-        VkPresentModeKHR ChooseSwapPresentMode(const VkPhysicalDevice& inDevice, const VkSurfaceKHR& inSurface);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
+        VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
-        void RecordCommandBuffer(const VkCommandBuffer& buffer, const uint32_t& imageIndex);
+        void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
         const std::vector<const char*> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
 
-        VkInstance instance      = VK_NULL_HANDLE;
+        static inline VkInstance instance = VK_NULL_HANDLE;
+
         VkSurfaceKHR surface     = VK_NULL_HANDLE;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
         std::vector<VkImage> swapChainImages;
