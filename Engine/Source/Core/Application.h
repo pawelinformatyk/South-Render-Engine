@@ -28,7 +28,6 @@ namespace South
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.
 
-
     // I want to have multiple viewports. How do I do it. Do I need layers or just
     // two imgui windows with rendered scenes with different camera.
     // VkPipelineViewportStateCreateInfo - > viewport count?

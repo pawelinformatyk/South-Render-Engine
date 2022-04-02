@@ -101,6 +101,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">sthpch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Source\Core\VulkanDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Context.h" />
@@ -111,6 +112,7 @@
     <ClInclude Include="Source\Core\Window.h" />
     <ClInclude Include="Source\Core\VulkanContext.h" />
     <ClInclude Include="Source\sthpch.h" />
+    <ClInclude Include="Source\Core\VulkanDevice.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
 #include "Core/VulkanContext.h"
-
 #include "Core/Application.h"
+#include "Core/VulkanDevice.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
@@ -14,7 +14,10 @@ namespace South
     {
         CreateInstance();
         CreateSurface(window);
-        CreateDevices();
+
+        device = VulkanDevice::Create();
+        device->Init(instance, surface);
+
         CreateSwapChain(window);
         CreateImageViews();
         CreateRenderPass();
@@ -26,6 +29,8 @@ namespace South
 
     void VulkanContext::DeInit()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         // #TODO : Order?
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -52,12 +57,16 @@ namespace South
         vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
         vkDestroyFence(logicDevice, inFlightFence, nullptr);
 
-        vkDestroyDevice(logicDevice, nullptr);
+        delete device;
+
         vkDestroyInstance(instance, nullptr);
     }
 
     void VulkanContext::Tick()
     {
+        const VkDevice& logicDevice  = device->GetDevice();
+        const VkQueue& graphicsQueue = device->GetQ();
+
         // Wait for the previous frame to finish
         vkWaitForFences(logicDevice, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
         vkResetFences(logicDevice, 1, &inFlightFence);
@@ -86,7 +95,7 @@ namespace South
             .pSignalSemaphores    = signalSemaphores,
         };
 
-        vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence);
+        vkQueueSubmit(device->GetQ(), 1, &submitInfo, inFlightFence);
 
         VkSwapchainKHR swapChains[] = { swapChain };
 
@@ -141,156 +150,12 @@ namespace South
         }
     }
 
-    void VulkanContext::CreateDevices()
-    {
-        // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
-        auto IsDeviceSuitable =
-            [&requiredDeviceExtensions = requiredDeviceExtensions, &surface = surface](const VkPhysicalDevice& device)
-        {
-            // Check if device supports swap chain.
-            uint32_t extensionCount;
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-            std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-            std::set<std::string> requiredExtensionsSet(requiredDeviceExtensions.begin(),
-                                                        requiredDeviceExtensions.end());
-
-            for (const auto& extension : availableExtensions)
-            {
-                requiredExtensionsSet.erase(extension.extensionName);
-            }
-
-            if (!requiredExtensionsSet.empty())
-            {
-                return std::optional<uint32_t>();
-            }
-
-            // #TODO : Look for specific gpu??
-            uint32_t formatCount;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-            if (!formatCount)
-            {
-                return std::optional<uint32_t>();
-            }
-
-            uint32_t presentModesCount;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
-            if (!presentModesCount)
-            {
-                return std::optional<uint32_t>();
-            }
-
-            // Check if device has needed queue family.
-            uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-            for (uint32_t i = 0; i < queueFamilyCount; ++i)
-            {
-                VkBool32 presentSupport = false;
-                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-                if (presentSupport && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
-                {
-                    return std::optional<uint32_t>(i);
-                }
-            }
-
-            return std::optional<uint32_t>();
-        };
-
-        // Lambda to rate device based on our needs.
-        auto RateDevice = [](const VkPhysicalDevice& device)
-        {
-            // Rate based on features and properties.
-            int score = 0;
-
-            VkPhysicalDeviceProperties deviceProperties;
-            VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceProperties(device, &deviceProperties);
-            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-            // Discrete GPUs have a significant performance advantage
-            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-            {
-                score += 1000;
-            }
-            if (deviceFeatures.multiViewport)
-            {
-                score += 1000;
-            }
-
-            return score;
-        };
-
-        // Get vector of devices.
-        uint32_t devicesCount = 0;
-        vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
-
-        std::vector<VkPhysicalDevice> devices(devicesCount);
-        vkEnumeratePhysicalDevices(instance, &devicesCount, devices.data());
-
-        // Find best gpu available. Reject those without correct queue and rate the rest.
-        std::multimap<int, std::pair<VkPhysicalDevice, uint32_t>> devicesScoreboard;
-
-        for (const VkPhysicalDevice& dev : devices)
-        {
-            std::optional<uint32_t> qFamIndex = IsDeviceSuitable(dev);
-            if (!qFamIndex.has_value())
-            {
-                continue;
-            }
-
-            devicesScoreboard.emplace(RateDevice(dev), std::make_pair(dev, qFamIndex.value()));
-        }
-
-        // Get device if it was found.
-        if (devicesScoreboard.size())
-        {
-            physDevice       = devicesScoreboard.rbegin()->second.first;
-            QueueFamilyIndex = devicesScoreboard.rbegin()->second.second;
-        }
-        else
-        {
-            std::cout << "physDevice Not found." << std::endl;
-            // Throw error?
-        }
-
-        // Set logical device and queue.
-        const float queuePrio = 1.f;
-
-        VkDeviceQueueCreateInfo sQCreateInfo{
-            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .pNext            = nullptr,
-            .queueFamilyIndex = QueueFamilyIndex,
-            .queueCount       = 1,
-            .pQueuePriorities = &queuePrio,
-        };
-
-        VkPhysicalDeviceFeatures sDeviceFeatures{};
-
-        VkDeviceCreateInfo sCreateInfo{
-            .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .pNext                   = nullptr,
-            .queueCreateInfoCount    = 1,
-            .pQueueCreateInfos       = &sQCreateInfo,
-            .enabledLayerCount       = 0,
-            .enabledExtensionCount   = static_cast<uint32_t>(requiredDeviceExtensions.size()),
-            .ppEnabledExtensionNames = requiredDeviceExtensions.data(),
-            .pEnabledFeatures        = &sDeviceFeatures,
-        };
-
-        vkCreateDevice(physDevice, &sCreateInfo, nullptr, &logicDevice);
-
-        vkGetDeviceQueue(logicDevice, QueueFamilyIndex, 0, &graphicsQueue);
-    }
-
     void VulkanContext::CreateSwapChain(GLFWwindow& window)
     {
+        const VkPhysicalDevice& physDevice = device->GetPhysicalDevice();
+        const VkDevice& logicDevice        = device->GetDevice();
+        const uint32_t& QueueFamilyIndex   = device->GetQFamilyIndex();
+
         VkSurfaceCapabilitiesKHR capabilities;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
 
@@ -337,6 +202,8 @@ namespace South
 
     void VulkanContext::CreateImageViews()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         swapChainImageViews.resize(swapChainImages.size());
 
         VkImageSubresourceRange subresourceRange{
@@ -407,11 +274,13 @@ namespace South
             .pDependencies   = &dependency,
         };
 
-        vkCreateRenderPass(logicDevice, &renderPassInfo, nullptr, &renderPass);
+        vkCreateRenderPass(device->GetDevice(), &renderPassInfo, nullptr, &renderPass);
     }
 
     void VulkanContext::CreateGraphicsPipeline()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         auto readFile = [](const std::string& fileName)
         {
             std::ifstream file(fileName, std::ios::ate | std::ios::binary);
@@ -622,6 +491,8 @@ namespace South
 
     void VulkanContext::CreateFramebuffers()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         swapChainFramebuffers.resize(swapChainImageViews.size());
 
         for (auto i = 0; i < swapChainImageViews.size(); i++)
@@ -645,11 +516,13 @@ namespace South
 
     void VulkanContext::CreateCommands()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         VkCommandPoolCreateInfo poolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = QueueFamilyIndex,
+            .queueFamilyIndex = device->GetQFamilyIndex(),
         };
 
         vkCreateCommandPool(logicDevice, &poolInfo, nullptr, &commandPool);
@@ -667,6 +540,8 @@ namespace South
 
     void VulkanContext::CreateSyncObjects()
     {
+        const VkDevice& logicDevice = device->GetDevice();
+
         VkSemaphoreCreateInfo semaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,

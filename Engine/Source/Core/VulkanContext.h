@@ -1,11 +1,12 @@
 #pragma once
 
-
 #include "Core/Context.h"
 #include "vulkan/vulkan_core.h"
 
 namespace South
 {
+    class VulkanDevice;
+
     class VulkanContext : public Context
     {
       public:
@@ -16,7 +17,6 @@ namespace South
       private:
         void CreateInstance();
         void CreateSurface(GLFWwindow& window);
-        void CreateDevices();
         void CreateSwapChain(GLFWwindow& window);
         void CreateImageViews();
         void CreateRenderPass();
@@ -35,13 +35,9 @@ namespace South
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
 
-        VkInstance instance         = VK_NULL_HANDLE;
-        VkSurfaceKHR surface        = VK_NULL_HANDLE;
-        uint32_t QueueFamilyIndex   = 0;
-        VkPhysicalDevice physDevice = VK_NULL_HANDLE;
-        VkDevice logicDevice        = VK_NULL_HANDLE;
-        VkQueue graphicsQueue       = VK_NULL_HANDLE;
-        VkSwapchainKHR swapChain    = VK_NULL_HANDLE;
+        VkInstance instance      = VK_NULL_HANDLE;
+        VkSurfaceKHR surface     = VK_NULL_HANDLE;
+        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
         std::vector<VkImage> swapChainImages;
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
@@ -59,5 +55,7 @@ namespace South
         VkSemaphore imageAvailableSemaphore;
         VkSemaphore renderFinishedSemaphore;
         VkFence inFlightFence;
+
+        VulkanDevice* device;
     };
 }; // namespace South
