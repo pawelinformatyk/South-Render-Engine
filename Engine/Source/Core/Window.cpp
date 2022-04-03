@@ -12,7 +12,7 @@ namespace South
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         pWindow = glfwCreateWindow(Width, Height, GetAppName(), nullptr, nullptr);
     }
@@ -36,11 +36,6 @@ namespace South
 
     AppWindow* AppWindow::Create()
     {
-        auto ptr = new AppWindow;
-        if (ptr)
-        {
-            return ptr->pWindow ? ptr : nullptr;
-        }
-        return nullptr;
+        return new AppWindow;
     }
 } // namespace South

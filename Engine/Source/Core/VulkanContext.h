@@ -33,10 +33,6 @@ namespace South
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-        const std::vector<const char*> requiredDeviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        };
-
         static inline VkInstance instance = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface     = VK_NULL_HANDLE;
@@ -45,16 +41,14 @@ namespace South
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
         std::vector<VkImageView> swapChainImageViews;
+        std::vector<VkFramebuffer> swapChainFramebuffers;
 
         VkRenderPass renderPass;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
 
-        std::vector<VkFramebuffer> swapChainFramebuffers;
-
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
-
         VkSemaphore imageAvailableSemaphore;
         VkSemaphore renderFinishedSemaphore;
         VkFence inFlightFence;
