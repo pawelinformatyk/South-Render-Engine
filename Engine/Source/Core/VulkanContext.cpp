@@ -10,6 +10,10 @@
 
 namespace South
 {
+    const std::vector<Vertex> vertices = { { { 0.0f, -0.5f }, { .5f, 0.0f, 0.5f } },
+                                           { { 0.5f, 0.5f }, { 0.1f, .6f, 0.2f } },
+                                           { { -0.5f, 0.5f }, { 0.0f, .2f, 1.0f } } };
+
     void VulkanContext::Init(GLFWwindow& window)
     {
         CreateInstance();
@@ -23,6 +27,7 @@ namespace South
         CreateRenderPass();
         CreateGraphicsPipeline();
         CreateFramebuffers();
+        CreateVertexBuffers();
         CreateCommands();
         CreateSyncObjects();
     }
@@ -56,6 +61,9 @@ namespace South
         vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
         vkDestroyFence(logicDevice, inFlightFence, nullptr);
+
+        vkDestroyBuffer(logicDevice, vertexBuffer, nullptr);
+        vkFreeMemory(logicDevice, vertexBufferMemory, nullptr);
 
         delete device;
 
@@ -325,11 +333,14 @@ namespace South
             return shaderModule;
         };
 
-        std::vector<char> vertShaderCode = readFile("Source/Shaders/vert.spv");
-        std::vector<char> fragShaderCode = readFile("Source/Shaders/frag.spv");
+        std::vector<char> triangleVertShaderCode = readFile("Source/Shaders/Compiled/Triangle_V.spv");
+        std::vector<char> triangleFragShaderCode = readFile("Source/Shaders/Compiled/Triangle_F.spv");
 
-        VkShaderModule vertShaderMod = CreateShaderModule(vertShaderCode);
-        VkShaderModule fragShaderMod = CreateShaderModule(fragShaderCode);
+        std::vector<char> baseVertShaderCode = readFile("Source/Shaders/Compiled/Base_V.spv");
+        std::vector<char> baseFragShaderCode = readFile("Source/Shaders/Compiled/Base_F.spv");
+
+        VkShaderModule vertShaderMod = CreateShaderModule(baseVertShaderCode);
+        VkShaderModule fragShaderMod = CreateShaderModule(baseFragShaderCode);
 
         // Assign shaders to specific pipeline
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{
@@ -350,14 +361,17 @@ namespace South
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+        const auto& bindingDesc     = Vertex::GetBindingDescription();
+        const auto& attributesDescs = Vertex::GetAttributesDescriptions();
+
         // Inputs to vertext shader.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{
             .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .pNext                           = nullptr,
-            .vertexBindingDescriptionCount   = 0,
-            .pVertexBindingDescriptions      = nullptr,
-            .vertexAttributeDescriptionCount = 0,
-            .pVertexAttributeDescriptions    = nullptr,
+            .vertexBindingDescriptionCount   = 1,
+            .pVertexBindingDescriptions      = &bindingDesc,
+            .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributesDescs.size()),
+            .pVertexAttributeDescriptions    = attributesDescs.data(),
         };
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{
@@ -519,6 +533,58 @@ namespace South
         }
     }
 
+    void VulkanContext::CreateVertexBuffers()
+    {
+        VkBufferCreateInfo bufferInfo{
+            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext       = nullptr,
+            .size        = sizeof(vertices[0]) * vertices.size(),
+            .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        };
+
+        VkDevice logicalDev      = device->GetDevice();
+        VkPhysicalDevice physDev = device->GetPhysicalDevice();
+
+        vkCreateBuffer(logicalDev, &bufferInfo, nullptr, &vertexBuffer);
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(logicalDev, vertexBuffer, &memRequirements);
+
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(physDev, &memProperties);
+
+        auto findMemoryType = [&memProperties = memProperties](uint32_t typeFilter, VkMemoryPropertyFlags properties)
+        {
+            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+            {
+                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                {
+                    return i;
+                }
+            }
+
+            // #TODO : Should throw an error.
+            return typeFilter;
+        };
+
+        VkMemoryAllocateInfo allocInfo{
+            .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+            .pNext           = nullptr,
+            .allocationSize  = memRequirements.size,
+            .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
+        };
+
+        vkAllocateMemory(logicalDev, &allocInfo, nullptr, &vertexBufferMemory);
+        vkBindBufferMemory(logicalDev, vertexBuffer, vertexBufferMemory, 0);
+
+        void* data;
+        vkMapMemory(logicalDev, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+        vkUnmapMemory(logicalDev, vertexBufferMemory);
+    }
+
     void VulkanContext::CreateCommands()
     {
         VkDevice logicDevice = device->GetDevice();
@@ -652,12 +718,49 @@ namespace South
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-        vkCmdDraw(commandBuffer, 3, 2, 0, 0);
-        vkCmdDraw(commandBuffer, 3, 2, 3, 1);
+        VkBuffer vertexBuffers[] = { vertexBuffer };
+        VkDeviceSize offsets[]   = { 0 };
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+
+        // vkCmdDraw(commandBuffer, 3, 2, 0, 0);
+        // vkCmdDraw(commandBuffer, 3, 2, 3, 1);
 
         vkCmdEndRenderPass(commandBuffer);
 
         vkEndCommandBuffer(commandBuffer);
     }
+
+    const VkVertexInputBindingDescription& Vertex::GetBindingDescription()
+    {
+        return bindingDesc;
+    }
+
+    const std::array<VkVertexInputAttributeDescription, 2>& Vertex::GetAttributesDescriptions()
+    {
+        return attributesDescs;
+    }
+
+    VkVertexInputBindingDescription Vertex::bindingDesc{
+        .binding   = 0,
+        .stride    = sizeof(Vertex),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+    };
+
+    std::array<VkVertexInputAttributeDescription, 2> Vertex::attributesDescs{
+        VkVertexInputAttributeDescription{
+            .location = 0,
+            .binding  = 0,
+            .format   = VK_FORMAT_R32G32_SFLOAT,
+            .offset   = offsetof(Vertex, pos),
+        },
+        VkVertexInputAttributeDescription{
+            .location = 1,
+            .binding  = 0,
+            .format   = VK_FORMAT_R32G32B32_SFLOAT,
+            .offset   = offsetof(Vertex, color),
+        },
+    };
 
 } // namespace South

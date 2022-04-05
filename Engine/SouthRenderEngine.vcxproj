@@ -125,4 +125,10 @@
       <Project>{790e703f-e2d8-4549-9de9-58b64c48d8f7}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Shaders\base.frag" />
+    <None Include="Source\Shaders\base.vert" />
+    <None Include="Source\Shaders\Triangle.frag" />
+    <None Include="Source\Shaders\Triangle.vert" />
+  </ItemGroup>
 </Project>

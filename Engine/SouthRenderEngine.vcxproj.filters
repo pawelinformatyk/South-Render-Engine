@@ -72,4 +72,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Shaders\base.frag" />
+    <None Include="Source\Shaders\base.vert" />
+    <None Include="Source\Shaders\Triangle.frag" />
+    <None Include="Source\Shaders\Triangle.vert" />
+  </ItemGroup>
 </Project>

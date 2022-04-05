@@ -2,10 +2,24 @@
 
 #include "Core/Context.h"
 #include "vulkan/vulkan_core.h"
+#include "glm.hpp"
 
 namespace South
 {
     class VulkanDevice;
+
+    struct Vertex
+    {
+        glm::vec2 pos;
+        glm::vec3 color;
+
+        static const VkVertexInputBindingDescription& GetBindingDescription();
+        static const std::array<VkVertexInputAttributeDescription, 2>& GetAttributesDescriptions();
+
+      private:
+        static VkVertexInputBindingDescription bindingDesc;
+        static std::array<VkVertexInputAttributeDescription, 2> attributesDescs;
+    };
 
     class VulkanContext : public Context
     {
@@ -24,6 +38,7 @@ namespace South
         void CreateRenderPass();
         void CreateGraphicsPipeline();
         void CreateFramebuffers();
+        void CreateVertexBuffers();
         void CreateCommands();
         void CreateSyncObjects();
 
@@ -42,6 +57,9 @@ namespace South
         VkExtent2D swapChainExtent;
         std::vector<VkImageView> swapChainImageViews;
         std::vector<VkFramebuffer> swapChainFramebuffers;
+
+        VkBuffer vertexBuffer;
+        VkDeviceMemory vertexBufferMemory;
 
         VkRenderPass renderPass;
         VkPipelineLayout pipelineLayout;

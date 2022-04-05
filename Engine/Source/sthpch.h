@@ -10,5 +10,6 @@
 
 //
 #include <vector>
+#include <array>
 #include <map>
 #include <set>
