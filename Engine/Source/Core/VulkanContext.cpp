@@ -538,7 +538,7 @@ namespace South
         VkBufferCreateInfo bufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
-            .size        = sizeof(vertices[0]) * vertices.size(),
+            .size        = sizeof(Vertex) * vertices.size(),
             .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
