@@ -3,6 +3,7 @@
 #include "Core/VulkanContext.h"
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
+#include "Core/VulkanVertexBuffer.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
@@ -10,12 +11,33 @@
 
 namespace South
 {
-    const std::vector<Vertex> vertices = { { { 0.0f, -0.5f }, { .5f, 0.0f, 0.5f } },
-                                           { { 0.5f, 0.5f }, { 0.1f, .6f, 0.2f } },
-                                           { { -0.5f, 0.5f }, { 0.0f, .2f, 1.0f } } };
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_real_distribution<float> dist(0.f, 1.f);
+
+    const std::vector<Vertex> vertices = { {
+                                               glm::vec3(2.f * dist(rng) - 1.f, -dist(rng), 0.f),
+                                               glm::vec3(0.f),
+                                               glm::vec2(0.f),
+                                               glm::vec3(dist(rng), dist(rng), dist(rng)),
+                                           },
+                                           {
+                                               glm::vec3(dist(rng), dist(rng), 0.f),
+                                               glm::vec3(0.f),
+                                               glm::vec2(0.f),
+                                               glm::vec3(dist(rng), dist(rng), dist(rng)),
+                                           },
+                                           {
+                                               glm::vec3(-dist(rng), dist(rng), 0.f),
+                                               glm::vec3(0.f),
+                                               glm::vec2(0.f),
+                                               glm::vec3(dist(rng), dist(rng), dist(rng)),
+                                           } };
 
     void VulkanContext::Init(GLFWwindow& window)
     {
+        contextInstance = this;
+
         CreateInstance();
         CreateSurface(window);
 
@@ -38,7 +60,7 @@ namespace South
 
         // #TODO : Order?
 
-        vkDestroySurfaceKHR(instance, surface, nullptr);
+        vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
         for (auto imageView : swapChainImageViews)
         {
             vkDestroyImageView(logicDevice, imageView, nullptr);
@@ -62,12 +84,9 @@ namespace South
         vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
         vkDestroyFence(logicDevice, inFlightFence, nullptr);
 
-        vkDestroyBuffer(logicDevice, vertexBuffer, nullptr);
-        vkFreeMemory(logicDevice, vertexBufferMemory, nullptr);
-
         delete device;
 
-        vkDestroyInstance(instance, nullptr);
+        vkDestroyInstance(vulkanInstance, nullptr);
     }
 
     void VulkanContext::Tick()
@@ -122,9 +141,19 @@ namespace South
         vkQueuePresentKHR(graphicsQueue, &presentInfo);
     }
 
-    VkInstance VulkanContext::GetInstance()
+    VkInstance VulkanContext::GetVulkanInstance()
     {
-        return instance;
+        return vulkanInstance;
+    }
+
+    VulkanContext* VulkanContext::GetContextInstance()
+    {
+        return contextInstance;
+    }
+
+    VulkanDevice* VulkanContext::GetCurrentDevice()
+    {
+        return contextInstance->device;
     }
 
     void VulkanContext::CreateInstance()
@@ -152,12 +181,12 @@ namespace South
             .ppEnabledExtensionNames = extensions,
         };
 
-        vkCreateInstance(&sCreateInfo, nullptr, &instance);
+        vkCreateInstance(&sCreateInfo, nullptr, &vulkanInstance);
     }
 
     void VulkanContext::CreateSurface(GLFWwindow& window)
     {
-        if (!glfwCreateWindowSurface(instance, &window, nullptr, &surface))
+        if (!glfwCreateWindowSurface(vulkanInstance, &window, nullptr, &surface))
         {
             return /*error*/;
         }
@@ -535,54 +564,8 @@ namespace South
 
     void VulkanContext::CreateVertexBuffers()
     {
-        VkBufferCreateInfo bufferInfo{
-            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .pNext       = nullptr,
-            .size        = sizeof(Vertex) * vertices.size(),
-            .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        };
-
-        VkDevice logicalDev      = device->GetDevice();
-        VkPhysicalDevice physDev = device->GetPhysicalDevice();
-
-        vkCreateBuffer(logicalDev, &bufferInfo, nullptr, &vertexBuffer);
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(logicalDev, vertexBuffer, &memRequirements);
-
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physDev, &memProperties);
-
-        auto findMemoryType = [&memProperties = memProperties](uint32_t typeFilter, VkMemoryPropertyFlags properties)
-        {
-            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-            {
-                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-                {
-                    return i;
-                }
-            }
-
-            // #TODO : Should throw an error.
-            return typeFilter;
-        };
-
-        VkMemoryAllocateInfo allocInfo{
-            .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-            .pNext           = nullptr,
-            .allocationSize  = memRequirements.size,
-            .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
-        };
-
-        vkAllocateMemory(logicalDev, &allocInfo, nullptr, &vertexBufferMemory);
-        vkBindBufferMemory(logicalDev, vertexBuffer, vertexBufferMemory, 0);
-
-        void* data;
-        vkMapMemory(logicalDev, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-        vkUnmapMemory(logicalDev, vertexBufferMemory);
+        vertexBuffer = new VulkanVertexBuffer(static_cast<const void*>(vertices.data()),
+                                              static_cast<uint32_t>(sizeof(Vertex) * vertices.size()));
     }
 
     void VulkanContext::CreateCommands()
@@ -718,7 +701,7 @@ namespace South
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-        VkBuffer vertexBuffers[] = { vertexBuffer };
+        VkBuffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
         VkDeviceSize offsets[]   = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
@@ -737,7 +720,7 @@ namespace South
         return bindingDesc;
     }
 
-    const std::array<VkVertexInputAttributeDescription, 2>& Vertex::GetAttributesDescriptions()
+    const std::array<VkVertexInputAttributeDescription, 4>& Vertex::GetAttributesDescriptions()
     {
         return attributesDescs;
     }
@@ -748,15 +731,27 @@ namespace South
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
     };
 
-    std::array<VkVertexInputAttributeDescription, 2> Vertex::attributesDescs{
+    std::array<VkVertexInputAttributeDescription, 4> Vertex::attributesDescs{
         VkVertexInputAttributeDescription{
             .location = 0,
             .binding  = 0,
-            .format   = VK_FORMAT_R32G32_SFLOAT,
+            .format   = VK_FORMAT_R32G32B32_SFLOAT,
             .offset   = offsetof(Vertex, pos),
         },
         VkVertexInputAttributeDescription{
             .location = 1,
+            .binding  = 0,
+            .format   = VK_FORMAT_R32G32B32_SFLOAT,
+            .offset   = offsetof(Vertex, normal),
+        },
+        VkVertexInputAttributeDescription{
+            .location = 2,
+            .binding  = 0,
+            .format   = VK_FORMAT_R32G32_SFLOAT,
+            .offset   = offsetof(Vertex, texCoords),
+        },
+        VkVertexInputAttributeDescription{
+            .location = 3,
             .binding  = 0,
             .format   = VK_FORMAT_R32G32B32_SFLOAT,
             .offset   = offsetof(Vertex, color),

@@ -7,15 +7,17 @@ namespace South
 
     class VulkanVertexBuffer
     {
-        // ????/??
-        void Create();
-
-        void Map(void* data, size_t size, size_t sizeOfElement);
+      public:
+        //  Create vertex buffer using staging.
+        VulkanVertexBuffer(const void* data, uint32_t size);
+        ~VulkanVertexBuffer();
 
         VkBuffer GetBuffer() const;
 
-
       private:
+        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+                                VkMemoryPropertyFlags properties) const;
+
         VkBuffer buffer       = VK_NULL_HANDLE;
         VkDeviceMemory memory = VK_NULL_HANDLE;
     };

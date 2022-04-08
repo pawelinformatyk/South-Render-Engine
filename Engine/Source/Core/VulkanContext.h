@@ -7,18 +7,21 @@
 namespace South
 {
     class VulkanDevice;
+    class VulkanVertexBuffer;
 
     struct Vertex
     {
-        glm::vec2 pos;
+        glm::vec3 pos;
+        glm::vec3 normal;
+        glm::vec2 texCoords;
         glm::vec3 color;
 
         static const VkVertexInputBindingDescription& GetBindingDescription();
-        static const std::array<VkVertexInputAttributeDescription, 2>& GetAttributesDescriptions();
+        static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
 
       private:
         static VkVertexInputBindingDescription bindingDesc;
-        static std::array<VkVertexInputAttributeDescription, 2> attributesDescs;
+        static std::array<VkVertexInputAttributeDescription, 4> attributesDescs;
     };
 
     class VulkanContext : public Context
@@ -28,7 +31,12 @@ namespace South
         virtual void DeInit() override;
         virtual void Tick() override;
 
-        static VkInstance GetInstance();
+        static VkInstance GetVulkanInstance();
+        static VulkanContext* GetContextInstance();
+        static VulkanDevice* GetCurrentDevice();
+
+      private:
+        static inline VulkanContext* contextInstance = nullptr;
 
       private:
         void CreateInstance();
@@ -48,7 +56,7 @@ namespace South
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-        static inline VkInstance instance = VK_NULL_HANDLE;
+        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface     = VK_NULL_HANDLE;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
@@ -57,9 +65,6 @@ namespace South
         VkExtent2D swapChainExtent;
         std::vector<VkImageView> swapChainImageViews;
         std::vector<VkFramebuffer> swapChainFramebuffers;
-
-        VkBuffer vertexBuffer             = VK_NULL_HANDLE;
-        VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 
         VkRenderPass renderPass         = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -72,5 +77,6 @@ namespace South
         VkFence inFlightFence               = VK_NULL_HANDLE;
 
         VulkanDevice* device;
+        VulkanVertexBuffer* vertexBuffer;
     };
 }; // namespace South
