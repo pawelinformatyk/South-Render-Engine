@@ -1,13 +1,13 @@
 #include "sthpch.h"
 
-#include "Core/VulkanVertexBuffer.h"
+#include "Core/VulkanIndexBuffer.h"
 #include "Core/VulkanContext.h"
 #include "Core/VulkanDevice.h"
 
 namespace South
 {
 
-    VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size)
+    VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size)
     {
         // #TODO : Asserts
         VulkanDevice* vulkanDev  = VulkanContext::GetCurrentDevice();
@@ -60,7 +60,7 @@ namespace South
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
             .size        = size,
-            .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
@@ -141,7 +141,7 @@ namespace South
         vkFreeMemory(logicalDev, stagingBufferMemory, nullptr);
     }
 
-    VulkanVertexBuffer::~VulkanVertexBuffer()
+    VulkanIndexBuffer::~VulkanIndexBuffer()
     {
         VkDevice logicalDev = VulkanContext::GetCurrentDevice()->GetDevice();
 
@@ -149,13 +149,13 @@ namespace South
         vkFreeMemory(logicalDev, memory, nullptr);
     }
 
-    VkBuffer VulkanVertexBuffer::GetBuffer() const
+    VkBuffer VulkanIndexBuffer::GetBuffer() const
     {
         return buffer;
     }
 
-    uint32_t VulkanVertexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
-                                                VkMemoryPropertyFlags properties) const
+    uint32_t VulkanIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+                                               VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {

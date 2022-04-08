@@ -14,8 +14,7 @@ namespace South
 
     Application::Application(int argc, char** argv)
     {
-        // #TODO : Creation should be dependant on some static values?
-        // And I should not worry about pointers...
+        // #TODO : How not to worry about pointers...
 
         pWindow = AppWindow::Create();
         if (!pWindow)

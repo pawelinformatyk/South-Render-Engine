@@ -4,6 +4,8 @@
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexBuffer.h"
+#include "Core/VulkanIndexBuffer.h"
+#include "Core/Mesh.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
@@ -16,7 +18,13 @@ namespace South
     std::uniform_real_distribution<float> dist(0.f, 1.f);
 
     const std::vector<Vertex> vertices = { {
-                                               glm::vec3(2.f * dist(rng) - 1.f, -dist(rng), 0.f),
+                                               glm::vec3(dist(rng) - 1.f, -dist(rng), 0.f),
+                                               glm::vec3(0.f),
+                                               glm::vec2(0.f),
+                                               glm::vec3(dist(rng), dist(rng), dist(rng)),
+                                           },
+                                           {
+                                               glm::vec3(dist(rng), -dist(rng), 0.f),
                                                glm::vec3(0.f),
                                                glm::vec2(0.f),
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
@@ -34,6 +42,8 @@ namespace South
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
                                            } };
 
+    const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
+
     void VulkanContext::Init(GLFWwindow& window)
     {
         contextInstance = this;
@@ -49,7 +59,7 @@ namespace South
         CreateRenderPass();
         CreateGraphicsPipeline();
         CreateFramebuffers();
-        CreateVertexBuffers();
+        CreateModelBuffers();
         CreateCommands();
         CreateSyncObjects();
     }
@@ -83,6 +93,9 @@ namespace South
         vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
         vkDestroyFence(logicDevice, inFlightFence, nullptr);
+
+        delete vertexBuffer;
+        delete indexBuffer;
 
         delete device;
 
@@ -562,10 +575,13 @@ namespace South
         }
     }
 
-    void VulkanContext::CreateVertexBuffers()
+    void VulkanContext::CreateModelBuffers()
     {
         vertexBuffer = new VulkanVertexBuffer(static_cast<const void*>(vertices.data()),
-                                              static_cast<uint32_t>(sizeof(Vertex) * vertices.size()));
+                                              static_cast<uint32_t>(sizeof(vertices[0]) * vertices.size()));
+
+        indexBuffer = new VulkanIndexBuffer(static_cast<const void*>(indices.data()),
+                                            static_cast<uint32_t>(sizeof(indices[0]) * indices.size()));
     }
 
     void VulkanContext::CreateCommands()
@@ -704,8 +720,10 @@ namespace South
         VkBuffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
         VkDeviceSize offsets[]   = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-        vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+        // vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
         // vkCmdDraw(commandBuffer, 3, 2, 0, 0);
         // vkCmdDraw(commandBuffer, 3, 2, 3, 1);
@@ -714,48 +732,5 @@ namespace South
 
         vkEndCommandBuffer(commandBuffer);
     }
-
-    const VkVertexInputBindingDescription& Vertex::GetBindingDescription()
-    {
-        return bindingDesc;
-    }
-
-    const std::array<VkVertexInputAttributeDescription, 4>& Vertex::GetAttributesDescriptions()
-    {
-        return attributesDescs;
-    }
-
-    VkVertexInputBindingDescription Vertex::bindingDesc{
-        .binding   = 0,
-        .stride    = sizeof(Vertex),
-        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
-    };
-
-    std::array<VkVertexInputAttributeDescription, 4> Vertex::attributesDescs{
-        VkVertexInputAttributeDescription{
-            .location = 0,
-            .binding  = 0,
-            .format   = VK_FORMAT_R32G32B32_SFLOAT,
-            .offset   = offsetof(Vertex, pos),
-        },
-        VkVertexInputAttributeDescription{
-            .location = 1,
-            .binding  = 0,
-            .format   = VK_FORMAT_R32G32B32_SFLOAT,
-            .offset   = offsetof(Vertex, normal),
-        },
-        VkVertexInputAttributeDescription{
-            .location = 2,
-            .binding  = 0,
-            .format   = VK_FORMAT_R32G32_SFLOAT,
-            .offset   = offsetof(Vertex, texCoords),
-        },
-        VkVertexInputAttributeDescription{
-            .location = 3,
-            .binding  = 0,
-            .format   = VK_FORMAT_R32G32B32_SFLOAT,
-            .offset   = offsetof(Vertex, color),
-        },
-    };
 
 } // namespace South

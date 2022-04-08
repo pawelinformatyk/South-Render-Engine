@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Mesh.cpp" />
     <ClCompile Include="Source\Core\Context.cpp" />
     <ClCompile Include="Source\Core\Application.cpp" />
     <ClCompile Include="Source\Core\Main.cpp" />
@@ -103,8 +104,10 @@
     </ClCompile>
     <ClCompile Include="Source\Core\VulkanDevice.cpp" />
     <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp" />
+    <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Mesh.h" />
     <ClInclude Include="Source\Core\Context.h" />
     <ClInclude Include="Source\Core\Application.h" />
     <ClInclude Include="Source\Core\OpenglContext.h" />
@@ -115,6 +118,7 @@
     <ClInclude Include="Source\sthpch.h" />
     <ClInclude Include="Source\Core\VulkanDevice.h" />
     <ClInclude Include="Source\Core\VulkanVertexBuffer.h" />
+    <ClInclude Include="Source\Core\VulkanIndexBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

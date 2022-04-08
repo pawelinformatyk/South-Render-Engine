@@ -6,11 +6,11 @@ namespace South
 {
 
     // #TODO #PERF : Combine with VertexBuffer for being more cache friendly.
-    class VulkanVertexBuffer
+    class VulkanIndexBuffer
     {
       public:
-        VulkanVertexBuffer(const void* data, uint32_t size);
-        ~VulkanVertexBuffer();
+        VulkanIndexBuffer(const void* data, uint32_t size);
+        ~VulkanIndexBuffer();
 
         VkBuffer GetBuffer() const;
 
