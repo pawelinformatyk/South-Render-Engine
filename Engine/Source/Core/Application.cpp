@@ -15,6 +15,11 @@ namespace South
         Instance = this;
 
         pWindow = std::make_unique<Window>();
+        pWindow->SetCloseWindowCallback(
+            [this]()
+            {
+                CloseWindow();
+            });
         pWindow->Init();
 
         GraphicalContext = new VulkanContext;
@@ -40,6 +45,11 @@ namespace South
     void Application::DeInit()
     {
         GraphicalContext->DeInit();
+        pWindow->SetCloseWindowCallback(
+            []()
+            {
+            });
+
         pWindow->DeInit();
         delete GraphicalContext;
     }
@@ -52,6 +62,11 @@ namespace South
     Application& Application::Get()
     {
         return *Instance;
+    }
+
+    void Application::CloseWindow()
+    {
+        bRunning = false;
     }
 
 } // namespace South

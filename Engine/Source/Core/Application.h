@@ -24,6 +24,8 @@ namespace South
         static Application& Get();
 
       private:
+        void CloseWindow();
+
         static inline Application* Instance = nullptr;
 
         // Renderer?

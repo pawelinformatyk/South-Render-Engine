@@ -75,34 +75,31 @@ namespace South
     {
         VkDevice logicDevice = device->GetDevice();
 
-        // #TODO : Order?
+        vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
+        vkDestroyFence(logicDevice, inFlightFence, nullptr);
 
-        vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
-        for (auto imageView : swapChainImageViews)
-        {
-            vkDestroyImageView(logicDevice, imageView, nullptr);
-        }
-        vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
-
-        vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
-        vkDestroyRenderPass(logicDevice, renderPass, nullptr);
-
-        vkDestroyPipeline(logicDevice, graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
+        vkDestroyCommandPool(logicDevice, commandPool, nullptr);
 
         for (auto framebuffer : swapChainFramebuffers)
         {
             vkDestroyFramebuffer(logicDevice, framebuffer, nullptr);
         }
 
-        vkDestroyCommandPool(logicDevice, commandPool, nullptr);
+        vkDestroyPipeline(logicDevice, graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(logicDevice, pipelineLayout, nullptr);
+        vkDestroyRenderPass(logicDevice, renderPass, nullptr);
 
-        vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
-        vkDestroyFence(logicDevice, inFlightFence, nullptr);
+        vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
+
+        for (auto imageView : swapChainImageViews)
+        {
+            vkDestroyImageView(logicDevice, imageView, nullptr);
+        }
+
+        vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
 
         delete VI_Buffer;
-
         delete device;
 
         vkDestroyInstance(vulkanInstance, nullptr);
@@ -174,7 +171,6 @@ namespace South
     {
         return *instance;
     }
-
 
     void VulkanContext::CreateInstance()
     {

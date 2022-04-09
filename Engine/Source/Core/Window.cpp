@@ -16,6 +16,15 @@ namespace South
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         glfwWindow = glfwCreateWindow(Width, Height, GetAppName(), nullptr, nullptr);
+
+        glfwSetWindowUserPointer(glfwWindow, &closeWindowFN);
+
+        glfwSetWindowCloseCallback(glfwWindow,
+                                   [](GLFWwindow* window)
+                                   {
+                                       auto& callback = *((CloseWindowCallback*)glfwGetWindowUserPointer(window));
+                                       callback();
+                                   });
     }
 
     void Window::DeInit()
@@ -33,6 +42,11 @@ namespace South
     GLFWwindow* Window::GetglfwWindow() const
     {
         return glfwWindow;
+    }
+
+    void Window::SetCloseWindowCallback(const CloseWindowCallback& callback)
+    {
+        closeWindowFN = callback;
     }
 
 } // namespace South
