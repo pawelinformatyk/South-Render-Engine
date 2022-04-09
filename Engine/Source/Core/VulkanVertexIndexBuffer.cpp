@@ -1,15 +1,15 @@
 #include "sthpch.h"
 
-#include "Core/VulkanIndexBuffer.h"
+#include "Core/VulkanVertexIndexBuffer.h"
 #include "Core/VulkanContext.h"
 #include "Core/VulkanDevice.h"
 
 namespace South
 {
 
-    VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size)
+    VulkanVertexIndexBuffer::VulkanVertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData,
+                                                     uint32_t iSize)
     {
-        // #TODO : Asserts
         const VulkanDevice& vulkanDev = VulkanContext::Get().GetCurrentDevice();
         VkDevice logicalDev           = vulkanDev.GetDevice();
         VkPhysicalDevice physDev      = vulkanDev.GetPhysicalDevice();
@@ -17,12 +17,12 @@ namespace South
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(physDev, &memProperties);
 
-        // Staging buffer.
+        indexOffset = vSize;
 
         VkBufferCreateInfo stagingBufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
-            .size        = size,
+            .size        = vSize + iSize,
             .usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
@@ -52,17 +52,24 @@ namespace South
 
         staginBufferData = nullptr;
 
-        vkMapMemory(logicalDev, stagingBufferMemory, 0, stagingBufferInfo.size, 0, &staginBufferData);
-        memcpy(staginBufferData, data, (size_t)stagingBufferInfo.size);
+        vkMapMemory(logicalDev, stagingBufferMemory, 0, vSize, 0, &staginBufferData);
+        memcpy(staginBufferData, vData, static_cast<size_t>(vSize));
+        vkUnmapMemory(logicalDev, stagingBufferMemory);
+
+        staginBufferData = nullptr;
+
+        vkMapMemory(logicalDev, stagingBufferMemory, indexOffset, iSize, 0, &staginBufferData);
+        memcpy(staginBufferData, iData, static_cast<size_t>(iSize));
         vkUnmapMemory(logicalDev, stagingBufferMemory);
 
         // Actual buffer.
 
         VkBufferCreateInfo bufferInfo{
-            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .pNext       = nullptr,
-            .size        = stagingBufferInfo.size,
-            .usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext = nullptr,
+            .size  = stagingBufferInfo.size,
+            .usage =
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
@@ -143,7 +150,7 @@ namespace South
         vkFreeMemory(logicalDev, stagingBufferMemory, nullptr);
     }
 
-    VulkanIndexBuffer::~VulkanIndexBuffer()
+    VulkanVertexIndexBuffer::~VulkanVertexIndexBuffer()
     {
         VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
@@ -151,13 +158,18 @@ namespace South
         vkFreeMemory(logicalDev, memory, nullptr);
     }
 
-    VkBuffer VulkanIndexBuffer::GetBuffer() const
+    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const
     {
         return buffer;
     }
 
-    uint32_t VulkanIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
-                                               VkMemoryPropertyFlags properties) const
+    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const
+    {
+        return indexOffset;
+    }
+
+    uint32_t VulkanVertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
+                                                     uint32_t typeFilter, VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {

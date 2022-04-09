@@ -103,7 +103,7 @@ namespace South
             return score;
         };
 
-        VkInstance instance = VulkanContext::GetVulkanInstance();
+        VkInstance instance = VulkanContext::Get().GetVulkanInstance();
 
         // Get vector of devices.
         uint32_t devicesCount = 0;

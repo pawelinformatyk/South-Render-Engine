@@ -5,6 +5,7 @@
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexBuffer.h"
 #include "Core/VulkanIndexBuffer.h"
+#include "Core/VulkanVertexIndexBuffer.h"
 #include "Editor/Mesh.h"
 
 #include <GLFW/glfw3.h>
@@ -52,7 +53,7 @@ namespace South
             return;
         }
 
-        contextInstance = this;
+        instance = this;
 
         CreateInstance();
         CreateSurface(*glfwWindow);
@@ -100,8 +101,7 @@ namespace South
         vkDestroySemaphore(logicDevice, renderFinishedSemaphore, nullptr);
         vkDestroyFence(logicDevice, inFlightFence, nullptr);
 
-        delete vertexBuffer;
-        delete indexBuffer;
+        delete VI_Buffer;
 
         delete device;
 
@@ -165,15 +165,16 @@ namespace South
         return vulkanInstance;
     }
 
-    VulkanContext* VulkanContext::GetContextInstance()
+    VulkanDevice& VulkanContext::GetCurrentDevice()
     {
-        return contextInstance;
+        return *device;
     }
 
-    VulkanDevice* VulkanContext::GetCurrentDevice()
+    VulkanContext& VulkanContext::Get()
     {
-        return contextInstance->device;
+        return *instance;
     }
+
 
     void VulkanContext::CreateInstance()
     {
@@ -583,11 +584,9 @@ namespace South
 
     void VulkanContext::CreateModelBuffers()
     {
-        vertexBuffer = new VulkanVertexBuffer(static_cast<const void*>(vertices.data()),
-                                              static_cast<uint32_t>(sizeof(vertices[0]) * vertices.size()));
-
-        indexBuffer = new VulkanIndexBuffer(static_cast<const void*>(indices.data()),
-                                            static_cast<uint32_t>(sizeof(indices[0]) * indices.size()));
+        VI_Buffer = new VulkanVertexIndexBuffer(
+            static_cast<const void*>(vertices.data()), static_cast<uint32_t>(sizeof(vertices[0]) * vertices.size()),
+            static_cast<const void*>(indices.data()), static_cast<uint32_t>(sizeof(indices[0]) * indices.size()));
     }
 
     void VulkanContext::CreateCommands()
@@ -723,16 +722,15 @@ namespace South
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-        VkBuffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
-        VkDeviceSize offsets[]   = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+        {
+            VkBuffer meshBuffer = VI_Buffer->GetVulkanBuffer();
+            VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshBuffer, &offset);
+            vkCmdBindIndexBuffer(commandBuffer, meshBuffer, VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
 
-        // vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+        }
 
-        // vkCmdDraw(commandBuffer, 3, 2, 0, 0);
-        // vkCmdDraw(commandBuffer, 3, 2, 3, 1);
 
         vkCmdEndRenderPass(commandBuffer);
 

@@ -7,6 +7,7 @@ namespace South
 {
     class VulkanIndexBuffer;
     class VulkanVertexBuffer;
+    class VulkanVertexIndexBuffer;
 
     struct Vertex
     {
@@ -23,6 +24,7 @@ namespace South
         static std::array<VkVertexInputAttributeDescription, 4> attributesDescs;
     };
 
+    // #TODO : One/two/three... meshes - one/two buffer
     class StaticMesh
     {
       public:
@@ -32,9 +34,9 @@ namespace South
         std::vector<Vertex> vertices;
         std::vector<uint16_t> indices;
 
-        // #TODO : Where to put them? Should be in the same place as vectors?
-        VulkanIndexBuffer* indexBuffer;
-        VulkanVertexBuffer* verticesBuffer;
+        // VulkanIndexBuffer* indexBuffer;
+        // VulkanVertexBuffer* verticesBuffer;
+        VulkanVertexIndexBuffer* VI_Buffer;
     };
 
 

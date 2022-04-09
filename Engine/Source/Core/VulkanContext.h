@@ -8,7 +8,7 @@ namespace South
     class VulkanDevice;
     class VulkanVertexBuffer;
     class VulkanIndexBuffer;
-
+    class VulkanVertexIndexBuffer;
 
     class VulkanContext : public Context
     {
@@ -17,12 +17,13 @@ namespace South
         virtual void DeInit() override;
         virtual void Tick() override;
 
-        static VkInstance GetVulkanInstance();
-        static VulkanContext* GetContextInstance();
-        static VulkanDevice* GetCurrentDevice();
+        VkInstance GetVulkanInstance();
+        VulkanDevice& GetCurrentDevice();
+
+        static VulkanContext& Get();
 
       private:
-        static inline VulkanContext* contextInstance = nullptr;
+        static inline VulkanContext* instance = nullptr;
 
       private:
         void CreateInstance();
@@ -62,8 +63,7 @@ namespace South
         VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
         VkFence inFlightFence               = VK_NULL_HANDLE;
 
-        VulkanDevice* device;
-        VulkanVertexBuffer* vertexBuffer;
-        VulkanIndexBuffer* indexBuffer;
+        VulkanDevice* device               = nullptr;
+        VulkanVertexIndexBuffer* VI_Buffer = nullptr;
     };
 }; // namespace South

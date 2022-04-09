@@ -107,6 +107,7 @@
     <ClCompile Include="Source\Core\VulkanDevice.cpp" />
     <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp" />
     <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp" />
+    <ClCompile Include="Source\Core\VulkanVertexIndexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Editor\Entity.h" />
@@ -123,6 +124,7 @@
     <ClInclude Include="Source\Core\VulkanDevice.h" />
     <ClInclude Include="Source\Core\VulkanVertexBuffer.h" />
     <ClInclude Include="Source\Core\VulkanIndexBuffer.h" />
+    <ClInclude Include="Source\Core\VulkanVertexIndexBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

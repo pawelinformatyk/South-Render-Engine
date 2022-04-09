@@ -10,9 +10,9 @@ namespace South
     VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size)
     {
         // #TODO : Asserts
-        VulkanDevice* vulkanDev  = VulkanContext::GetCurrentDevice();
-        VkDevice logicalDev      = vulkanDev->GetDevice();
-        VkPhysicalDevice physDev = vulkanDev->GetPhysicalDevice();
+        const VulkanDevice& vulkanDev = VulkanContext::Get().GetCurrentDevice();
+        VkDevice logicalDev           = vulkanDev.GetDevice();
+        VkPhysicalDevice physDev      = vulkanDev.GetPhysicalDevice();
 
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(physDev, &memProperties);
@@ -88,7 +88,7 @@ namespace South
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-            .queueFamilyIndex = vulkanDev->GetQFamilyIndex(),
+            .queueFamilyIndex = vulkanDev.GetQFamilyIndex(),
         };
 
         VkCommandPool commandPool = VK_NULL_HANDLE;
@@ -130,7 +130,7 @@ namespace South
             .pCommandBuffers    = &commandBuffer,
         };
 
-        VkQueue graphicsQueue = vulkanDev->GetQ();
+        VkQueue graphicsQueue = vulkanDev.GetQ();
 
         vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(graphicsQueue);
@@ -143,7 +143,7 @@ namespace South
 
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
-        VkDevice logicalDev = VulkanContext::GetCurrentDevice()->GetDevice();
+        VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
         vkDestroyBuffer(logicalDev, buffer, nullptr);
         vkFreeMemory(logicalDev, memory, nullptr);
