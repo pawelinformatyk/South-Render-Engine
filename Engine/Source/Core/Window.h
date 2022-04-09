@@ -9,20 +9,18 @@ namespace South
     // Target of graphics rendering and inputs.
     // Events need to be picked up by this window
     // #TODO : I think there should be swap chain here.
-    class AppWindow
+    class Window
     {
       public:
-        AppWindow();
-        ~AppWindow();
+        void Init();
+        void DeInit();
 
-        void Tick();
+        void ProcessEvents();
 
-        GLFWwindow* GetNativeWindow() const;
-
-        static AppWindow* Create();
+        GLFWwindow* GetglfwWindow() const;
 
       private:
-        GLFWwindow* pWindow = nullptr;
+        GLFWwindow* glfwWindow = nullptr;
 
         uint32_t Width  = 1600;
         uint32_t Height = 960;

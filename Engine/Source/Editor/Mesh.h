@@ -26,7 +26,7 @@ namespace South
     class StaticMesh
     {
       public:
-        StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint16_t>& inIndices);
+        StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
 
       private:
         std::vector<Vertex> vertices;
@@ -37,14 +37,5 @@ namespace South
         VulkanVertexBuffer* verticesBuffer;
     };
 
-    // Visible/rendered object?
-    // #TODO : Should be passed to rendering pipeline?
-    class Object
-    {
-      private:
-        glm::mat4 Transform;
-
-        StaticMesh* mesh = nullptr;
-    };
 
 } // namespace South

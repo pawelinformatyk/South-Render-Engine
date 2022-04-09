@@ -5,9 +5,13 @@
 
 int main(int argc, char** argv)
 {
-    South::Application App(argc, argv);
+    auto* App = new South::Application;
 
-    App.Run();
+    App->Init();
+    App->Run();
+    App->DeInit();
+
+    delete App;
 
     return 0;
 }

@@ -1,9 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/Application.h"
-
 #include "Core/VulkanContext.h"
-#include "Core/Window.h"
 
 namespace South
 {
@@ -12,15 +10,12 @@ namespace South
         return "SouthRenderEngine";
     }
 
-    Application::Application(int argc, char** argv)
+    void Application::Init()
     {
-        // #TODO : How not to worry about pointers...
+        Instance = this;
 
-        pWindow = AppWindow::Create();
-        if (!pWindow)
-        {
-            return;
-        }
+        pWindow = std::make_unique<Window>();
+        pWindow->Init();
 
         GraphicalContext = new VulkanContext;
         if (!GraphicalContext)
@@ -28,25 +23,35 @@ namespace South
             return;
         }
 
-        GraphicalContext->Init(*pWindow->GetNativeWindow());
+        GraphicalContext->Init();
 
         bRunning = true;
-    }
-
-    Application::~Application()
-    {
-        delete pWindow;
-        GraphicalContext->DeInit();
-        delete GraphicalContext;
     }
 
     void Application::Run()
     {
         while (bRunning)
         {
-            pWindow->Tick();
+            pWindow->ProcessEvents();
             GraphicalContext->Tick();
         }
+    }
+
+    void Application::DeInit()
+    {
+        GraphicalContext->DeInit();
+        pWindow->DeInit();
+        delete GraphicalContext;
+    }
+
+    Window& Application::GetWindow() const
+    {
+        return *pWindow;
+    }
+
+    Application& Application::Get()
+    {
+        return *Instance;
     }
 
 } // namespace South

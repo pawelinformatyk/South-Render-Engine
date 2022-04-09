@@ -7,10 +7,8 @@ namespace South
     class OpenglContext : public Context
     {
       public:
-        void Init(GLFWwindow& window) override;
-
-        void DeInit() override;
-
-        void Tick() override;
+        virtual void Init() override{};
+        virtual void DeInit() override{};
+        virtual void Tick() override{};
     };
 } // namespace South

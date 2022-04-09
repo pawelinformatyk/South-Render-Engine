@@ -5,7 +5,7 @@
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexBuffer.h"
 #include "Core/VulkanIndexBuffer.h"
-#include "Core/Mesh.h"
+#include "Editor/Mesh.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
@@ -42,19 +42,25 @@ namespace South
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
                                            } };
 
-    const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
+    const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
 
-    void VulkanContext::Init(GLFWwindow& window)
+    void VulkanContext::Init()
     {
+        auto* glfwWindow = Application::Get().GetWindow().GetglfwWindow();
+        if (!glfwWindow)
+        {
+            return;
+        }
+
         contextInstance = this;
 
         CreateInstance();
-        CreateSurface(window);
+        CreateSurface(*glfwWindow);
 
         device = VulkanDevice::Create();
         device->Init(surface);
 
-        CreateSwapChain(window);
+        CreateSwapChain(*glfwWindow);
         CreateImageViews();
         CreateRenderPass();
         CreateGraphicsPipeline();
@@ -720,7 +726,7 @@ namespace South
         VkBuffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
         VkDeviceSize offsets[]   = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
         // vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
         vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);

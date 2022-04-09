@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Core/Window.h"
+
 namespace South
 {
-    class AppWindow;
     class Context;
 
     const char* GetAppName();
@@ -12,16 +13,23 @@ namespace South
     class Application
     {
       public:
-        Application(int argc, char** argv);
-        ~Application();
-
+        void Init();
         void Run();
+        void DeInit();
+
+        void OnEvent();
+
+        Window& GetWindow() const;
+
+        static Application& Get();
 
       private:
+        static inline Application* Instance = nullptr;
+
         // Renderer?
         Context* GraphicalContext = nullptr;
 
-        AppWindow* pWindow = nullptr;
+        std::unique_ptr<Window> pWindow = nullptr;
 
         bool bRunning = false;
     };

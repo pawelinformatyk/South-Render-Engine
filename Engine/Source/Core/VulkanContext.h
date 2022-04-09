@@ -13,7 +13,7 @@ namespace South
     class VulkanContext : public Context
     {
       public:
-        virtual void Init(GLFWwindow& window) override;
+        virtual void Init() override;
         virtual void DeInit() override;
         virtual void Tick() override;
 
