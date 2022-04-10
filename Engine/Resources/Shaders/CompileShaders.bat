@@ -1,0 +1,2 @@
+C:/Dev/VulkanSDK/1.3.204.1/Bin/glslc.exe Resources/Shaders/Base.vert -o Resources/Shaders/Cached/Base_V.spv
+C:/Dev/VulkanSDK/1.3.204.1/Bin/glslc.exe Resources/Shaders/Base.frag -o Resources/Shaders/Cached/Base_F.spv

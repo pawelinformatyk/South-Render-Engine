@@ -6,8 +6,6 @@
 namespace South
 {
     class VulkanDevice;
-    class VulkanVertexBuffer;
-    class VulkanIndexBuffer;
     class VulkanVertexIndexBuffer;
 
     class VulkanContext : public Context
@@ -23,7 +21,8 @@ namespace South
         static VulkanContext& Get();
 
       private:
-        static inline VulkanContext* instance = nullptr;
+        static inline VulkanContext* instance   = nullptr;
+        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
 
       private:
         void CreateInstance();
@@ -32,18 +31,19 @@ namespace South
         void CreateImageViews();
         void CreateRenderPass();
         void CreateGraphicsPipeline();
+
         void CreateFramebuffers();
         void CreateModelBuffers();
         void CreateCommands();
         void CreateSyncObjects();
+
+        void CompileShaders();
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
-
-        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface     = VK_NULL_HANDLE;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;

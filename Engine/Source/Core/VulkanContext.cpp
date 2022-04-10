@@ -3,14 +3,19 @@
 #include "Core/VulkanContext.h"
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
-#include "Core/VulkanVertexBuffer.h"
-#include "Core/VulkanIndexBuffer.h"
 #include "Core/VulkanVertexIndexBuffer.h"
 #include "Editor/Mesh.h"
+#include "Editor/Camera.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <fstream>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "glm.hpp"
+#include <gtx/string_cast.hpp>
 
 namespace South
 {
@@ -18,32 +23,69 @@ namespace South
     std::mt19937 rng(dev());
     std::uniform_real_distribution<float> dist(0.f, 1.f);
 
+    // const std::vector<Vertex> vertices = { {
+    //                                            glm::vec3(dist(rng) - 1.f, -dist(rng), 0.f),
+    //                                            glm::vec3(0.f),
+    //                                            glm::vec2(0.f),
+    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
+    //                                        },
+    //                                        {
+    //                                            glm::vec3(dist(rng), -dist(rng), 0.f),
+    //                                            glm::vec3(0.f),
+    //                                            glm::vec2(0.f),
+    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
+    //                                        },
+    //                                        {
+    //                                            glm::vec3(dist(rng), dist(rng), 0.f),
+    //                                            glm::vec3(0.f),
+    //                                            glm::vec2(0.f),
+    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
+    //                                        },
+    //                                        {
+    //                                            glm::vec3(-dist(rng), dist(rng), 0.f),
+    //                                            glm::vec3(0.f),
+    //                                            glm::vec2(0.f),
+    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
+    //                                        } };
+
+    // NDC space
     const std::vector<Vertex> vertices = { {
-                                               glm::vec3(dist(rng) - 1.f, -dist(rng), 0.f),
+                                               glm::vec3(-0.5f, -0.5f, 0.f),
+                                               glm::vec3(0.f),
+                                               glm::vec2(0.f),
+                                               glm::vec3(1.f, 1.f, 1),
+                                           },
+                                           {
+                                               glm::vec3(0.5f, -0.5f, 0.f),
                                                glm::vec3(0.f),
                                                glm::vec2(0.f),
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
                                            },
                                            {
-                                               glm::vec3(dist(rng), -dist(rng), 0.f),
+                                               glm::vec3(0.5f, 0.5f, 0.f),
                                                glm::vec3(0.f),
                                                glm::vec2(0.f),
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
                                            },
                                            {
-                                               glm::vec3(dist(rng), dist(rng), 0.f),
-                                               glm::vec3(0.f),
-                                               glm::vec2(0.f),
-                                               glm::vec3(dist(rng), dist(rng), dist(rng)),
-                                           },
-                                           {
-                                               glm::vec3(-dist(rng), dist(rng), 0.f),
+                                               glm::vec3(-0.5f, 0.5f, 0.f),
                                                glm::vec3(0.f),
                                                glm::vec2(0.f),
                                                glm::vec3(dist(rng), dist(rng), dist(rng)),
                                            } };
 
     const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
+
+
+    struct PushConstant
+    {
+        glm::mat4 Model;
+        glm::mat4 View;
+        glm::mat4 Projection;
+    };
+
+    Camera editorCam;
+    PushConstant pushConstant;
 
     void VulkanContext::Init()
     {
@@ -69,6 +111,14 @@ namespace South
         CreateModelBuffers();
         CreateCommands();
         CreateSyncObjects();
+
+        editorCam.SetView(glm::vec3(2.f, 1.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        editorCam.SetProjection(glm::radians(70.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f,
+                                200.0f);
+
+        pushConstant.Model      = glm::mat4(1.f);
+        pushConstant.View       = editorCam.GetViewMatrix();
+        pushConstant.Projection = editorCam.GetProjectionMatrix();
     }
 
     void VulkanContext::DeInit()
@@ -107,6 +157,13 @@ namespace South
 
     void VulkanContext::Tick()
     {
+        static int16_t i = 0;
+        ++i;
+        pushConstant.Model = glm::rotate(pushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
+        pushConstant.Model = glm::scale(pushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+
+        std::cout << i << std::endl;
+
         VkDevice logicDevice  = device->GetDevice();
         VkQueue graphicsQueue = device->GetQ();
 
@@ -337,6 +394,8 @@ namespace South
 
     void VulkanContext::CreateGraphicsPipeline()
     {
+        CompileShaders();
+
         VkDevice logicDevice = device->GetDevice();
 
         auto readFile = [](const std::string& fileName)
@@ -378,11 +437,8 @@ namespace South
             return shaderModule;
         };
 
-        std::vector<char> triangleVertShaderCode = readFile("Source/Shaders/Compiled/Triangle_V.spv");
-        std::vector<char> triangleFragShaderCode = readFile("Source/Shaders/Compiled/Triangle_F.spv");
-
-        std::vector<char> baseVertShaderCode = readFile("Source/Shaders/Compiled/Base_V.spv");
-        std::vector<char> baseFragShaderCode = readFile("Source/Shaders/Compiled/Base_F.spv");
+        std::vector<char> baseVertShaderCode = readFile("Resources/Shaders/Cached/Base_V.spv");
+        std::vector<char> baseFragShaderCode = readFile("Resources/Shaders/Cached/Base_F.spv");
 
         VkShaderModule vertShaderMod = CreateShaderModule(baseVertShaderCode);
         VkShaderModule fragShaderMod = CreateShaderModule(baseFragShaderCode);
@@ -480,7 +536,6 @@ namespace South
 
         // #TODO : Depth and stecncil testing.
 
-
         // Color blending
         VkPipelineColorBlendAttachmentState colorBlendAttachment{
             .blendEnable         = VK_TRUE,
@@ -515,13 +570,19 @@ namespace South
         };
 
         // Pipeline layout - uniforms in shaders.
+        VkPushConstantRange pushConstantRange{
+            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+            .offset     = 0,
+            .size       = sizeof(PushConstant),
+        };
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext                  = nullptr,
             .setLayoutCount         = 0,
             .pSetLayouts            = nullptr,
-            .pushConstantRangeCount = 0,
-            .pPushConstantRanges    = nullptr,
+            .pushConstantRangeCount = 1,
+            .pPushConstantRanges    = &pushConstantRange,
         };
 
         vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout);
@@ -629,6 +690,11 @@ namespace South
         vkCreateFence(logicDevice, &fenceInfo, nullptr, &inFlightFence);
     }
 
+    void VulkanContext::CompileShaders()
+    {
+        system("Resources\\Shaders\\CompileShaders.bat");
+    }
+
     VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         uint32_t formatCount;
@@ -718,7 +784,11 @@ namespace South
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
+        // Draw
         {
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
+                               &pushConstant);
+
             VkBuffer meshBuffer = VI_Buffer->GetVulkanBuffer();
             VkDeviceSize offset = 0;
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshBuffer, &offset);
@@ -726,7 +796,6 @@ namespace South
 
             vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
         }
-
 
         vkCmdEndRenderPass(commandBuffer);
 
