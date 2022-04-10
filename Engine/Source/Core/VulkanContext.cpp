@@ -23,31 +23,6 @@ namespace South
     std::mt19937 rng(dev());
     std::uniform_real_distribution<float> dist(0.f, 1.f);
 
-    // const std::vector<Vertex> vertices = { {
-    //                                            glm::vec3(dist(rng) - 1.f, -dist(rng), 0.f),
-    //                                            glm::vec3(0.f),
-    //                                            glm::vec2(0.f),
-    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
-    //                                        },
-    //                                        {
-    //                                            glm::vec3(dist(rng), -dist(rng), 0.f),
-    //                                            glm::vec3(0.f),
-    //                                            glm::vec2(0.f),
-    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
-    //                                        },
-    //                                        {
-    //                                            glm::vec3(dist(rng), dist(rng), 0.f),
-    //                                            glm::vec3(0.f),
-    //                                            glm::vec2(0.f),
-    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
-    //                                        },
-    //                                        {
-    //                                            glm::vec3(-dist(rng), dist(rng), 0.f),
-    //                                            glm::vec3(0.f),
-    //                                            glm::vec2(0.f),
-    //                                            glm::vec3(dist(rng), dist(rng), dist(rng)),
-    //                                        } };
-
     // NDC space
     const std::vector<Vertex> vertices = { {
                                                glm::vec3(-0.5f, -0.5f, 0.f),
@@ -76,7 +51,8 @@ namespace South
 
     const std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
 
-
+    // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
+    // Projection too.
     struct PushConstant
     {
         glm::mat4 Model;
@@ -157,12 +133,13 @@ namespace South
 
     void VulkanContext::Tick()
     {
-        static int16_t i = 0;
-        ++i;
-        pushConstant.Model = glm::rotate(pushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-        pushConstant.Model = glm::scale(pushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
-
-        std::cout << i << std::endl;
+        // Animation
+        {
+            static int16_t i = 0;
+            ++i;
+            pushConstant.Model = glm::rotate(pushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
+            pushConstant.Model = glm::scale(pushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+        }
 
         VkDevice logicDevice  = device->GetDevice();
         VkQueue graphicsQueue = device->GetQ();
