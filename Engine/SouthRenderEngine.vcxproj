@@ -88,13 +88,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\ShadersLibrary.cpp" />
     <ClCompile Include="Source\Editor\Camera.cpp" />
     <ClCompile Include="Source\Editor\Entity.cpp" />
     <ClCompile Include="Source\Editor\Scene.cpp" />
     <ClCompile Include="Source\Editor\Mesh.cpp" />
     <ClCompile Include="Source\Core\Context.cpp" />
     <ClCompile Include="Source\Core\Application.cpp" />
-    <ClCompile Include="Source\Core\Main.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Core\OpenglContext.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
     <ClCompile Include="Source\Core\Window.cpp" />
@@ -109,8 +110,10 @@
     <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp" />
     <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp" />
     <ClCompile Include="Source\Core\VulkanVertexIndexBuffer.cpp" />
+    <ClCompile Include="Source\Core\VulkanShader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\ShadersLibrary.h" />
     <ClInclude Include="Source\Editor\Camera.h" />
     <ClInclude Include="Source\Editor\Entity.h" />
     <ClInclude Include="Source\Editor\Mesh.h" />
@@ -127,6 +130,7 @@
     <ClInclude Include="Source\Core\VulkanVertexBuffer.h" />
     <ClInclude Include="Source\Core\VulkanIndexBuffer.h" />
     <ClInclude Include="Source\Core\VulkanVertexIndexBuffer.h" />
+    <ClInclude Include="Source\Core\VulkanShader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -37,7 +37,6 @@ namespace South
         void CreateCommands();
         void CreateSyncObjects();
 
-        void CompileShaders();
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);

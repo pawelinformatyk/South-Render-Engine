@@ -4,6 +4,9 @@
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexIndexBuffer.h"
+#include "Core/VulkanShader.h"
+#include "Core/ShadersLibrary.h"
+
 #include "Editor/Mesh.h"
 #include "Editor/Camera.h"
 
@@ -88,7 +91,7 @@ namespace South
         CreateCommands();
         CreateSyncObjects();
 
-        editorCam.SetView(glm::vec3(2.f, 1.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        editorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         editorCam.SetProjection(glm::radians(70.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f,
                                 200.0f);
 
@@ -371,73 +374,17 @@ namespace South
 
     void VulkanContext::CreateGraphicsPipeline()
     {
-        CompileShaders();
-
         VkDevice logicDevice = device->GetDevice();
 
-        auto readFile = [](const std::string& fileName)
-        {
-            std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+        ShadersLibrary::CompileAllShaders();
 
-            if (file.fail() || !file.is_open())
-            {
-                throw std::runtime_error("failed to open file!");
-            }
+        // #TODO : Check errors.
+        auto* vertShader =
+            ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Cached/Base_V.spv", ShaderType::Vertex);
+        auto* fragShader =
+            ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Cached/Base_F.spv", ShaderType::Fragment);
 
-            size_t fileSize = (size_t)file.tellg();
-
-            std::vector<char> buffer(fileSize);
-
-            file.seekg(0);
-            file.read(buffer.data(), fileSize);
-
-            file.close();
-
-            return buffer;
-        };
-
-        auto CreateShaderModule = [&device = logicDevice](const std::vector<char>& code)
-        {
-            VkShaderModuleCreateInfo createInfo{
-                .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-                .pNext    = nullptr,
-                .codeSize = code.size(),
-                .pCode    = reinterpret_cast<const uint32_t*>(code.data()),
-            };
-
-            VkShaderModule shaderModule;
-            if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to create shader module!");
-            }
-
-            return shaderModule;
-        };
-
-        std::vector<char> baseVertShaderCode = readFile("Resources/Shaders/Cached/Base_V.spv");
-        std::vector<char> baseFragShaderCode = readFile("Resources/Shaders/Cached/Base_F.spv");
-
-        VkShaderModule vertShaderMod = CreateShaderModule(baseVertShaderCode);
-        VkShaderModule fragShaderMod = CreateShaderModule(baseFragShaderCode);
-
-        // Assign shaders to specific pipeline
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo{
-            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .pNext  = nullptr,
-            .stage  = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = vertShaderMod,
-            .pName  = "main",
-        };
-
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo{
-            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .pNext  = nullptr,
-            .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = fragShaderMod,
-            .pName  = "main",
-        };
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader->GetInfo(), fragShader->GetInfo() };
 
         const auto& bindingDesc     = Vertex::GetBindingDescription();
         const auto& attributesDescs = Vertex::GetAttributesDescriptions();
@@ -586,9 +533,6 @@ namespace South
         };
 
         vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
-
-        vkDestroyShaderModule(logicDevice, vertShaderMod, nullptr);
-        vkDestroyShaderModule(logicDevice, fragShaderMod, nullptr);
     }
 
     void VulkanContext::CreateFramebuffers()
@@ -665,11 +609,6 @@ namespace South
         vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
         vkCreateSemaphore(logicDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphore);
         vkCreateFence(logicDevice, &fenceInfo, nullptr, &inFlightFence);
-    }
-
-    void VulkanContext::CompileShaders()
-    {
-        system("Resources\\Shaders\\CompileShaders.bat");
     }
 
     VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
