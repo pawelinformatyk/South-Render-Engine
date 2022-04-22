@@ -1,6 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/VulkanContext.h"
+
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexIndexBuffer.h"
@@ -11,8 +12,6 @@
 #include "Editor/Camera.h"
 
 #include <GLFW/glfw3.h>
-#include <filesystem>
-#include <fstream>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
@@ -376,13 +375,10 @@ namespace South
     {
         VkDevice logicDevice = device->GetDevice();
 
-        ShadersLibrary::CompileAllShaders();
-
-        // #TODO : Check errors.
         auto* vertShader =
-            ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Cached/Base_V.spv", ShaderType::Vertex);
+            ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT, true);
         auto* fragShader =
-            ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Cached/Base_F.spv", ShaderType::Fragment);
+            ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT, true);
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader->GetInfo(), fragShader->GetInfo() };
 

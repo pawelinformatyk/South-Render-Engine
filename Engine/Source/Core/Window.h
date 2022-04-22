@@ -27,8 +27,8 @@ namespace South
       private:
         GLFWwindow* glfwWindow = nullptr;
 
-        uint32_t Width  = 1600;
-        uint32_t Height = 960;
+        uint32_t Width  = 400;
+        uint32_t Height = 460;
 
         CloseWindowCallback closeWindowFN;
     };

@@ -58,7 +58,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)ExternalLibraries\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combinedd.lib";%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>
@@ -82,7 +82,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)ExternalLibraries\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combined.lib";%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>

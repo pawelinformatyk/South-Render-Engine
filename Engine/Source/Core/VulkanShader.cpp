@@ -1,93 +1,102 @@
 #include "sthpch.h"
 
 #include "Core/VulkanShader.h"
+
+#include "Core/ShadersLibrary.h"
 #include "Core/VulkanContext.h"
 #include "Core/VulkanDevice.h"
 
 #include <fstream>
-#include <filesystem>
+#include <iostream>
+#include <sstream>
 
 namespace South
 {
 
-    VulkanShader::VulkanShader(const std::string& inName, const std::string& inPathToSPIRV, ShaderType inType)
-        : name(inName)
-        , pathToSPIRV(inPathToSPIRV)
-        , type(inType)
+    VulkanShader::VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages,
+                               bool bCompile /*= true*/)
+        : pathToCode(inPathToCode)
     {
-        // #TODO : Check errors.
-        std::vector<char> shaderCode = ReadFile(inPathToSPIRV);
-
-        CreateShaderModule(shaderCode);
-
-        VkShaderStageFlagBits shaderStage;
-        switch (type)
-        {
-            case ShaderType::Vertex:
-            {
-                shaderStage = VK_SHADER_STAGE_VERTEX_BIT;
-                break;
-            }
-            case ShaderType::Fragment:
-            {
-                shaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
-                break;
-            }
-        }
-
         info = {
-            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .pNext  = nullptr,
-            .stage  = shaderStage,
-            .module = module,
-            .pName  = "main",
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .stage = InStages,
+            .pName = "main",
         };
+
+        if (bCompile)
+        {
+            Compile();
+        }
     }
 
     VulkanShader::~VulkanShader()
     {
         VkDevice device = VulkanContext::Get().GetCurrentDevice().GetDevice();
-        vkDestroyShaderModule(device, module, nullptr);
+        vkDestroyShaderModule(device, info.module, nullptr);
     }
+
+    void VulkanShader::Compile()
+    {
+        const std::ifstream stream(pathToCode);
+        std::stringstream strStream;
+        strStream << stream.rdbuf();
+
+        const std::string code = strStream.str();
+
+        shaderc::Compiler& compiler             = ShadersLibrary::GetCompiler();
+        shaderc::CompileOptions compilerOptions = ShadersLibrary::GetCompilerOptions();
+
+        const auto shaderKind = GetShadercShaderKind(info.stage);
+
+        const shaderc::SpvCompilationResult result =
+            compiler.CompileGlslToSpv(code, shaderKind, pathToCode.data(), compilerOptions);
+
+        if (result.GetCompilationStatus() != shaderc_compilation_status_success)
+        {
+            return;
+        }
+
+        VkShaderModule module = CreateShaderModule(std::vector<uint32_t>(result.cbegin(), result.cend()));
+
+        info.module = module;
+    };
 
     const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const
     {
         return info;
     }
 
-    void VulkanShader::CreateShaderModule(const std::vector<char>& code)
+    VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code)
     {
         VkDevice device = VulkanContext::Get().GetCurrentDevice().GetDevice();
+        VkShaderModule module;
 
         VkShaderModuleCreateInfo createInfo{
             .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
             .pNext    = nullptr,
-            .codeSize = code.size(),
-            .pCode    = reinterpret_cast<const uint32_t*>(code.data()),
+            .codeSize = code.size() * sizeof(uint32_t),
+            .pCode    = code.data(),
         };
 
         vkCreateShaderModule(device, &createInfo, nullptr, &module);
+
+        return module;
     }
 
-    std::vector<char> VulkanShader::ReadFile(const std::string& fileName)
+    shaderc_shader_kind VulkanShader::GetShadercShaderKind(VkShaderStageFlagBits InStages)
     {
-        std::ifstream file(fileName, std::ios::ate | std::ios::binary);
-
-        if (file.fail() || !file.is_open())
+        switch (InStages)
         {
-            throw std::runtime_error("failed to open file!");
+            case VK_SHADER_STAGE_VERTEX_BIT:
+                return shaderc_shader_kind::shaderc_vertex_shader;
+            case VK_SHADER_STAGE_FRAGMENT_BIT:
+                return shaderc_shader_kind::shaderc_fragment_shader;
+            case VK_SHADER_STAGE_COMPUTE_BIT:
+                return shaderc_shader_kind::shaderc_compute_shader;
         }
 
-        size_t fileSize = (size_t)file.tellg();
-
-        std::vector<char> buffer(fileSize);
-
-        file.seekg(0);
-        file.read(buffer.data(), fileSize);
-
-        file.close();
-
-        return buffer;
+        return shaderc_shader_kind::shaderc_glsl_infer_from_source;
     }
 
 } // namespace South

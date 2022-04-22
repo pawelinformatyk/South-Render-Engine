@@ -1,35 +1,32 @@
 #pragma once
 
 #include "vulkan/vulkan_core.h"
+#include "shaderc/shaderc.hpp"
 
 namespace South
 {
-    // #TODO : Redundant. StageFlag is enough.
-    enum class ShaderType
-    {
-        Vertex,
-        Fragment,
-    };
-
+    // #TODO : Shader should be aware of pushConstants, desriptors etc.? Look Record function in context.
     class VulkanShader
     {
       public:
-        VulkanShader(const std::string& inName, const std::string& inPathToSPIRV, ShaderType inType);
+        VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
         ~VulkanShader();
+
+        void Compile();
 
         const VkPipelineShaderStageCreateInfo& GetInfo() const;
 
       private:
-        void CreateShaderModule(const std::vector<char>& code);
-        std::vector<char> ReadFile(const std::string& fileName);
+        VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 
-        std::string name;
-        std::string pathToSPIRV;
-        ShaderType type;
-
-        VkShaderModule module;
+        std::string pathToCode;
 
         VkPipelineShaderStageCreateInfo info;
+
+        // Static functions
+      public:
+        // #TODO : Move to Utils
+        static shaderc_shader_kind GetShadercShaderKind(VkShaderStageFlagBits InStages);
     };
 
 } // namespace South

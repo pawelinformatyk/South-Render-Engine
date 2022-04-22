@@ -5,32 +5,67 @@
 namespace South
 {
 
-    namespace ShadersLibrary
+    shaderc::Compiler ShadersLibrary::s_Compiler;
+
+    shaderc::CompileOptions ShadersLibrary::s_CompilerOptions;
+
+    void ShadersLibrary::Init()
     {
-
-        void CompileAllShaders()
+        if (!s_ShadersLibrary)
         {
-            system("Resources\\Shaders\\CompileShaders.bat");
+            s_ShadersLibrary = new ShadersLibrary;
+
+            // #TODO : Should be somewhere else.
+            s_CompilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+            s_CompilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
+        }
+    }
+
+    VulkanShader* ShadersLibrary::AddShader(const std::string& name, const std::string& pathToCode,
+                                            VkShaderStageFlagBits stages, bool bCompile /*= true*/)
+    {
+        if (!s_ShadersLibrary)
+        {
+            return nullptr;
         }
 
-        VulkanShader* AddShader(const std::string& name, const std::string& pathToSPIRV, ShaderType inType)
+        auto* newShader = new VulkanShader(pathToCode, stages, bCompile);
+        if (!newShader)
         {
-            auto* newShader = new VulkanShader(name, pathToSPIRV, inType);
-            if (!newShader)
-            {
-                return nullptr;
-            }
-
-            shaders.emplace(name, newShader);
-
-            return newShader;
+            return nullptr;
         }
 
-        VulkanShader* GetShader(const std::string& name)
-        {
-            return shaders[name];
-        }
+        s_ShadersLibrary->shaders.emplace(name, newShader);
 
-    } // namespace ShadersLibrary
+        return newShader;
+    }
+
+    VulkanShader* ShadersLibrary::GetShader(const std::string& name)
+    {
+        return s_ShadersLibrary->shaders[name];
+    }
+
+    const std::unordered_map<std::string, VulkanShader*>& ShadersLibrary::GetShaders()
+    {
+        return s_ShadersLibrary->shaders;
+    }
+
+    shaderc::Compiler& ShadersLibrary::GetCompiler()
+    {
+        return s_Compiler;
+    }
+
+    shaderc::CompileOptions& ShadersLibrary::GetCompilerOptions()
+    {
+        return s_CompilerOptions;
+    }
+
+    ShadersLibrary::ShadersLibrary()
+    {
+    }
+
+    ShadersLibrary::~ShadersLibrary()
+    {
+    }
 
 } // namespace South
