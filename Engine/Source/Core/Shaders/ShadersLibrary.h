@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/VulkanShader.h"
+#include "Core/Shaders/VulkanShader.h"
 
 #include "vulkan/vulkan_core.h"
 #include "shaderc/shaderc.hpp"

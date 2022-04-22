@@ -3,7 +3,6 @@
 #include "Core/Application.h"
 
 #include "Core/VulkanContext.h"
-#include "Core/ShadersLibrary.h"
 
 namespace South
 {
@@ -15,9 +14,6 @@ namespace South
     void Application::Init()
     {
         Instance = this;
-
-        // #TODO : Init AssetManager.
-        ShadersLibrary::Init();
 
         pWindow = std::make_unique<Window>();
         pWindow->SetCloseWindowCallback(

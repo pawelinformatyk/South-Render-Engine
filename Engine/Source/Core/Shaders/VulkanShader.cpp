@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
-#include "Core/VulkanShader.h"
+#include "Core/Shaders/VulkanShader.h"
 
-#include "Core/ShadersLibrary.h"
+#include "Core/Shaders/ShadersLibrary.h"
 #include "Core/VulkanContext.h"
 #include "Core/VulkanDevice.h"
 

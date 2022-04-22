@@ -5,17 +5,14 @@
 #include "Core/Application.h"
 #include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexIndexBuffer.h"
-#include "Core/VulkanShader.h"
-#include "Core/ShadersLibrary.h"
+#include "Core/Shaders/VulkanShader.h"
+#include "Core/Shaders/ShadersLibrary.h"
 
 #include "Editor/Mesh.h"
 #include "Editor/Camera.h"
 
 #include <GLFW/glfw3.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm.hpp"
 #include <gtx/string_cast.hpp>
 
@@ -80,6 +77,11 @@ namespace South
 
         device = VulkanDevice::Create();
         device->Init(surface);
+
+        // #TODO : Init AssetManager?
+        ShadersLibrary::Init();
+        ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT, true);
+        ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT, true);
 
         CreateSwapChain(*glfwWindow);
         CreateImageViews();
@@ -375,12 +377,11 @@ namespace South
     {
         VkDevice logicDevice = device->GetDevice();
 
-        auto* vertShader =
-            ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT, true);
-        auto* fragShader =
-            ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT, true);
+        // #TODO : Check for errors;
+        const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
+        const auto& fragShader = *ShadersLibrary::GetShader("Base_F");
 
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader->GetInfo(), fragShader->GetInfo() };
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
 
         const auto& bindingDesc     = Vertex::GetBindingDescription();
         const auto& attributesDescs = Vertex::GetAttributesDescriptions();

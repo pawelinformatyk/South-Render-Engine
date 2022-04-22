@@ -63,10 +63,10 @@
     <ClCompile Include="Source\Editor\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\VulkanShader.cpp">
+    <ClCompile Include="Source\Core\Shaders\VulkanShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\ShadersLibrary.cpp">
+    <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,10 +119,10 @@
     <ClInclude Include="Source\Editor\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\VulkanShader.h">
+    <ClInclude Include="Source\Core\Shaders\VulkanShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\ShadersLibrary.h">
+    <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

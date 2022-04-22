@@ -6,6 +6,7 @@
 namespace South
 {
     // #TODO : Shader should be aware of pushConstants, desriptors etc.? Look Record function in context.
+    // #TODO : Cache compiled shaders in some directory.
     class VulkanShader
     {
       public:

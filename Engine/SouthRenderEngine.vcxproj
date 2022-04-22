@@ -43,11 +43,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\1.3.204.1\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -69,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);GLM_FORCE_DEPTH_ZERO_TO_ONE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\1.3.204.1\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -88,7 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Core\ShadersLibrary.cpp" />
+    <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
     <ClCompile Include="Source\Editor\Camera.cpp" />
     <ClCompile Include="Source\Editor\Entity.cpp" />
     <ClCompile Include="Source\Editor\Scene.cpp" />
@@ -110,10 +113,10 @@
     <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp" />
     <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp" />
     <ClCompile Include="Source\Core\VulkanVertexIndexBuffer.cpp" />
-    <ClCompile Include="Source\Core\VulkanShader.cpp" />
+    <ClCompile Include="Source\Core\Shaders\VulkanShader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Core\ShadersLibrary.h" />
+    <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
     <ClInclude Include="Source\Editor\Camera.h" />
     <ClInclude Include="Source\Editor\Entity.h" />
     <ClInclude Include="Source\Editor\Mesh.h" />
@@ -130,7 +133,7 @@
     <ClInclude Include="Source\Core\VulkanVertexBuffer.h" />
     <ClInclude Include="Source\Core\VulkanIndexBuffer.h" />
     <ClInclude Include="Source\Core\VulkanVertexIndexBuffer.h" />
-    <ClInclude Include="Source\Core\VulkanShader.h" />
+    <ClInclude Include="Source\Core\Shaders\VulkanShader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
