@@ -14,6 +14,9 @@ namespace South
     class VulkanContext
     {
       public:
+        static VulkanContext& Get();
+
+      public:
         VulkanContext(VulkanContext const&) = delete;
         void operator=(VulkanContext const&) = delete;
 
@@ -29,8 +32,8 @@ namespace South
         ~VulkanContext(){};
 
         void CreateInstance();
-        void CreateSurface(GLFWwindow& window);
-        void CreateSwapChain(GLFWwindow& window);
+        void CreateSurface(GLFWwindow& Window);
+        void CreateSwapChain(GLFWwindow& Window);
         void CreateImageViews();
         void CreateRenderPass();
         void CreateGraphicsPipeline();
@@ -46,33 +49,29 @@ namespace South
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-        VkInstance vulkanInstance = VK_NULL_HANDLE;
+        VkInstance VulkanInstance = VK_NULL_HANDLE;
 
-        VkSurfaceKHR surface     = VK_NULL_HANDLE;
-        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-        std::vector<VkImage> swapChainImages;
-        VkFormat swapChainImageFormat;
-        VkExtent2D swapChainExtent;
-        std::vector<VkImageView> swapChainImageViews;
-        std::vector<VkFramebuffer> swapChainFramebuffers;
+        VkSurfaceKHR Surface     = VK_NULL_HANDLE;
+        VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
+        std::vector<VkImage> SwapChainImages;
+        VkFormat SwapChainImageFormat;
+        VkExtent2D SwapChainExtent;
+        std::vector<VkImageView> SwapChainImageViews;
+        std::vector<VkFramebuffer> SwapChainFramebuffers;
 
-        VkRenderPass renderPass         = VK_NULL_HANDLE;
-        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        VkPipeline graphicsPipeline     = VK_NULL_HANDLE;
+        VkRenderPass RenderPass         = VK_NULL_HANDLE;
+        VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
+        VkPipeline GraphicsPipeline     = VK_NULL_HANDLE;
 
-        VkCommandPool commandPool           = VK_NULL_HANDLE;
-        VkCommandBuffer commandBuffer       = VK_NULL_HANDLE;
-        VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
-        VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
-        VkFence inFlightFence               = VK_NULL_HANDLE;
+        VkCommandPool CommandPool           = VK_NULL_HANDLE;
+        VkCommandBuffer CommandBuffer       = VK_NULL_HANDLE;
+        VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
+        VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
+        VkFence FlightFence                 = VK_NULL_HANDLE;
 
-        std::unique_ptr<VulkanDevice> device = nullptr;
+        std::unique_ptr<VulkanDevice> Device = nullptr;
         VulkanVertexIndexBuffer* VI_Buffer   = nullptr;
 
         bool bCanTick = false;
-
-        // Static functions
-      public:
-        static VulkanContext& Get();
     };
 }; // namespace South

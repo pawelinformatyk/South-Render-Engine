@@ -45,6 +45,7 @@ namespace South
             {
             });
 
+
         pWindow->DeInit();
     }
 
@@ -60,8 +61,8 @@ namespace South
 
     Application& Application::Get()
     {
-        static Application instance;
-        return instance;
+        static Application Instance;
+        return Instance;
     }
 
     void Application::Kaboom()

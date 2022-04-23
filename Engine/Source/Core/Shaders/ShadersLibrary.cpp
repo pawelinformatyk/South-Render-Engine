@@ -11,8 +11,8 @@ namespace South
 
     ShadersLibrary& ShadersLibrary::Get()
     {
-        static ShadersLibrary instance;
-        return instance;
+        static ShadersLibrary Instance;
+        return Instance;
     }
 
     void ShadersLibrary::Init()
@@ -23,36 +23,36 @@ namespace South
 
     void ShadersLibrary::DeInit()
     {
-        for (const auto& [name, shader] : shaders)
+        for (const auto& [Name, Shader] : Shaders)
         {
-            delete shader;
+            delete Shader;
         }
 
-        shaders.clear();
+        Shaders.clear();
     }
 
-    VulkanShader* ShadersLibrary::AddShader(const std::string& name, const std::string& pathToCode,
-                                            VkShaderStageFlagBits stages, bool bCompile /*= true*/)
+    VulkanShader* ShadersLibrary::AddShader(const std::string& Name, const std::string& PathToCode,
+                                            VkShaderStageFlagBits Stages, bool bCompile /*= true*/)
     {
-        auto* newShader = new VulkanShader(pathToCode, stages, bCompile);
-        if (!newShader)
+        auto* NewShader = new VulkanShader(PathToCode, Stages, bCompile);
+        if (!NewShader)
         {
             return nullptr;
         }
 
-        shaders.emplace(name, newShader);
+        Shaders.emplace(Name, NewShader);
 
-        return newShader;
+        return NewShader;
     }
 
-    VulkanShader* ShadersLibrary::GetShader(const std::string& name)
+    VulkanShader* ShadersLibrary::GetShader(const std::string& Name)
     {
-        return shaders[name];
+        return Shaders.contains(Name) ? Shaders[Name] : nullptr;
     }
 
     const std::unordered_map<std::string, VulkanShader*>& ShadersLibrary::GetShaders()
     {
-        return shaders;
+        return Shaders;
     }
 
     shaderc::Compiler& ShadersLibrary::GetCompiler()

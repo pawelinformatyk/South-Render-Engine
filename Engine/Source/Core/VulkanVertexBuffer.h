@@ -9,17 +9,17 @@ namespace South
     class VulkanVertexBuffer
     {
       public:
-        VulkanVertexBuffer(const void* data, uint32_t size);
+        VulkanVertexBuffer(const void* Data, uint32_t Size);
         ~VulkanVertexBuffer();
 
         VkBuffer GetBuffer() const;
 
       private:
-        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
-                                VkMemoryPropertyFlags properties) const;
+        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t TypeFilter,
+                                VkMemoryPropertyFlags Properties) const;
 
-        VkBuffer buffer       = VK_NULL_HANDLE;
-        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkBuffer Buffer       = VK_NULL_HANDLE;
+        VkDeviceMemory Memory = VK_NULL_HANDLE;
     };
 
 } // namespace South

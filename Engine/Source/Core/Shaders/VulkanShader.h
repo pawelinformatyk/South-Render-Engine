@@ -18,11 +18,11 @@ namespace South
         const VkPipelineShaderStageCreateInfo& GetInfo() const;
 
       private:
-        VkShaderModule CreateShaderModule(const std::vector<uint32_t>& glslCode);
+        VkShaderModule CreateShaderModule(const std::vector<uint32_t>& GlslCode);
 
-        std::string pathToCode;
+        std::string PathToCode;
 
-        VkPipelineShaderStageCreateInfo info;
+        VkPipelineShaderStageCreateInfo ShaderInfo;
 
         // Static functions
       public:

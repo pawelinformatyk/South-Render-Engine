@@ -7,7 +7,7 @@ namespace South
 {
     class VulkanIndexBuffer;
     class VulkanVertexBuffer;
-    class VulkanVertexIndexBuffer;
+    class SVulkanVertexIndexBuffer;
 
     struct Vertex
     {
@@ -36,7 +36,7 @@ namespace South
 
         // VulkanIndexBuffer* indexBuffer;
         // VulkanVertexBuffer* verticesBuffer;
-        VulkanVertexIndexBuffer* VI_Buffer;
+        SVulkanVertexIndexBuffer* VI_Buffer;
     };
 
 

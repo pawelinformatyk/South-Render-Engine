@@ -23,9 +23,9 @@ namespace South
         void Init();
         void DeInit();
 
-        VulkanShader* AddShader(const std::string& name, const std::string& pathToCode, VkShaderStageFlagBits stages,
+        VulkanShader* AddShader(const std::string& Name, const std::string& PathToCode, VkShaderStageFlagBits Stages,
                                 bool bCompile = true);
-        VulkanShader* GetShader(const std::string& name);
+        VulkanShader* GetShader(const std::string& Name);
 
         const std::unordered_map<std::string, VulkanShader*>& GetShaders();
 
@@ -39,7 +39,7 @@ namespace South
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
 
-        std::unordered_map<std::string, VulkanShader*> shaders;
+        std::unordered_map<std::string, VulkanShader*> Shaders;
     };
 
 } // namespace South

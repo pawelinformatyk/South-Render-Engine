@@ -7,60 +7,60 @@
 namespace South
 {
 
-    void VulkanDevice::Init(VkSurfaceKHR surface)
+    void VulkanDevice::Init(VkSurfaceKHR Surface)
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
         auto IsDeviceSuitable =
-            [&requiredDeviceExtensions = requiredDeviceExtensions, &surface = surface](const VkPhysicalDevice& device)
+            [&RequiredDeviceExtensions = RequiredDeviceExtensions, &Surface = Surface](const VkPhysicalDevice& Device)
         {
             // Check if device supports swap chain.
-            uint32_t extensionCount;
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+            uint32_t ExtensionCount;
+            vkEnumerateDeviceExtensionProperties(Device, nullptr, &ExtensionCount, nullptr);
 
-            std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+            std::vector<VkExtensionProperties> AvailableExtensions(ExtensionCount);
+            vkEnumerateDeviceExtensionProperties(Device, nullptr, &ExtensionCount, AvailableExtensions.data());
 
-            std::set<std::string> requiredExtensionsSet(requiredDeviceExtensions.begin(),
-                                                        requiredDeviceExtensions.end());
+            std::set<std::string> RequiredExtensionsSet(RequiredDeviceExtensions.begin(),
+                                                        RequiredDeviceExtensions.end());
 
-            for (const auto& extension : availableExtensions)
+            for (const auto& Extension : AvailableExtensions)
             {
-                requiredExtensionsSet.erase(extension.extensionName);
+                RequiredExtensionsSet.erase(Extension.extensionName);
             }
 
-            if (!requiredExtensionsSet.empty())
+            if (!RequiredExtensionsSet.empty())
             {
                 return std::optional<uint32_t>();
             }
 
             // #TODO : Look for specific gpu??
-            uint32_t formatCount;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-            if (!formatCount)
+            uint32_t FormatCount;
+            vkGetPhysicalDeviceSurfaceFormatsKHR(Device, Surface, &FormatCount, nullptr);
+            if (!FormatCount)
             {
                 return std::optional<uint32_t>();
             }
 
-            uint32_t presentModesCount;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModesCount, nullptr);
-            if (!presentModesCount)
+            uint32_t PresentModesCount;
+            vkGetPhysicalDeviceSurfacePresentModesKHR(Device, Surface, &PresentModesCount, nullptr);
+            if (!PresentModesCount)
             {
                 return std::optional<uint32_t>();
             }
 
             // Check if device has needed queue family.
-            uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+            uint32_t QueueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(Device, &QueueFamilyCount, nullptr);
 
-            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+            std::vector<VkQueueFamilyProperties> QueueFamilies(QueueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(Device, &QueueFamilyCount, QueueFamilies.data());
 
-            for (uint32_t i = 0; i < queueFamilyCount; ++i)
+            for (uint32_t i = 0; i < QueueFamilyCount; ++i)
             {
-                VkBool32 presentSupport = false;
-                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+                VkBool32 bPresentSupport = false;
+                vkGetPhysicalDeviceSurfaceSupportKHR(Device, i, Surface, &bPresentSupport);
 
-                if (presentSupport && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+                if (bPresentSupport && (QueueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 {
                     return std::optional<uint32_t>(i);
                 }
@@ -70,57 +70,57 @@ namespace South
         };
 
         // Lambda to rate device based on our needs.
-        auto RateDevice = [](const VkPhysicalDevice& device)
+        auto RateDevice = [](const VkPhysicalDevice& Device)
         {
             // Rate based on features and properties.
-            int score = 0;
+            int Score = 0;
 
-            VkPhysicalDeviceProperties deviceProperties;
-            VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceProperties(device, &deviceProperties);
-            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+            VkPhysicalDeviceProperties DeviceProperties;
+            VkPhysicalDeviceFeatures DeviceFeatures;
+            vkGetPhysicalDeviceProperties(Device, &DeviceProperties);
+            vkGetPhysicalDeviceFeatures(Device, &DeviceFeatures);
 
             // Discrete GPUs have a significant performance advantage
-            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            if (DeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
             {
-                score += 1000;
+                Score += 1000;
             }
-            if (deviceFeatures.multiViewport)
+            if (DeviceFeatures.multiViewport)
             {
-                score += 1000;
+                Score += 1000;
             }
 
-            return score;
+            return Score;
         };
 
-        VkInstance instance = VulkanContext::Get().GetVulkanInstance();
+        VkInstance VulkanInstance = VulkanContext::Get().GetVulkanInstance();
 
         // Get vector of devices.
-        uint32_t devicesCount = 0;
-        vkEnumeratePhysicalDevices(instance, &devicesCount, nullptr);
+        uint32_t DevicesCount = 0;
+        vkEnumeratePhysicalDevices(VulkanInstance, &DevicesCount, nullptr);
 
-        std::vector<VkPhysicalDevice> devices(devicesCount);
-        vkEnumeratePhysicalDevices(instance, &devicesCount, devices.data());
+        std::vector<VkPhysicalDevice> Devices(DevicesCount);
+        vkEnumeratePhysicalDevices(VulkanInstance, &DevicesCount, Devices.data());
 
         // Find best gpu available. Reject those without correct queue and rate the rest.
-        std::multimap<int, std::pair<VkPhysicalDevice, uint32_t>> devicesScoreboard;
+        std::multimap<int, std::pair<VkPhysicalDevice, uint32_t>> DevicesScoreboard;
 
-        for (const VkPhysicalDevice& dev : devices)
+        for (const VkPhysicalDevice& Dev : Devices)
         {
-            std::optional<uint32_t> qFamIndex = IsDeviceSuitable(dev);
-            if (!qFamIndex.has_value())
+            std::optional<uint32_t> QFamIndex = IsDeviceSuitable(Dev);
+            if (!QFamIndex.has_value())
             {
                 continue;
             }
 
-            devicesScoreboard.emplace(RateDevice(dev), std::make_pair(dev, qFamIndex.value()));
+            DevicesScoreboard.emplace(RateDevice(Dev), std::make_pair(Dev, QFamIndex.value()));
         }
 
         // Get device if it was found.
-        if (devicesScoreboard.size())
+        if (DevicesScoreboard.size())
         {
-            physicalDevice   = devicesScoreboard.rbegin()->second.first;
-            QueueFamilyIndex = devicesScoreboard.rbegin()->second.second;
+            PhysicalDevice   = DevicesScoreboard.rbegin()->second.first;
+            QueueFamilyIndex = DevicesScoreboard.rbegin()->second.second;
         }
         else
         {
@@ -129,47 +129,47 @@ namespace South
         }
 
         // Set logical device and queue.
-        const float queuePrio = 1.f;
+        const float QueuePrio = 1.f;
 
-        VkDeviceQueueCreateInfo sQCreateInfo{
+        VkDeviceQueueCreateInfo QCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
             .queueFamilyIndex = QueueFamilyIndex,
             .queueCount       = 1,
-            .pQueuePriorities = &queuePrio,
+            .pQueuePriorities = &QueuePrio,
         };
 
-        VkPhysicalDeviceFeatures sDeviceFeatures{};
+        VkPhysicalDeviceFeatures DeviceFeatures{};
 
-        VkDeviceCreateInfo sCreateInfo{
+        VkDeviceCreateInfo CreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext                   = nullptr,
             .queueCreateInfoCount    = 1,
-            .pQueueCreateInfos       = &sQCreateInfo,
+            .pQueueCreateInfos       = &QCreateInfo,
             .enabledLayerCount       = 0,
-            .enabledExtensionCount   = static_cast<uint32_t>(requiredDeviceExtensions.size()),
-            .ppEnabledExtensionNames = requiredDeviceExtensions.data(),
-            .pEnabledFeatures        = &sDeviceFeatures,
+            .enabledExtensionCount   = static_cast<uint32_t>(RequiredDeviceExtensions.size()),
+            .ppEnabledExtensionNames = RequiredDeviceExtensions.data(),
+            .pEnabledFeatures        = &DeviceFeatures,
         };
 
-        vkCreateDevice(physicalDevice, &sCreateInfo, nullptr, &logicalDevice);
+        vkCreateDevice(PhysicalDevice, &CreateInfo, nullptr, &LogicalDevice);
 
-        vkGetDeviceQueue(logicalDevice, QueueFamilyIndex, 0, &Queue);
+        vkGetDeviceQueue(LogicalDevice, QueueFamilyIndex, 0, &Queue);
     }
 
     void VulkanDevice::DeInit()
     {
-        vkDestroyDevice(logicalDevice, nullptr);
+        vkDestroyDevice(LogicalDevice, nullptr);
     }
 
     VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const
     {
-        return physicalDevice;
+        return PhysicalDevice;
     }
 
     VkDevice VulkanDevice::GetDevice() const
     {
-        return logicalDevice;
+        return LogicalDevice;
     }
 
     uint32_t VulkanDevice::GetQFamilyIndex() const

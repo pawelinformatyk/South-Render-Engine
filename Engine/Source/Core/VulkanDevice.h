@@ -13,7 +13,7 @@ namespace South
         VulkanDevice(){};
         ~VulkanDevice(){};
 
-        void Init(VkSurfaceKHR surface);
+        void Init(VkSurfaceKHR Surface);
         void DeInit();
 
         VkPhysicalDevice GetPhysicalDevice() const;
@@ -22,12 +22,12 @@ namespace South
         VkQueue GetQ() const;
 
       private:
-        const std::vector<const char*> requiredDeviceExtensions = {
+        const std::vector<const char*> RequiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
 
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        VkDevice logicalDevice          = VK_NULL_HANDLE;
+        VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
+        VkDevice LogicalDevice          = VK_NULL_HANDLE;
 
         VkQueue Queue             = VK_NULL_HANDLE;
         uint32_t QueueFamilyIndex = 0;

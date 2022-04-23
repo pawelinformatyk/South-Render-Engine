@@ -15,9 +15,9 @@ namespace South
         virtual void DeInit() override;
 
       private:
-        VkSurfaceKHR surface = VK_NULL_HANDLE;
+        VkSurfaceKHR Surface = VK_NULL_HANDLE;
 
-        std::unique_ptr<VulkanSwapChain> swapChain = nullptr;
+        std::unique_ptr<VulkanSwapChain> SwapChain = nullptr;
     };
 
 } // namespace South

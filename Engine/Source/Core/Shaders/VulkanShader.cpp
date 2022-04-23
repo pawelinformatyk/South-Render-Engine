@@ -15,9 +15,9 @@ namespace South
 
     VulkanShader::VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages,
                                bool bCompile /*= true*/)
-        : pathToCode(inPathToCode)
+        : PathToCode(inPathToCode)
     {
-        info = {
+        ShaderInfo = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .pNext = nullptr,
             .stage = InStages,
@@ -32,59 +32,59 @@ namespace South
 
     VulkanShader::~VulkanShader()
     {
-        VkDevice device = VulkanContext::Get().GetCurrentDevice().GetDevice();
-        vkDestroyShaderModule(device, info.module, nullptr);
+        VkDevice LogDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
+        vkDestroyShaderModule(LogDev, ShaderInfo.module, nullptr);
     }
 
     void VulkanShader::Compile()
     {
-        const std::ifstream stream(pathToCode);
-        std::stringstream strStream;
-        strStream << stream.rdbuf();
+        const std::ifstream Stream(PathToCode);
+        std::stringstream StrStream;
+        StrStream << Stream.rdbuf();
 
-        const std::string glslCode = strStream.str();
+        const std::string GlslCode = StrStream.str();
 
-        shaderc::Compiler& compiler             = ShadersLibrary::GetCompiler();
-        shaderc::CompileOptions compilerOptions = ShadersLibrary::GetCompilerOptions();
+        shaderc::Compiler& Compiler             = ShadersLibrary::GetCompiler();
+        shaderc::CompileOptions CompilerOptions = ShadersLibrary::GetCompilerOptions();
 
-        const auto shaderKind = GetShadercShaderKind(info.stage);
+        const auto ShaderKind = GetShadercShaderKind(ShaderInfo.stage);
 
-        const shaderc::SpvCompilationResult result =
-            compiler.CompileGlslToSpv(glslCode, shaderKind, pathToCode.data(), compilerOptions);
+        const shaderc::SpvCompilationResult Result =
+            Compiler.CompileGlslToSpv(GlslCode, ShaderKind, PathToCode.data(), CompilerOptions);
 
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success)
+        if (Result.GetCompilationStatus() != shaderc_compilation_status_success)
         {
             return;
         }
 
-        const std::vector<uint32_t> spirvCode(result.cbegin(), result.cend());
+        const std::vector<uint32_t> SpirvCode(Result.cbegin(), Result.cend());
         // #TODO : Cache spirv in some directory.
 
-        VkShaderModule module = CreateShaderModule(spirvCode);
+        VkShaderModule Module = CreateShaderModule(SpirvCode);
 
-        info.module = module;
+        ShaderInfo.module = Module;
     };
 
     const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const
     {
-        return info;
+        return ShaderInfo;
     }
 
     VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
-        VkDevice device = VulkanContext::Get().GetCurrentDevice().GetDevice();
-        VkShaderModule module;
+        VkDevice LogDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
+        VkShaderModule Module;
 
-        VkShaderModuleCreateInfo createInfo{
+        VkShaderModuleCreateInfo CreateInfo{
             .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
             .pNext    = nullptr,
             .codeSize = glslCode.size() * sizeof(uint32_t),
             .pCode    = glslCode.data(),
         };
 
-        vkCreateShaderModule(device, &createInfo, nullptr, &module);
+        vkCreateShaderModule(LogDev, &CreateInfo, nullptr, &Module);
 
-        return module;
+        return Module;
     }
 
     shaderc_shader_kind VulkanShader::GetShadercShaderKind(VkShaderStageFlagBits InStages)

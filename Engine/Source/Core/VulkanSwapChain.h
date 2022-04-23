@@ -15,12 +15,12 @@ namespace South
         void DeInit();
 
       private:
-        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-        std::vector<VkImage> swapChainImages;
-        VkFormat swapChainImageFormat;
-        VkExtent2D swapChainExtent;
-        std::vector<VkImageView> swapChainImageViews;
-        std::vector<VkFramebuffer> swapChainFramebuffers;
+        VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
+        std::vector<VkImage> SwapChainImages;
+        VkFormat SwapChainImageFormat;
+        VkExtent2D SwapChainExtent;
+        std::vector<VkImageView> SwapChainImageViews;
+        std::vector<VkFramebuffer> SwapChainFramebuffers;
     };
 
 } // namespace South

@@ -10,16 +10,16 @@ namespace South
     VulkanVertexIndexBuffer::VulkanVertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData,
                                                      uint32_t iSize)
     {
-        const VulkanDevice& vulkanDev = VulkanContext::Get().GetCurrentDevice();
-        VkDevice logicalDev           = vulkanDev.GetDevice();
-        VkPhysicalDevice physDev      = vulkanDev.GetPhysicalDevice();
+        const VulkanDevice& VulkanDev = VulkanContext::Get().GetCurrentDevice();
+        VkDevice LogicalDev           = VulkanDev.GetDevice();
+        VkPhysicalDevice PhysDev      = VulkanDev.GetPhysicalDevice();
 
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physDev, &memProperties);
+        VkPhysicalDeviceMemoryProperties MemProperties;
+        vkGetPhysicalDeviceMemoryProperties(PhysDev, &MemProperties);
 
-        indexOffset = vSize;
+        IndexOffset = vSize;
 
-        VkBufferCreateInfo stagingBufferInfo{
+        VkBufferCreateInfo StagingBufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
             .size        = vSize + iSize,
@@ -27,145 +27,145 @@ namespace South
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        VkBuffer stagingBuffer;
-        vkCreateBuffer(logicalDev, &stagingBufferInfo, nullptr, &stagingBuffer);
+        VkBuffer StagingBuffer;
+        vkCreateBuffer(LogicalDev, &StagingBufferInfo, nullptr, &StagingBuffer);
 
-        VkMemoryRequirements stagingMemRequirements;
-        vkGetBufferMemoryRequirements(logicalDev, stagingBuffer, &stagingMemRequirements);
+        VkMemoryRequirements StagingMemRequirements;
+        vkGetBufferMemoryRequirements(LogicalDev, StagingBuffer, &StagingMemRequirements);
 
-        VkMemoryAllocateInfo stagingAllocInfo{
+        VkMemoryAllocateInfo StagingAllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .pNext          = nullptr,
-            .allocationSize = stagingMemRequirements.size,
+            .allocationSize = StagingMemRequirements.size,
             .memoryTypeIndex =
-                FindMemoryType(memProperties, stagingMemRequirements.memoryTypeBits,
+                FindMemoryType(MemProperties, StagingMemRequirements.memoryTypeBits,
                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
 
         };
 
-        VkDeviceMemory stagingBufferMemory;
-        vkAllocateMemory(logicalDev, &stagingAllocInfo, nullptr, &stagingBufferMemory);
+        VkDeviceMemory StagingBufferMemory;
+        vkAllocateMemory(LogicalDev, &StagingAllocInfo, nullptr, &StagingBufferMemory);
 
-        vkBindBufferMemory(logicalDev, stagingBuffer, stagingBufferMemory, 0);
+        vkBindBufferMemory(LogicalDev, StagingBuffer, StagingBufferMemory, 0);
 
-        void* staginBufferData;
+        void* StaginBufferData;
 
-        staginBufferData = nullptr;
+        StaginBufferData = nullptr;
 
-        vkMapMemory(logicalDev, stagingBufferMemory, 0, vSize, 0, &staginBufferData);
-        memcpy(staginBufferData, vData, static_cast<size_t>(vSize));
-        vkUnmapMemory(logicalDev, stagingBufferMemory);
+        vkMapMemory(LogicalDev, StagingBufferMemory, 0, vSize, 0, &StaginBufferData);
+        memcpy(StaginBufferData, vData, static_cast<size_t>(vSize));
+        vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
-        staginBufferData = nullptr;
+        StaginBufferData = nullptr;
 
-        vkMapMemory(logicalDev, stagingBufferMemory, indexOffset, iSize, 0, &staginBufferData);
-        memcpy(staginBufferData, iData, static_cast<size_t>(iSize));
-        vkUnmapMemory(logicalDev, stagingBufferMemory);
+        vkMapMemory(LogicalDev, StagingBufferMemory, IndexOffset, iSize, 0, &StaginBufferData);
+        memcpy(StaginBufferData, iData, static_cast<size_t>(iSize));
+        vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
         // Actual buffer.
 
-        VkBufferCreateInfo bufferInfo{
+        VkBufferCreateInfo BufferInfo{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext = nullptr,
-            .size  = stagingBufferInfo.size,
+            .size  = StagingBufferInfo.size,
             .usage =
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        vkCreateBuffer(logicalDev, &bufferInfo, nullptr, &buffer);
+        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &Buffer);
 
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(logicalDev, buffer, &memRequirements);
+        VkMemoryRequirements MemRequirements;
+        vkGetBufferMemoryRequirements(LogicalDev, Buffer, &MemRequirements);
 
-        VkMemoryAllocateInfo allocInfo{
+        VkMemoryAllocateInfo AllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .pNext          = nullptr,
-            .allocationSize = memRequirements.size,
+            .allocationSize = MemRequirements.size,
             .memoryTypeIndex =
-                FindMemoryType(memProperties, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
+                FindMemoryType(MemProperties, MemRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        vkAllocateMemory(logicalDev, &allocInfo, nullptr, &memory);
+        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &Memory);
 
-        vkBindBufferMemory(logicalDev, buffer, memory, 0);
+        vkBindBufferMemory(LogicalDev, Buffer, Memory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
         // #TODO : Should create every time I create buffer?
-        VkCommandPoolCreateInfo poolInfo{
+        VkCommandPoolCreateInfo PoolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-            .queueFamilyIndex = vulkanDev.GetQFamilyIndex(),
+            .queueFamilyIndex = VulkanDev.GetQFamilyIndex(),
         };
 
-        VkCommandPool commandPool = VK_NULL_HANDLE;
-        vkCreateCommandPool(logicalDev, &poolInfo, nullptr, &commandPool);
+        VkCommandPool CommandPool = VK_NULL_HANDLE;
+        vkCreateCommandPool(LogicalDev, &PoolInfo, nullptr, &CommandPool);
 
-        VkCommandBufferAllocateInfo commandAllocInfo{
+        VkCommandBufferAllocateInfo CommandAllocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
-            .commandPool        = commandPool,
+            .commandPool        = CommandPool,
             .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1,
         };
 
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(logicalDev, &commandAllocInfo, &commandBuffer);
+        VkCommandBuffer CommandBuffer;
+        vkAllocateCommandBuffers(LogicalDev, &CommandAllocInfo, &CommandBuffer);
 
-        VkCommandBufferBeginInfo beginInfo{
+        VkCommandBufferBeginInfo BeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext = nullptr,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         };
 
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        vkBeginCommandBuffer(CommandBuffer, &BeginInfo);
 
-        VkBufferCopy copyRegion{
+        VkBufferCopy CopyRegion{
             .srcOffset = 0,
             .dstOffset = 0,
-            .size      = stagingBufferInfo.size,
+            .size      = StagingBufferInfo.size,
         };
 
-        vkCmdCopyBuffer(commandBuffer, stagingBuffer, buffer, 1, &copyRegion);
+        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
 
-        vkEndCommandBuffer(commandBuffer);
+        vkEndCommandBuffer(CommandBuffer);
 
-        VkSubmitInfo submitInfo{
+        VkSubmitInfo SubmitInfo{
             .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext              = nullptr,
             .commandBufferCount = 1,
-            .pCommandBuffers    = &commandBuffer,
+            .pCommandBuffers    = &CommandBuffer,
         };
 
-        VkQueue graphicsQueue = vulkanDev.GetQ();
+        VkQueue GraphicsQueue = VulkanDev.GetQ();
 
-        vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(graphicsQueue);
+        vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(GraphicsQueue);
 
-        vkFreeCommandBuffers(logicalDev, commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(LogicalDev, CommandPool, 1, &CommandBuffer);
 
-        vkDestroyBuffer(logicalDev, stagingBuffer, nullptr);
-        vkFreeMemory(logicalDev, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(LogicalDev, StagingBuffer, nullptr);
+        vkFreeMemory(LogicalDev, StagingBufferMemory, nullptr);
     }
 
     VulkanVertexIndexBuffer::~VulkanVertexIndexBuffer()
     {
         VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
-        vkDestroyBuffer(logicalDev, buffer, nullptr);
-        vkFreeMemory(logicalDev, memory, nullptr);
+        vkDestroyBuffer(logicalDev, Buffer, nullptr);
+        vkFreeMemory(logicalDev, Memory, nullptr);
     }
 
     VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const
     {
-        return buffer;
+        return Buffer;
     }
 
     uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const
     {
-        return indexOffset;
+        return IndexOffset;
     }
 
     uint32_t VulkanVertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,

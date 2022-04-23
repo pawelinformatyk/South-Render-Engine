@@ -19,13 +19,13 @@ namespace South
         uint32_t GetIndexOffset() const;
 
       private:
-        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
-                                VkMemoryPropertyFlags properties) const;
+        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t typeFilter,
+                                VkMemoryPropertyFlags Properties) const;
 
-        uint32_t indexOffset = 0;
+        uint32_t IndexOffset = 0;
 
-        VkBuffer buffer       = VK_NULL_HANDLE;
-        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkBuffer Buffer       = VK_NULL_HANDLE;
+        VkDeviceMemory Memory = VK_NULL_HANDLE;
     };
 
 } // namespace South
