@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/VulkanDevice.h"
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -65,8 +66,8 @@ namespace South
         VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
         VkFence inFlightFence               = VK_NULL_HANDLE;
 
-        VulkanDevice* device               = nullptr;
-        VulkanVertexIndexBuffer* VI_Buffer = nullptr;
+        std::unique_ptr<VulkanDevice> device = nullptr;
+        VulkanVertexIndexBuffer* VI_Buffer   = nullptr;
 
         bool bCanTick = false;
 

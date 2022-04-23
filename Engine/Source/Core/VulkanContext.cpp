@@ -3,7 +3,6 @@
 #include "Core/VulkanContext.h"
 
 #include "Core/Application.h"
-#include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexIndexBuffer.h"
 #include "Core/Shaders/VulkanShader.h"
 #include "Core/Shaders/ShadersLibrary.h"
@@ -73,7 +72,7 @@ namespace South
         CreateInstance();
         CreateSurface(*glfwWindow);
 
-        device = VulkanDevice::Create();
+        device = std::make_unique<VulkanDevice>();
         device->Init(surface);
 
         ShadersLibrary& shadersLib = ShadersLibrary::Get();
@@ -132,7 +131,8 @@ namespace South
         vkDestroySwapchainKHR(logicDevice, swapChain, nullptr);
 
         delete VI_Buffer;
-        delete device;
+
+        device->DeInit();
 
         vkDestroyInstance(vulkanInstance, nullptr);
 

@@ -7,16 +7,6 @@
 namespace South
 {
 
-    VulkanDevice::~VulkanDevice()
-    {
-        vkDestroyDevice(logicalDevice, nullptr);
-    }
-
-    VulkanDevice* VulkanDevice::Create()
-    {
-        return new VulkanDevice;
-    }
-
     void VulkanDevice::Init(VkSurfaceKHR surface)
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
@@ -165,6 +155,11 @@ namespace South
         vkCreateDevice(physicalDevice, &sCreateInfo, nullptr, &logicalDevice);
 
         vkGetDeviceQueue(logicalDevice, QueueFamilyIndex, 0, &Queue);
+    }
+
+    void VulkanDevice::DeInit()
+    {
+        vkDestroyDevice(logicalDevice, nullptr);
     }
 
     VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const

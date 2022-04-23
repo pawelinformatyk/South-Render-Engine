@@ -10,11 +10,11 @@ namespace South
     class VulkanDevice
     {
       public:
-        ~VulkanDevice();
-
-        static VulkanDevice* Create();
+        VulkanDevice(){};
+        ~VulkanDevice(){};
 
         void Init(VkSurfaceKHR surface);
+        void DeInit();
 
         VkPhysicalDevice GetPhysicalDevice() const;
         VkDevice GetDevice() const;
