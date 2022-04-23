@@ -92,6 +92,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
+    <ClCompile Include="Source\Core\Window\VulkanWindow.cpp" />
     <ClCompile Include="Source\Editor\Camera.cpp" />
     <ClCompile Include="Source\Editor\Entity.cpp" />
     <ClCompile Include="Source\Editor\Scene.cpp" />
@@ -101,7 +102,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Core\OpenglContext.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
-    <ClCompile Include="Source\Core\Window.cpp" />
+    <ClCompile Include="Source\Core\Window\Window.cpp" />
     <ClCompile Include="Source\Core\VulkanContext.cpp" />
     <ClCompile Include="Source\sthpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -117,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
+    <ClInclude Include="Source\Core\Window\VulkanWindow.h" />
     <ClInclude Include="Source\Editor\Camera.h" />
     <ClInclude Include="Source\Editor\Entity.h" />
     <ClInclude Include="Source\Editor\Mesh.h" />
@@ -126,7 +128,7 @@
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\Editor\Scene.h" />
     <ClInclude Include="Source\GUI.h" />
-    <ClInclude Include="Source\Core\Window.h" />
+    <ClInclude Include="Source\Core\Window\Window.h" />
     <ClInclude Include="Source\Core\VulkanContext.h" />
     <ClInclude Include="Source\sthpch.h" />
     <ClInclude Include="Source\Core\VulkanDevice.h" />

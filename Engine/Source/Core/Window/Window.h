@@ -9,27 +9,29 @@ namespace South
 
     // Target of graphics rendering and inputs.
     // Events need to be picked up by this window
-    // #TODO : I think there should be swap chain here.
     class Window
     {
-        using CloseWindowCallback = std::function<void()>;
 
       public:
-        void Init();
-        void DeInit();
-
-        void ProcessEvents();
+        virtual void Init();
+        virtual void DeInit();
 
         GLFWwindow* GetglfwWindow() const;
 
-        void SetCloseWindowCallback(const CloseWindowCallback& callback);
-
-      private:
+      protected:
         GLFWwindow* glfwWindow = nullptr;
 
         uint32_t Width  = 400;
         uint32_t Height = 460;
 
+        // Events
+      public:
+        using CloseWindowCallback = std::function<void()>;
+
+        void ProcessEvents();
+        void SetCloseWindowCallback(const CloseWindowCallback& callback);
+
+      private:
         CloseWindowCallback closeWindowFN;
     };
 

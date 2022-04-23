@@ -1,6 +1,6 @@
 #include "sthpch.h"
 
-#include "Core/Window.h"
+#include "Core/Window/Window.h"
 #include "Core/Application.h"
 
 #include <GLFW/glfw3.h>
@@ -13,7 +13,7 @@ namespace South
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         glfwWindow = glfwCreateWindow(Width, Height, GetAppName(), nullptr, nullptr);
 
@@ -34,14 +34,14 @@ namespace South
         glfwTerminate();
     }
 
-    void Window::ProcessEvents()
-    {
-        glfwPollEvents();
-    }
-
     GLFWwindow* Window::GetglfwWindow() const
     {
         return glfwWindow;
+    }
+
+    void Window::ProcessEvents()
+    {
+        glfwPollEvents();
     }
 
     void Window::SetCloseWindowCallback(const CloseWindowCallback& callback)

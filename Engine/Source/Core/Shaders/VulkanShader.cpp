@@ -42,7 +42,7 @@ namespace South
         std::stringstream strStream;
         strStream << stream.rdbuf();
 
-        const std::string code = strStream.str();
+        const std::string glslCode = strStream.str();
 
         shaderc::Compiler& compiler             = ShadersLibrary::GetCompiler();
         shaderc::CompileOptions compilerOptions = ShadersLibrary::GetCompilerOptions();
@@ -50,14 +50,17 @@ namespace South
         const auto shaderKind = GetShadercShaderKind(info.stage);
 
         const shaderc::SpvCompilationResult result =
-            compiler.CompileGlslToSpv(code, shaderKind, pathToCode.data(), compilerOptions);
+            compiler.CompileGlslToSpv(glslCode, shaderKind, pathToCode.data(), compilerOptions);
 
         if (result.GetCompilationStatus() != shaderc_compilation_status_success)
         {
             return;
         }
 
-        VkShaderModule module = CreateShaderModule(std::vector<uint32_t>(result.cbegin(), result.cend()));
+        const std::vector<uint32_t> spirvCode(result.cbegin(), result.cend());
+        // #TODO : Cache spirv in some directory.
+
+        VkShaderModule module = CreateShaderModule(spirvCode);
 
         info.module = module;
     };
@@ -67,7 +70,7 @@ namespace South
         return info;
     }
 
-    VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code)
+    VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
         VkDevice device = VulkanContext::Get().GetCurrentDevice().GetDevice();
         VkShaderModule module;
@@ -75,8 +78,8 @@ namespace South
         VkShaderModuleCreateInfo createInfo{
             .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
             .pNext    = nullptr,
-            .codeSize = code.size() * sizeof(uint32_t),
-            .pCode    = code.data(),
+            .codeSize = glslCode.size() * sizeof(uint32_t),
+            .pCode    = glslCode.data(),
         };
 
         vkCreateShaderModule(device, &createInfo, nullptr, &module);

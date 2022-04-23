@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Window.h"
+#include "Core/Window/Window.h"
 
 namespace South
 {

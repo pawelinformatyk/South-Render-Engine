@@ -80,8 +80,8 @@ namespace South
 
         // #TODO : Init AssetManager?
         ShadersLibrary::Init();
-        ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT, true);
-        ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT, true);
+        ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
+        ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
         CreateSwapChain(*glfwWindow);
         CreateImageViews();
@@ -681,6 +681,7 @@ namespace South
 
         vkBeginCommandBuffer(buffer, &beginInfo);
 
+        // #TODO : Pipeline static value?
         VkClearValue clearColor = { { 0.f, 0.f, 0.f, 1.f } };
 
         VkRenderPassBeginInfo renderPassInfo{

@@ -8,6 +8,7 @@ namespace South
     class VulkanDevice;
     class VulkanVertexIndexBuffer;
 
+    // Class holding all "global" vulkan related variables.
     class VulkanContext : public Context
     {
       public:
@@ -17,12 +18,6 @@ namespace South
 
         VkInstance GetVulkanInstance();
         VulkanDevice& GetCurrentDevice();
-
-        static VulkanContext& Get();
-
-      private:
-        static inline VulkanContext* instance   = nullptr;
-        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
 
       private:
         void CreateInstance();
@@ -64,5 +59,13 @@ namespace South
 
         VulkanDevice* device               = nullptr;
         VulkanVertexIndexBuffer* VI_Buffer = nullptr;
+
+        // Static functions
+      public:
+        static VulkanContext& Get();
+
+      private:
+        static inline VulkanContext* instance   = nullptr;
+        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
     };
 }; // namespace South

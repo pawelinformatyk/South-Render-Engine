@@ -9,8 +9,7 @@ namespace South
 {
     class VulkanShader;
 
-    // ShadersLibrary is singleton.
-    // Contains all named compiled shaders in unordererd map.
+    // Library containing all named compiled shaders in unordererd map.
     // #TODO : Should be part of asset manager? Then change from static methods?
     class ShadersLibrary
     {
@@ -32,9 +31,6 @@ namespace South
 
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
-
-        //   compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-        //   compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
 
       private:
         ShadersLibrary();
