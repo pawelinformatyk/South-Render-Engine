@@ -26,14 +26,19 @@ namespace South
       private:
         void CloseWindow();
 
-        static inline Application* Instance = nullptr;
-
         // Renderer?
         Context* GraphicalContext = nullptr;
 
         std::unique_ptr<Window> pWindow = nullptr;
 
         bool bRunning = false;
+
+        // Static functions
+      public:
+        static void Kaboom();
+
+      private:
+        static inline Application* Instance = nullptr;
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

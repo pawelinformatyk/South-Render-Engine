@@ -70,4 +70,9 @@ namespace South
         bRunning = false;
     }
 
+    void Application::Kaboom()
+    {
+        *(int*)0 = 0;
+    }
+
 } // namespace South
