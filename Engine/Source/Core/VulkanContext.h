@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Core/Context.h"
 #include "vulkan/vulkan_core.h"
+
+struct GLFWwindow;
 
 namespace South
 {
@@ -9,17 +10,23 @@ namespace South
     class VulkanVertexIndexBuffer;
 
     // Class holding all "global" vulkan related variables.
-    class VulkanContext : public Context
+    class VulkanContext
     {
       public:
-        virtual void Init() override;
-        virtual void DeInit() override;
-        virtual void Tick() override;
+        VulkanContext(VulkanContext const&) = delete;
+        void operator=(VulkanContext const&) = delete;
+
+        void Init();
+        void DeInit();
+        void Tick();
 
         VkInstance GetVulkanInstance();
         VulkanDevice& GetCurrentDevice();
 
       private:
+        VulkanContext(){};
+        ~VulkanContext(){};
+
         void CreateInstance();
         void CreateSurface(GLFWwindow& window);
         void CreateSwapChain(GLFWwindow& window);
@@ -32,12 +39,13 @@ namespace South
         void CreateCommands();
         void CreateSyncObjects();
 
-
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+
+        VkInstance vulkanInstance = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface     = VK_NULL_HANDLE;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
@@ -60,12 +68,10 @@ namespace South
         VulkanDevice* device               = nullptr;
         VulkanVertexIndexBuffer* VI_Buffer = nullptr;
 
+        bool bCanTick = false;
+
         // Static functions
       public:
         static VulkanContext& Get();
-
-      private:
-        static inline VulkanContext* instance   = nullptr;
-        static inline VkInstance vulkanInstance = VK_NULL_HANDLE;
     };
 }; // namespace South

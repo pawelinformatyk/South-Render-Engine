@@ -4,7 +4,7 @@
 
 namespace South
 {
-    class Context;
+    class VulkanContext;
 
     const char* GetAppName();
 
@@ -13,6 +13,9 @@ namespace South
     class Application
     {
       public:
+        Application(Application const&) = delete;
+        void operator=(Application const&) = delete;
+
         void Init();
         void Run();
         void DeInit();
@@ -21,13 +24,10 @@ namespace South
 
         Window& GetWindow() const;
 
-        static Application& Get();
-
       private:
-        void CloseWindow();
+        Application(){};
 
-        // Renderer?
-        Context* GraphicalContext = nullptr;
+        void CloseWindow();
 
         std::unique_ptr<Window> pWindow = nullptr;
 
@@ -35,10 +35,9 @@ namespace South
 
         // Static functions
       public:
-        static void Kaboom();
+        static Application& Get();
 
-      private:
-        static inline Application* Instance = nullptr;
+        static void Kaboom();
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

@@ -10,31 +10,34 @@ namespace South
     class VulkanShader;
 
     // Library containing all named compiled shaders in unordererd map.
-    // #TODO : Should be part of asset manager? Then change from static methods?
+    // #TODO : Should be part of asset manager?
     class ShadersLibrary
     {
       public:
+        ShadersLibrary(ShadersLibrary const&) = delete;
+        void operator=(ShadersLibrary const&) = delete;
+
         // Createa instance of class and set static values.
-        static void Init();
+        static ShadersLibrary& Get();
 
-        static VulkanShader* AddShader(const std::string& name, const std::string& pathToCode,
-                                       VkShaderStageFlagBits stages, bool bCompile = true);
-        static VulkanShader* GetShader(const std::string& name);
+        void Init();
+        void DeInit();
 
-        static const std::unordered_map<std::string, VulkanShader*>& GetShaders();
+        VulkanShader* AddShader(const std::string& name, const std::string& pathToCode, VkShaderStageFlagBits stages,
+                                bool bCompile = true);
+        VulkanShader* GetShader(const std::string& name);
+
+        const std::unordered_map<std::string, VulkanShader*>& GetShaders();
 
         static shaderc::Compiler& GetCompiler();
         static shaderc::CompileOptions& GetCompilerOptions();
 
       private:
-        static inline ShadersLibrary* s_ShadersLibrary = nullptr;
+        ShadersLibrary(){};
+        ~ShadersLibrary(){};
 
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
-
-      private:
-        ShadersLibrary();
-        ~ShadersLibrary();
 
         std::unordered_map<std::string, VulkanShader*> shaders;
     };

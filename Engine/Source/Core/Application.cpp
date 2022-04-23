@@ -13,8 +13,6 @@ namespace South
 
     void Application::Init()
     {
-        Instance = this;
-
         pWindow = std::make_unique<Window>();
         pWindow->SetCloseWindowCallback(
             [this]()
@@ -23,13 +21,7 @@ namespace South
             });
         pWindow->Init();
 
-        GraphicalContext = new VulkanContext;
-        if (!GraphicalContext)
-        {
-            return;
-        }
-
-        GraphicalContext->Init();
+        VulkanContext::Get().Init();
 
         bRunning = true;
     }
@@ -39,20 +31,21 @@ namespace South
         while (bRunning)
         {
             pWindow->ProcessEvents();
-            GraphicalContext->Tick();
+
+            VulkanContext::Get().Tick();
         }
     }
 
     void Application::DeInit()
     {
-        GraphicalContext->DeInit();
+        VulkanContext::Get().DeInit();
+
         pWindow->SetCloseWindowCallback(
             []()
             {
             });
 
         pWindow->DeInit();
-        delete GraphicalContext;
     }
 
     Window& Application::GetWindow() const
@@ -60,14 +53,15 @@ namespace South
         return *pWindow;
     }
 
-    Application& Application::Get()
-    {
-        return *Instance;
-    }
-
     void Application::CloseWindow()
     {
         bRunning = false;
+    }
+
+    Application& Application::Get()
+    {
+        static Application instance;
+        return instance;
     }
 
     void Application::Kaboom()

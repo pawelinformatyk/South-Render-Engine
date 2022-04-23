@@ -70,18 +70,16 @@ namespace South
             return;
         }
 
-        instance = this;
-
         CreateInstance();
         CreateSurface(*glfwWindow);
 
         device = VulkanDevice::Create();
         device->Init(surface);
 
-        // #TODO : Init AssetManager?
-        ShadersLibrary::Init();
-        ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
-        ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+        ShadersLibrary& shadersLib = ShadersLibrary::Get();
+        shadersLib.Init();
+        shadersLib.AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
+        shadersLib.AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
         CreateSwapChain(*glfwWindow);
         CreateImageViews();
@@ -99,10 +97,14 @@ namespace South
         pushConstant.Model      = glm::mat4(1.f);
         pushConstant.View       = editorCam.GetViewMatrix();
         pushConstant.Projection = editorCam.GetProjectionMatrix();
+
+        bCanTick = true;
     }
 
     void VulkanContext::DeInit()
     {
+        ShadersLibrary::Get().DeInit();
+
         VkDevice logicDevice = device->GetDevice();
 
         vkDestroySemaphore(logicDevice, imageAvailableSemaphore, nullptr);
@@ -133,10 +135,17 @@ namespace South
         delete device;
 
         vkDestroyInstance(vulkanInstance, nullptr);
+
+        bCanTick = false;
     }
 
     void VulkanContext::Tick()
     {
+        if (!bCanTick)
+        {
+            return;
+        }
+
         // Animation
         {
             static int16_t i = 0;
@@ -207,7 +216,8 @@ namespace South
 
     VulkanContext& VulkanContext::Get()
     {
-        return *instance;
+        static VulkanContext instance;
+        return instance;
     }
 
     void VulkanContext::CreateInstance()
@@ -378,8 +388,9 @@ namespace South
         VkDevice logicDevice = device->GetDevice();
 
         // #TODO : Check for errors;
-        const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
-        const auto& fragShader = *ShadersLibrary::GetShader("Base_F");
+        ShadersLibrary& shadersLib = ShadersLibrary::Get();
+        const auto& vertShader     = *shadersLib.GetShader("Base_V");
+        const auto& fragShader     = *shadersLib.GetShader("Base_F");
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
 

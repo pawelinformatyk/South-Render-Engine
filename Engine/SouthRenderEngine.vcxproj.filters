@@ -24,16 +24,10 @@
     <ClCompile Include="Source\Core\Window\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\Context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Core\VulkanContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\Tutorial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Core\OpenglContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\sthpch.cpp">
@@ -72,6 +66,9 @@
     <ClCompile Include="Source\Core\Window\VulkanWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\VulkanSwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GUI.h">
@@ -83,16 +80,10 @@
     <ClInclude Include="Source\Core\Window\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Core\VulkanContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Tutorial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Core\OpenglContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\sthpch.h">
@@ -129,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Window\VulkanWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\VulkanSwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
