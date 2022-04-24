@@ -52,7 +52,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
@@ -60,8 +60,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combinedd.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;$(SolutionDir)ExternalLibraries\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combinedd.lib";"spdlogd.lib";%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>
@@ -74,7 +74,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);GLM_FORCE_DEPTH_ZERO_TO_ONE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\Include;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
@@ -84,13 +84,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combined.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;$(SolutionDir)ExternalLibraries\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combined.lib";"spdlog.lib";%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Log\Logger.cpp" />
     <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
     <ClCompile Include="Source\Core\Window\VulkanWindow.cpp" />
     <ClCompile Include="Source\Editor\Camera.cpp" />
@@ -98,10 +99,10 @@
     <ClCompile Include="Source\Editor\Scene.cpp" />
     <ClCompile Include="Source\Editor\Mesh.cpp" />
     <ClCompile Include="Source\Core\Application.cpp" />
-    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
     <ClCompile Include="Source\Core\Window\Window.cpp" />
     <ClCompile Include="Source\Core\VulkanContext.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\sthpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">sthpch.h</PrecompiledHeaderFile>
@@ -116,6 +117,7 @@
     <ClCompile Include="Source\Core\VulkanSwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Log\Logger.h" />
     <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
     <ClInclude Include="Source\Core\Window\VulkanWindow.h" />
     <ClInclude Include="Source\Editor\Camera.h" />

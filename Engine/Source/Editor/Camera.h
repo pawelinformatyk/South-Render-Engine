@@ -42,9 +42,10 @@ namespace South
         glm::vec3 right   = glm::vec3(1.f, 0.f, 0.f);
         glm::vec3 up      = glm::vec3(0.f, 1.f, 0.f);
 
-        float fov    = 0.f;
-        float aspect = 0.f;
-        float near   = 0.f;
-        float far    = 0.f;
+        float Fov    = 0.f;
+        float Aspect = 0.f;
+        float Near   = 0.f;
+        float Far    = 0.f;
     };
+
 } // namespace South

@@ -6,8 +6,6 @@ namespace South
 {
     class VulkanContext;
 
-    const char* GetAppName();
-
     // Input, window resize,close,open, events,
     // run loop, what decides what keep app going
     class Application
@@ -24,6 +22,7 @@ namespace South
 
         Window& GetWindow() const;
 
+
       private:
         Application(){};
 
@@ -35,6 +34,7 @@ namespace South
 
         // Static functions
       public:
+        static const char* GetName();
         static Application& Get();
 
         static void Kaboom();

@@ -17,6 +17,8 @@ namespace South
 
     void ShadersLibrary::Init()
     {
+        STH_INFO("ShadersLibrary Initialized.");
+
         s_CompilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
         s_CompilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
     }
@@ -29,6 +31,8 @@ namespace South
         }
 
         Shaders.clear();
+
+        STH_INFO("ShadersLibrary Deinitialized.");
     }
 
     VulkanShader* ShadersLibrary::AddShader(const std::string& Name, const std::string& PathToCode,

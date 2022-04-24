@@ -226,7 +226,7 @@ namespace South
         VkApplicationInfo sAppInfo{
             .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext              = nullptr,
-            .pApplicationName   = GetAppName(),
+            .pApplicationName   = Application::GetName(),
             .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
             .pEngineName        = "None",
             .engineVersion      = VK_MAKE_VERSION(0, 0, 0),
@@ -242,6 +242,7 @@ namespace South
             .pNext                   = nullptr,
             .pApplicationInfo        = &sAppInfo,
             .enabledLayerCount       = 0,
+            .ppEnabledLayerNames     = nullptr,
             .enabledExtensionCount   = extensionCount,
             .ppEnabledExtensionNames = extensions,
         };

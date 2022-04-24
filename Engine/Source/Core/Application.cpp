@@ -6,10 +6,6 @@
 
 namespace South
 {
-    const char* GetAppName()
-    {
-        return "SouthRenderEngine";
-    }
 
     void Application::Init()
     {
@@ -59,6 +55,11 @@ namespace South
         bRunning = false;
     }
 
+    const char* Application::GetName()
+    {
+        return "SouthRenderEngine";
+    }
+
     Application& Application::Get()
     {
         static Application Instance;
@@ -67,6 +68,8 @@ namespace South
 
     void Application::Kaboom()
     {
+        STH_CRIT("Kaboom");
+
         *(int*)0 = 0;
     }
 

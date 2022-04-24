@@ -7,13 +7,13 @@ namespace South
 {
 
     Camera::Camera(glm::vec3 inPos, glm::vec3 inTarget, float inFov, float inAspect, float inNear, float inFar)
-        : fov(inFov)
-        , aspect(inAspect)
-        , near(inNear)
-        , far(inFar)
+        : Fov(inFov)
+        , Aspect(inAspect)
+        , Near(inNear)
+        , Far(inFar)
     {
         SetView(inPos, inTarget);
-        SetProjection(fov, aspect, near, far);
+        SetProjection(Fov, Aspect, Near, Far);
     }
 
     Camera::Camera()
@@ -31,12 +31,12 @@ namespace South
 
     void Camera::SetProjection(float inFov, float inAspect, float inNear, float inFar)
     {
-        fov    = inFov;
-        aspect = inAspect;
-        near   = inNear;
-        far    = inFar;
+        Fov    = inFov;
+        Aspect = inAspect;
+        Near   = inNear;
+        Far    = inFar;
 
-        projection = glm::perspective(fov, aspect, near, far);
+        projection = glm::perspective(Fov, Aspect, Near, Far);
         projection[1][1] *= -1;
     }
 

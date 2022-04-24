@@ -14,11 +14,10 @@ namespace South
     class ShadersLibrary
     {
       public:
+        static ShadersLibrary& Get();
+
         ShadersLibrary(ShadersLibrary const&) = delete;
         void operator=(ShadersLibrary const&) = delete;
-
-        // Createa instance of class and set static values.
-        static ShadersLibrary& Get();
 
         void Init();
         void DeInit();

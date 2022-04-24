@@ -15,7 +15,7 @@ namespace South
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        glfwWindow = glfwCreateWindow(Width, Height, GetAppName(), nullptr, nullptr);
+        glfwWindow = glfwCreateWindow(Width, Height, Application::GetName(), nullptr, nullptr);
 
         glfwSetWindowUserPointer(glfwWindow, &closeWindowFN);
 
