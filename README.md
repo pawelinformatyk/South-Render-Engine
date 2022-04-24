@@ -17,3 +17,9 @@ maybe focus on rendering side and create bigger application with nodes like blen
 
 
 https://en.wikipedia.org/wiki/Oren–Nayar_reflectance_model
+
+
+
+
+
+LICENSESSSSSSS
