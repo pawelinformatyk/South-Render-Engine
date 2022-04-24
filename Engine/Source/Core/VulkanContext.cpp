@@ -67,6 +67,33 @@ namespace South
         return Instance;
     }
 
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    {
+        if (pCallbackData)
+        {
+            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+            {
+                STH_VK_TRACE(pCallbackData->pMessage);
+            }
+            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+            {
+                STH_VK_INFO(pCallbackData->pMessage);
+            }
+            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+            {
+                STH_VK_WARN(pCallbackData->pMessage);
+            }
+            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+            {
+                STH_VK_ERR(pCallbackData->pMessage);
+            }
+        }
+
+        return VK_FALSE;
+    }
+
     void VulkanContext::Init()
     {
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
@@ -75,7 +102,18 @@ namespace South
             return;
         }
 
+        if (bEnableValidationLayers && CheckValidationLayers())
+        {
+            STH_VK_WARN("ValidationsLayers not found.");
+        }
+
         CreateInstance();
+
+        if (bEnableValidationLayers)
+        {
+            SetupMessenger();
+        }
+
         CreateSurface(*GlfwWindow);
 
         Device = std::make_unique<VulkanDevice>();
@@ -104,6 +142,8 @@ namespace South
         PushConstant.Projection = EditorCam.GetProjectionMatrix();
 
         bCanTick = true;
+
+        STH_INFO("VulkanContext Initialized.");
     }
 
     void VulkanContext::DeInit()
@@ -143,6 +183,8 @@ namespace South
         vkDestroyInstance(VulkanInstance, nullptr);
 
         bCanTick = false;
+
+        STH_INFO("VulkanContext Deinitialized.");
     }
 
     void VulkanContext::Tick()
@@ -220,7 +262,6 @@ namespace South
         return *Device;
     }
 
-
     void VulkanContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
@@ -233,21 +274,48 @@ namespace South
             .apiVersion         = VK_API_VERSION_1_0,
         };
 
-        // Extensions
-        uint32_t extensionCount = 0;
-        const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+        std::vector<const char*> Extensions = GetRequiredInstanceExtensions();
 
         VkInstanceCreateInfo sCreateInfo{
-            .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-            .pNext                   = nullptr,
-            .pApplicationInfo        = &sAppInfo,
-            .enabledLayerCount       = 0,
-            .ppEnabledLayerNames     = nullptr,
-            .enabledExtensionCount   = extensionCount,
-            .ppEnabledExtensionNames = extensions,
+            .sType               = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            .pNext               = nullptr,
+            .pApplicationInfo    = &sAppInfo,
+            .enabledLayerCount   = bEnableValidationLayers ? static_cast<uint32_t>(RequiredValidationLayers.size()) : 0,
+            .ppEnabledLayerNames = bEnableValidationLayers ? RequiredValidationLayers.data() : nullptr,
+            .enabledExtensionCount   = static_cast<uint32_t>(Extensions.size()),
+            .ppEnabledExtensionNames = Extensions.data(),
         };
 
         vkCreateInstance(&sCreateInfo, nullptr, &VulkanInstance);
+    }
+
+    void VulkanContext::SetupMessenger()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
+            .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            .pNext           = nullptr,
+            .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+            .pfnUserCallback = ValidationMessageCallback,
+            .pUserData       = nullptr,
+        };
+
+
+        auto func =
+            (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+
+        if (func)
+        {
+            func(VulkanInstance, &CreateInfo, nullptr, &Messenger);
+        }
+        else
+        {
+            STH_VK_WARN("PFN_vkCreateDebugUtilsMessengerEXT failed");
+        }
     }
 
     void VulkanContext::CreateSurface(GLFWwindow& Window)
@@ -727,6 +795,51 @@ namespace South
         vkCmdEndRenderPass(CommandBuffer);
 
         vkEndCommandBuffer(CommandBuffer);
+    }
+
+    std::vector<const char*> VulkanContext::GetRequiredInstanceExtensions()
+    {
+        uint32_t ExtensionCount     = 0;
+        const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&ExtensionCount);
+
+        std::vector<const char*> Extensions(GlfwExtensions, GlfwExtensions + ExtensionCount);
+
+        if (bEnableValidationLayers)
+        {
+            Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return Extensions;
+    }
+
+    bool VulkanContext::CheckValidationLayers()
+    {
+        uint32_t Count;
+        vkEnumerateInstanceLayerProperties(&Count, nullptr);
+
+        std::vector<VkLayerProperties> AvailableLayers(Count);
+        vkEnumerateInstanceLayerProperties(&Count, AvailableLayers.data());
+
+        for (const char* ReqLayer : RequiredValidationLayers)
+        {
+            bool bFound = false;
+
+            for (const VkLayerProperties& AvLayer : AvailableLayers)
+            {
+                if (AvLayer.layerName == ReqLayer)
+                {
+                    bFound = true;
+                    break;
+                }
+            }
+
+            if (!bFound)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 } // namespace South

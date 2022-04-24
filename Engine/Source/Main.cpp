@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     South::Logger::Init();
 
-    STH_TRACE("Application Start");
+    STH_INFO("Application Start");
 
     auto& App = South::Application::Get();
 
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     App.Run();
     App.DeInit();
 
-    STH_TRACE("Application Shutdown.");
+    STH_INFO("Application Shutdown.");
 
     South::Logger::DeInit();
 
