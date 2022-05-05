@@ -23,3 +23,7 @@ https://en.wikipedia.org/wiki/Oren–Nayar_reflectance_model
 
 
 LICENSESSSSSSS
+
+
+
+PIORUNY 
