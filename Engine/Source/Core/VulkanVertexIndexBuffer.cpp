@@ -158,15 +158,9 @@ namespace South
         vkFreeMemory(logicalDev, Memory, nullptr);
     }
 
-    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const
-    {
-        return Buffer;
-    }
+    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const { return Buffer; }
 
-    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const
-    {
-        return IndexOffset;
-    }
+    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const { return IndexOffset; }
 
     uint32_t VulkanVertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
                                                      uint32_t typeFilter, VkMemoryPropertyFlags properties) const

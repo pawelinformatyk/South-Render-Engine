@@ -8,13 +8,13 @@ namespace South
     // #TODO #PERF : Combine with VertexBuffer for being more cache friendly.
     class VulkanVertexBuffer
     {
-      public:
+    public:
         VulkanVertexBuffer(const void* Data, uint32_t Size);
         ~VulkanVertexBuffer();
 
         VkBuffer GetBuffer() const;
 
-      private:
+    private:
         uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t TypeFilter,
                                 VkMemoryPropertyFlags Properties) const;
 

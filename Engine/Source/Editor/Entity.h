@@ -10,7 +10,7 @@ namespace South
     // #TODO : Should be passed to rendering pipeline?class Entity
     class Entity
     {
-      private:
+    private:
         glm::mat4 Transform;
 
         StaticMesh* mesh = nullptr;

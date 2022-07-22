@@ -2,7 +2,7 @@
 
 #include "Core/VulkanContext.h"
 
-#include "Core/Application.h"
+#include "Core/App/Application.h"
 #include "Core/VulkanVertexIndexBuffer.h"
 #include "Core/Shaders/VulkanShader.h"
 #include "Core/Shaders/ShadersLibrary.h"
@@ -61,58 +61,16 @@ namespace South
     Camera EditorCam;
     PushConstant PushConstant;
 
-    VulkanContext& VulkanContext::Get()
-    {
-        static VulkanContext Instance;
-        return Instance;
-    }
-
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
-    {
-        if (pCallbackData)
-        {
-            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-            {
-                STH_VK_TRACE(pCallbackData->pMessage);
-            }
-            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-            {
-                STH_VK_INFO(pCallbackData->pMessage);
-            }
-            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-            {
-                STH_VK_WARN(pCallbackData->pMessage);
-            }
-            if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-            {
-                STH_VK_ERR(pCallbackData->pMessage);
-            }
-        }
-
-        return VK_FALSE;
-    }
-
     void VulkanContext::Init()
     {
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
-        if (!GlfwWindow)
-        {
-            return;
-        }
+        if (!GlfwWindow) { return; }
 
-        if (bEnableValidationLayers && CheckValidationLayers())
-        {
-            STH_VK_WARN("ValidationsLayers not found.");
-        }
+        if (bEnableValidationLayers && CheckValidationLayers()) { STH_VK_WARN("ValidationsLayers not found."); }
 
         CreateInstance();
 
-        if (bEnableValidationLayers)
-        {
-            SetupMessenger();
-        }
+        if (bEnableValidationLayers) { CreateMessenger(); }
 
         CreateSurface(*GlfwWindow);
 
@@ -150,49 +108,44 @@ namespace South
     {
         ShadersLibrary::Get().DeInit();
 
+        bCanTick = false;
+
         VkDevice LogicDevice = Device->GetDevice();
 
-        vkDestroySemaphore(LogicDevice, ImageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(LogicDevice, RenderFinishedSemaphore, nullptr);
-        vkDestroyFence(LogicDevice, FlightFence, nullptr);
+        delete VI_Buffer;
 
+        // #TODO : Error with commandbuffer still in use.
         vkDestroyCommandPool(LogicDevice, CommandPool, nullptr);
 
-        for (auto framebuffer : SwapChainFramebuffers)
-        {
-            vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr);
-        }
+        for (auto framebuffer : SwapChainFramebuffers) { vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr); }
 
         vkDestroyPipeline(LogicDevice, GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(LogicDevice, PipelineLayout, nullptr);
         vkDestroyRenderPass(LogicDevice, RenderPass, nullptr);
 
-        vkDestroySurfaceKHR(VulkanInstance, Surface, nullptr);
-
-        for (auto ImageView : SwapChainImageViews)
-        {
-            vkDestroyImageView(LogicDevice, ImageView, nullptr);
-        }
+        for (auto ImageView : SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
 
         vkDestroySwapchainKHR(LogicDevice, SwapChain, nullptr);
 
-        delete VI_Buffer;
+
+        vkDestroyFence(LogicDevice, FlightFence, nullptr);
+        vkDestroySemaphore(LogicDevice, ImageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(LogicDevice, RenderFinishedSemaphore, nullptr);
 
         Device->DeInit();
 
-        vkDestroyInstance(VulkanInstance, nullptr);
+        if (bEnableValidationLayers) { DestroyMessenger(); }
 
-        bCanTick = false;
+        vkDestroySurfaceKHR(VulkanInstance, Surface, nullptr);
+
+        vkDestroyInstance(VulkanInstance, nullptr);
 
         STH_INFO("VulkanContext Deinitialized.");
     }
 
     void VulkanContext::Tick()
     {
-        if (!bCanTick)
-        {
-            return;
-        }
+        if (!bCanTick) { return; }
 
         // Animation
         {
@@ -252,15 +205,9 @@ namespace South
         vkQueuePresentKHR(GraphicsQueue, &SresentInfo);
     }
 
-    VkInstance VulkanContext::GetVulkanInstance()
-    {
-        return VulkanInstance;
-    }
+    VkInstance VulkanContext::GetVulkanInstance() { return VulkanInstance; }
 
-    VulkanDevice& VulkanContext::GetCurrentDevice()
-    {
-        return *Device;
-    }
+    VulkanDevice& VulkanContext::GetCurrentDevice() { return *Device; }
 
     void VulkanContext::CreateInstance()
     {
@@ -271,7 +218,7 @@ namespace South
             .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
             .pEngineName        = "None",
             .engineVersion      = VK_MAKE_VERSION(0, 0, 0),
-            .apiVersion         = VK_API_VERSION_1_0,
+            .apiVersion         = VK_MAKE_API_VERSION(0, 1, 3, 0),
         };
 
         std::vector<const char*> Extensions = GetRequiredInstanceExtensions();
@@ -289,7 +236,7 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &VulkanInstance);
     }
 
-    void VulkanContext::SetupMessenger()
+    void VulkanContext::CreateMessenger()
     {
         VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
             .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -304,26 +251,19 @@ namespace South
             .pUserData       = nullptr,
         };
 
-
         auto func =
             (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
 
-        if (func)
-        {
-            func(VulkanInstance, &CreateInfo, nullptr, &Messenger);
-        }
+        if (func) { func(VulkanInstance, &CreateInfo, nullptr, &Messenger); }
         else
         {
-            STH_VK_WARN("PFN_vkCreateDebugUtilsMessengerEXT failed");
+            STH_VK_WARN("vkCreateDebugUtilsMessengerEXT not found");
         }
     }
 
     void VulkanContext::CreateSurface(GLFWwindow& Window)
     {
-        if (!glfwCreateWindowSurface(VulkanInstance, &Window, nullptr, &Surface))
-        {
-            return /*error*/;
-        }
+        if (!glfwCreateWindowSurface(VulkanInstance, &Window, nullptr, &Surface)) { return /*error*/; }
     }
 
     void VulkanContext::CreateSwapChain(GLFWwindow& window)
@@ -720,10 +660,7 @@ namespace South
 
         for (const auto& PresentMode : AvailablePresentModes)
         {
-            if (PresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-            {
-                return PresentMode;
-            }
+            if (PresentMode == VK_PRESENT_MODE_MAILBOX_KHR) { return PresentMode; }
         }
 
         return VK_PRESENT_MODE_FIFO_KHR;
@@ -763,7 +700,7 @@ namespace South
         vkBeginCommandBuffer(Buffer, &BeginInfo);
 
         // #TODO : Pipeline static value?
-        VkClearValue ClearColor = { { 0.f, 0.f, 0.f, 1.f } };
+        VkClearValue ClearColor = { { 0.008f, 0.008f, 0.008f, 1.f } };
 
         VkRenderPassBeginInfo RenderPassInfo{
             .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -775,26 +712,37 @@ namespace South
             .pClearValues    = &ClearColor,
         };
 
-        vkCmdBeginRenderPass(CommandBuffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(Buffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
+        vkCmdBindPipeline(Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
 
         // Draw
         {
-            vkCmdPushConstants(CommandBuffer, PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
+            vkCmdPushConstants(Buffer, PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
                                &PushConstant);
 
             VkBuffer MeshBuffer = VI_Buffer->GetVulkanBuffer();
             VkDeviceSize Offset = 0;
-            vkCmdBindVertexBuffers(CommandBuffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(CommandBuffer, MeshBuffer, VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
+            vkCmdBindVertexBuffers(Buffer, 0, 1, &MeshBuffer, &Offset);
+            vkCmdBindIndexBuffer(Buffer, MeshBuffer, VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexed(CommandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(Buffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
         }
 
-        vkCmdEndRenderPass(CommandBuffer);
+        vkCmdEndRenderPass(Buffer);
 
-        vkEndCommandBuffer(CommandBuffer);
+        vkEndCommandBuffer(Buffer);
+    }
+
+    void VulkanContext::DestroyMessenger()
+    {
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(VulkanInstance,
+                                                                               "vkDestroyDebugUtilsMessengerEXT");
+        if (func) { func(VulkanInstance, Messenger, nullptr); }
+        else
+        {
+            STH_VK_WARN("vkDestroyDebugUtilsMessengerEXT not found");
+        }
     }
 
     std::vector<const char*> VulkanContext::GetRequiredInstanceExtensions()
@@ -804,10 +752,7 @@ namespace South
 
         std::vector<const char*> Extensions(GlfwExtensions, GlfwExtensions + ExtensionCount);
 
-        if (bEnableValidationLayers)
-        {
-            Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
+        if (bEnableValidationLayers) { Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
 
         return Extensions;
     }
@@ -833,13 +778,35 @@ namespace South
                 }
             }
 
-            if (!bFound)
-            {
-                return false;
-            }
+            if (!bFound) { return false; }
         }
 
         return true;
     }
 
+    // Static functions
+
+    VulkanContext& VulkanContext::Get()
+    {
+        static VulkanContext Instance;
+        return Instance;
+    }
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    {
+        if (pCallbackData)
+        {
+            switch (messageSeverity)
+            {
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: STH_VK_ERR(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: STH_VK_WARN(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: STH_VK_INFO(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: STH_VK_TRACE(pCallbackData->pMessage); break;
+            }
+        }
+
+        return VK_FALSE;
+    }
 } // namespace South

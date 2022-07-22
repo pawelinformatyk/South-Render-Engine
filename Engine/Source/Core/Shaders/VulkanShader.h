@@ -9,7 +9,7 @@ namespace South
     // #TODO : Cache compiled shaders (spirv) in some directory.
     class VulkanShader
     {
-      public:
+    public:
         VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
         ~VulkanShader();
 
@@ -17,7 +17,7 @@ namespace South
 
         const VkPipelineShaderStageCreateInfo& GetInfo() const;
 
-      private:
+    private:
         VkShaderModule CreateShaderModule(const std::vector<uint32_t>& GlslCode);
 
         std::string PathToCode;
@@ -25,7 +25,7 @@ namespace South
         VkPipelineShaderStageCreateInfo ShaderInfo;
 
         // Static functions
-      public:
+    public:
         // #TODO : Move to Utils
         static shaderc_shader_kind GetShadercShaderKind(VkShaderStageFlagBits InStages);
     };

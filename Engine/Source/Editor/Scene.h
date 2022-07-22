@@ -6,7 +6,7 @@ namespace South
 
     class Scene
     {
-      private:
+    private:
         // Entities on current scene.
         std::vector<Entity*> Entities;
     };

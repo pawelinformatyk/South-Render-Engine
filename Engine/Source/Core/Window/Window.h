@@ -12,26 +12,26 @@ namespace South
     class Window
     {
 
-      public:
+    public:
         virtual void Init();
         virtual void DeInit();
 
         GLFWwindow* GetglfwWindow() const;
 
-      protected:
+    protected:
         GLFWwindow* glfwWindow = nullptr;
 
         uint32_t Width  = 400;
         uint32_t Height = 460;
 
         // Events
-      public:
+    public:
         using CloseWindowCallback = std::function<void()>;
 
         void ProcessEvents();
         void SetCloseWindowCallback(const CloseWindowCallback& callback);
 
-      private:
+    private:
         CloseWindowCallback closeWindowFN;
     };
 

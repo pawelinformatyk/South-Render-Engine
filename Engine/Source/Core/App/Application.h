@@ -10,9 +10,8 @@ namespace South
     // run loop, what decides what keep app going
     class Application
     {
-      public:
-        Application(Application const&) = delete;
-        void operator=(Application const&) = delete;
+    public:
+        Application();
 
         void Init();
         void Run();
@@ -22,10 +21,7 @@ namespace South
 
         Window& GetWindow() const;
 
-
-      private:
-        Application(){};
-
+    private:
         void CloseWindow();
 
         std::unique_ptr<Window> pWindow = nullptr;
@@ -33,11 +29,13 @@ namespace South
         bool bRunning = false;
 
         // Static functions
-      public:
+    public:
         static const char* GetName();
         static Application& Get();
 
         static void Kaboom();
+
+        static inline Application* Instance;
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

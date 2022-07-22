@@ -1,22 +1,33 @@
 #include "sthpch.h"
 
-#include "Core/Application.h"
+#include "Core/App/Application.h"
 
 int main(int argc, char** argv)
 {
-    South::Logger::Init();
+    bool bApplicationRunning = true;
 
-    STH_INFO("Application Start");
+    while (bApplicationRunning)
+    {
+        South::Logger::Init();
 
-    auto& App = South::Application::Get();
+        STH_INFO("Application Start");
+        STH_INFO("");
 
-    App.Init();
-    App.Run();
-    App.DeInit();
+        auto* App = new South::Application;
 
-    STH_INFO("Application Shutdown.");
+        // #TODO : check App ensure
 
-    South::Logger::DeInit();
+        App->Init();
+        App->Run();
+        App->DeInit();
+
+        delete App;
+
+        STH_INFO("");
+        STH_INFO("Application Shutdown.");
+
+        South::Logger::DeInit();
+    }
 
     return 0;
 }

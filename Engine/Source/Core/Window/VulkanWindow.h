@@ -10,14 +10,14 @@ namespace South
 
     class VulkanWindow : Window
     {
-      public:
+    public:
         virtual void Init() override;
         virtual void DeInit() override;
 
-      private:
+    private:
         VkSurfaceKHR Surface = VK_NULL_HANDLE;
 
-        std::unique_ptr<VulkanSwapChain> SwapChain = nullptr;
+        VulkanSwapChain SwapChain;
     };
 
 } // namespace South

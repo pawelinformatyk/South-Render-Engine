@@ -1,7 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/Window/Window.h"
-#include "Core/Application.h"
+#include "Core/App/Application.h"
 
 #include <GLFW/glfw3.h>
 
@@ -34,19 +34,10 @@ namespace South
         glfwTerminate();
     }
 
-    GLFWwindow* Window::GetglfwWindow() const
-    {
-        return glfwWindow;
-    }
+    GLFWwindow* Window::GetglfwWindow() const { return glfwWindow; }
 
-    void Window::ProcessEvents()
-    {
-        glfwPollEvents();
-    }
+    void Window::ProcessEvents() { glfwPollEvents(); }
 
-    void Window::SetCloseWindowCallback(const CloseWindowCallback& callback)
-    {
-        closeWindowFN = callback;
-    }
+    void Window::SetCloseWindowCallback(const CloseWindowCallback& callback) { closeWindowFN = callback; }
 
 } // namespace South

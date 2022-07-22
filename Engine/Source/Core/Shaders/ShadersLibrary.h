@@ -13,7 +13,7 @@ namespace South
     // #TODO : Should be part of asset manager?
     class ShadersLibrary
     {
-      public:
+    public:
         static ShadersLibrary& Get();
 
         ShadersLibrary(ShadersLibrary const&) = delete;
@@ -31,7 +31,7 @@ namespace South
         static shaderc::Compiler& GetCompiler();
         static shaderc::CompileOptions& GetCompilerOptions();
 
-      private:
+    private:
         ShadersLibrary(){};
         ~ShadersLibrary(){};
 

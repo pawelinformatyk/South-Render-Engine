@@ -9,7 +9,7 @@ namespace South
     // Has also variables related to queues, because they are retrieved from devices.
     class VulkanDevice
     {
-      public:
+    public:
         VulkanDevice(){};
         ~VulkanDevice(){};
 
@@ -21,7 +21,7 @@ namespace South
         uint32_t GetQFamilyIndex() const;
         VkQueue GetQ() const;
 
-      private:
+    private:
         const std::vector<const char*> RequiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };

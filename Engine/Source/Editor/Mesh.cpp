@@ -5,10 +5,7 @@
 namespace South
 {
 
-    const VkVertexInputBindingDescription& Vertex::GetBindingDescription()
-    {
-        return bindingDesc;
-    }
+    const VkVertexInputBindingDescription& Vertex::GetBindingDescription() { return bindingDesc; }
 
     const std::array<VkVertexInputAttributeDescription, 4>& Vertex::GetAttributesDescriptions()
     {

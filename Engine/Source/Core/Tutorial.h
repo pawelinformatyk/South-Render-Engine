@@ -34,10 +34,7 @@ namespace South
     {
         auto func =
             (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-        if (func != nullptr)
-        {
-            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-        }
+        if (func != nullptr) { return func(instance, pCreateInfo, pAllocator, pDebugMessenger); }
         else
         {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -49,10 +46,7 @@ namespace South
     {
         auto func =
             (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-        if (func != nullptr)
-        {
-            func(instance, debugMessenger, pAllocator);
-        }
+        if (func != nullptr) { func(instance, debugMessenger, pAllocator); }
     }
 
     struct QueueFamilyIndices
@@ -60,10 +54,7 @@ namespace South
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
 
-        bool isComplete()
-        {
-            return graphicsFamily.has_value() && presentFamily.has_value();
-        }
+        bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
     };
 
     struct SwapChainSupportDetails
@@ -75,7 +66,7 @@ namespace South
 
     class TutorialContext : public Context
     {
-      private:
+    private:
         VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;
         VkSurfaceKHR surface;
@@ -104,7 +95,7 @@ namespace South
         VkSemaphore renderFinishedSemaphores;
         VkFence inFlightFence;
 
-      public:
+    public:
         virtual void Init(GLFWwindow& window) override
         {
             createInstance();
@@ -130,27 +121,18 @@ namespace South
 
             vkDestroyCommandPool(device, commandPool, nullptr);
 
-            for (auto framebuffer : swapChainFramebuffers)
-            {
-                vkDestroyFramebuffer(device, framebuffer, nullptr);
-            }
+            for (auto framebuffer : swapChainFramebuffers) { vkDestroyFramebuffer(device, framebuffer, nullptr); }
 
             vkDestroyPipeline(device, graphicsPipeline, nullptr);
             vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
             vkDestroyRenderPass(device, renderPass, nullptr);
 
-            for (auto imageView : swapChainImageViews)
-            {
-                vkDestroyImageView(device, imageView, nullptr);
-            }
+            for (auto imageView : swapChainImageViews) { vkDestroyImageView(device, imageView, nullptr); }
 
             vkDestroySwapchainKHR(device, swapChain, nullptr);
             vkDestroyDevice(device, nullptr);
 
-            if (enableValidationLayers)
-            {
-                DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-            }
+            if (enableValidationLayers) { DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr); }
 
             vkDestroySurfaceKHR(instance, surface, nullptr);
             vkDestroyInstance(instance, nullptr);
@@ -221,8 +203,7 @@ namespace South
 
         void setupDebugMessenger()
         {
-            if (!enableValidationLayers)
-                return;
+            if (!enableValidationLayers) return;
 
             VkDebugUtilsMessengerCreateInfoEXT createInfo;
             populateDebugMessengerCreateInfo(createInfo);
@@ -246,10 +227,7 @@ namespace South
             uint32_t deviceCount = 0;
             vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
-            if (deviceCount == 0)
-            {
-                throw std::runtime_error("failed to find GPUs with Vulkan support!");
-            }
+            if (deviceCount == 0) { throw std::runtime_error("failed to find GPUs with Vulkan support!"); }
 
             std::vector<VkPhysicalDevice> devices(deviceCount);
             vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
@@ -263,10 +241,7 @@ namespace South
                 }
             }
 
-            if (physicalDevice == VK_NULL_HANDLE)
-            {
-                throw std::runtime_error("failed to find a suitable GPU!");
-            }
+            if (physicalDevice == VK_NULL_HANDLE) { throw std::runtime_error("failed to find a suitable GPU!"); }
         }
 
         void createLogicalDevice()
@@ -827,10 +802,7 @@ namespace South
         {
             for (const auto& availablePresentMode : availablePresentModes)
             {
-                if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-                {
-                    return availablePresentMode;
-                }
+                if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) { return availablePresentMode; }
             }
 
             return VK_PRESENT_MODE_FIFO_KHR;
@@ -912,10 +884,7 @@ namespace South
 
             std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-            for (const auto& extension : availableExtensions)
-            {
-                requiredExtensions.erase(extension.extensionName);
-            }
+            for (const auto& extension : availableExtensions) { requiredExtensions.erase(extension.extensionName); }
 
             return requiredExtensions.empty();
         }
@@ -933,23 +902,14 @@ namespace South
             int i = 0;
             for (const auto& queueFamily : queueFamilies)
             {
-                if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                {
-                    indices.graphicsFamily = i;
-                }
+                if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) { indices.graphicsFamily = i; }
 
                 VkBool32 presentSupport = false;
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
-                if (presentSupport)
-                {
-                    indices.presentFamily = i;
-                }
+                if (presentSupport) { indices.presentFamily = i; }
 
-                if (indices.isComplete())
-                {
-                    break;
-                }
+                if (indices.isComplete()) { break; }
 
                 i++;
             }
@@ -965,10 +925,7 @@ namespace South
 
             std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-            if (enableValidationLayers)
-            {
-                extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            }
+            if (enableValidationLayers) { extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
 
             return extensions;
         }
@@ -994,10 +951,7 @@ namespace South
                     }
                 }
 
-                if (!layerFound)
-                {
-                    return false;
-                }
+                if (!layerFound) { return false; }
             }
 
             return true;
@@ -1007,10 +961,7 @@ namespace South
         {
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-            if (file.fail() || !file.is_open())
-            {
-                throw std::runtime_error("failed to open file!");
-            }
+            if (file.fail() || !file.is_open()) { throw std::runtime_error("failed to open file!"); }
 
             size_t fileSize = (size_t)file.tellg();
             std::vector<char> buffer(fileSize);

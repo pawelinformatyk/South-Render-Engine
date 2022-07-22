@@ -149,10 +149,7 @@ namespace South
         vkFreeMemory(LogicalDev, Memory, nullptr);
     }
 
-    VkBuffer VulkanVertexBuffer::GetBuffer() const
-    {
-        return Buffer;
-    }
+    VkBuffer VulkanVertexBuffer::GetBuffer() const { return Buffer; }
 
     uint32_t VulkanVertexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t TypeFilter,
                                                 VkMemoryPropertyFlags Properties) const

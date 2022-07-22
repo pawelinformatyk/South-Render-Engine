@@ -13,14 +13,10 @@ namespace South
     // Class holding all "global" vulkan related variables.
     class VulkanContext
     {
-      public:
+    public:
         static VulkanContext& Get();
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-      public:
+    public:
         VulkanContext(VulkanContext const&) = delete;
         void operator=(VulkanContext const&) = delete;
 
@@ -31,16 +27,22 @@ namespace South
         VkInstance GetVulkanInstance();
         VulkanDevice& GetCurrentDevice();
 
-      private:
+    private:
+        static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+
+    private:
         VulkanContext(){};
         ~VulkanContext(){};
 
         void CreateInstance();
-        void SetupMessenger();
+        void CreateMessenger();
 
         void CreateSurface(GLFWwindow& Window);
         void CreateSwapChain(GLFWwindow& Window);
         void CreateImageViews();
+
         void CreateRenderPass();
         void CreateGraphicsPipeline();
 
@@ -54,6 +56,8 @@ namespace South
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+
+        void DestroyMessenger();
 
         std::vector<const char*> GetRequiredInstanceExtensions();
 

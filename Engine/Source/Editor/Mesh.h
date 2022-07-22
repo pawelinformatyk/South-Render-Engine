@@ -19,7 +19,7 @@ namespace South
         static const VkVertexInputBindingDescription& GetBindingDescription();
         static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
 
-      private:
+    private:
         static VkVertexInputBindingDescription bindingDesc;
         static std::array<VkVertexInputAttributeDescription, 4> attributesDescs;
     };
@@ -27,10 +27,10 @@ namespace South
     // #TODO : One/two/three... meshes - one/two buffer
     class StaticMesh
     {
-      public:
+    public:
         StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
 
-      private:
+    private:
         std::vector<Vertex> vertices;
         std::vector<uint16_t> indices;
 

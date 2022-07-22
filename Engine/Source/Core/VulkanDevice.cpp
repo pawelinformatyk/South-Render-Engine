@@ -23,30 +23,18 @@ namespace South
             std::set<std::string> RequiredExtensionsSet(RequiredDeviceExtensions.begin(),
                                                         RequiredDeviceExtensions.end());
 
-            for (const auto& Extension : AvailableExtensions)
-            {
-                RequiredExtensionsSet.erase(Extension.extensionName);
-            }
+            for (const auto& Extension : AvailableExtensions) { RequiredExtensionsSet.erase(Extension.extensionName); }
 
-            if (!RequiredExtensionsSet.empty())
-            {
-                return std::optional<uint32_t>();
-            }
+            if (!RequiredExtensionsSet.empty()) { return std::optional<uint32_t>(); }
 
             // #TODO : Look for specific gpu??
             uint32_t FormatCount;
             vkGetPhysicalDeviceSurfaceFormatsKHR(Device, Surface, &FormatCount, nullptr);
-            if (!FormatCount)
-            {
-                return std::optional<uint32_t>();
-            }
+            if (!FormatCount) { return std::optional<uint32_t>(); }
 
             uint32_t PresentModesCount;
             vkGetPhysicalDeviceSurfacePresentModesKHR(Device, Surface, &PresentModesCount, nullptr);
-            if (!PresentModesCount)
-            {
-                return std::optional<uint32_t>();
-            }
+            if (!PresentModesCount) { return std::optional<uint32_t>(); }
 
             // Check if device has needed queue family.
             uint32_t QueueFamilyCount = 0;
@@ -81,14 +69,8 @@ namespace South
             vkGetPhysicalDeviceFeatures(Device, &DeviceFeatures);
 
             // Discrete GPUs have a significant performance advantage
-            if (DeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-            {
-                Score += 1000;
-            }
-            if (DeviceFeatures.multiViewport)
-            {
-                Score += 1000;
-            }
+            if (DeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) { Score += 1000; }
+            if (DeviceFeatures.multiViewport) { Score += 1000; }
 
             return Score;
         };
@@ -108,10 +90,7 @@ namespace South
         for (const VkPhysicalDevice& Dev : Devices)
         {
             std::optional<uint32_t> QFamIndex = IsDeviceSuitable(Dev);
-            if (!QFamIndex.has_value())
-            {
-                continue;
-            }
+            if (!QFamIndex.has_value()) { continue; }
 
             DevicesScoreboard.emplace(RateDevice(Dev), std::make_pair(Dev, QFamIndex.value()));
         }
@@ -157,29 +136,14 @@ namespace South
         vkGetDeviceQueue(LogicalDevice, QueueFamilyIndex, 0, &Queue);
     }
 
-    void VulkanDevice::DeInit()
-    {
-        vkDestroyDevice(LogicalDevice, nullptr);
-    }
+    void VulkanDevice::DeInit() { vkDestroyDevice(LogicalDevice, nullptr); }
 
-    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const
-    {
-        return PhysicalDevice;
-    }
+    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const { return PhysicalDevice; }
 
-    VkDevice VulkanDevice::GetDevice() const
-    {
-        return LogicalDevice;
-    }
+    VkDevice VulkanDevice::GetDevice() const { return LogicalDevice; }
 
-    uint32_t VulkanDevice::GetQFamilyIndex() const
-    {
-        return QueueFamilyIndex;
-    }
+    uint32_t VulkanDevice::GetQFamilyIndex() const { return QueueFamilyIndex; }
 
-    VkQueue VulkanDevice::GetQ() const
-    {
-        return Queue;
-    }
+    VkQueue VulkanDevice::GetQ() const { return Queue; }
 
 } // namespace South

@@ -16,13 +16,9 @@ namespace South
         SetProjection(Fov, Aspect, Near, Far);
     }
 
-    Camera::Camera()
-    {
-    }
+    Camera::Camera() {}
 
-    void Camera::ProcessEvent()
-    {
-    }
+    void Camera::ProcessEvent() {}
 
     void Camera::SetView(glm::vec3 inPos, glm::vec3 inTarget)
     {
@@ -40,19 +36,10 @@ namespace South
         projection[1][1] *= -1;
     }
 
-    const glm::mat4& Camera::GetViewMatrix() const
-    {
-        return view;
-    }
+    const glm::mat4& Camera::GetViewMatrix() const { return view; }
 
-    const glm::mat4& Camera::GetProjectionMatrix() const
-    {
-        return projection;
-    }
+    const glm::mat4& Camera::GetProjectionMatrix() const { return projection; }
 
-    glm::mat4 Camera::GetViewProjectionMatrix() const
-    {
-        return view * projection;
-    }
+    glm::mat4 Camera::GetViewProjectionMatrix() const { return view * projection; }
 
 } // namespace South

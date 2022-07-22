@@ -7,7 +7,7 @@ namespace South
 
     class Camera
     {
-      public:
+    public:
         Camera();
         Camera(glm::vec3 pos, glm::vec3 target, float fov, float aspect, float near, float inFar);
 
@@ -29,7 +29,7 @@ namespace South
         void SetRotation(glm::vec3 newRotation);
         void AddRotation(glm::vec3 deltaRotation);
 
-      private:
+    private:
         glm::mat4 view;
         glm::mat4 projection;
 

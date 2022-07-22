@@ -24,10 +24,7 @@ namespace South
             .pName = "main",
         };
 
-        if (bCompile)
-        {
-            Compile();
-        }
+        if (bCompile) { Compile(); }
     }
 
     VulkanShader::~VulkanShader()
@@ -52,10 +49,7 @@ namespace South
         const shaderc::SpvCompilationResult Result =
             Compiler.CompileGlslToSpv(GlslCode, ShaderKind, PathToCode.data(), CompilerOptions);
 
-        if (Result.GetCompilationStatus() != shaderc_compilation_status_success)
-        {
-            return;
-        }
+        if (Result.GetCompilationStatus() != shaderc_compilation_status_success) { return; }
 
         const std::vector<uint32_t> SpirvCode(Result.cbegin(), Result.cend());
         // #TODO : Cache spirv in some directory.
@@ -65,10 +59,7 @@ namespace South
         ShaderInfo.module = Module;
     };
 
-    const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const
-    {
-        return ShaderInfo;
-    }
+    const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const { return ShaderInfo; }
 
     VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
@@ -91,12 +82,9 @@ namespace South
     {
         switch (InStages)
         {
-            case VK_SHADER_STAGE_VERTEX_BIT:
-                return shaderc_shader_kind::shaderc_vertex_shader;
-            case VK_SHADER_STAGE_FRAGMENT_BIT:
-                return shaderc_shader_kind::shaderc_fragment_shader;
-            case VK_SHADER_STAGE_COMPUTE_BIT:
-                return shaderc_shader_kind::shaderc_compute_shader;
+            case VK_SHADER_STAGE_VERTEX_BIT: return shaderc_shader_kind::shaderc_vertex_shader;
+            case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_shader_kind::shaderc_fragment_shader;
+            case VK_SHADER_STAGE_COMPUTE_BIT: return shaderc_shader_kind::shaderc_compute_shader;
         }
 
         return shaderc_shader_kind::shaderc_glsl_infer_from_source;

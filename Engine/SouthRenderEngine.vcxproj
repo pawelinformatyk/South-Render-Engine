@@ -98,7 +98,7 @@
     <ClCompile Include="Source\Editor\Entity.cpp" />
     <ClCompile Include="Source\Editor\Scene.cpp" />
     <ClCompile Include="Source\Editor\Mesh.cpp" />
-    <ClCompile Include="Source\Core\Application.cpp" />
+    <ClCompile Include="Source\Core\App\Application.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
     <ClCompile Include="Source\Core\Window\Window.cpp" />
     <ClCompile Include="Source\Core\VulkanContext.cpp" />
@@ -123,7 +123,7 @@
     <ClInclude Include="Source\Editor\Camera.h" />
     <ClInclude Include="Source\Editor\Entity.h" />
     <ClInclude Include="Source\Editor\Mesh.h" />
-    <ClInclude Include="Source\Core\Application.h" />
+    <ClInclude Include="Source\Core\App\Application.h" />
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\Editor\Scene.h" />
     <ClInclude Include="Source\GUI.h" />

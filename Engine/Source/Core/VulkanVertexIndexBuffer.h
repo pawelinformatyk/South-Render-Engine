@@ -11,14 +11,14 @@ namespace South
     // VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
     class VulkanVertexIndexBuffer
     {
-      public:
+    public:
         VulkanVertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData, uint32_t iSize);
         ~VulkanVertexIndexBuffer();
 
         VkBuffer GetVulkanBuffer() const;
         uint32_t GetIndexOffset() const;
 
-      private:
+    private:
         uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t typeFilter,
                                 VkMemoryPropertyFlags Properties) const;
 
