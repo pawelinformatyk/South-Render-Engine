@@ -13,18 +13,18 @@ namespace South
     {
         Window::Init();
 
-        if (!glfwWindow) { return; }
+        if (!m_glfwWindow) { return; }
 
         VkInstance VulkanInstance = VulkanContext::Get().GetVulkanInstance();
 
         // Initialize surface.
-        if (!glfwCreateWindowSurface(VulkanInstance, glfwWindow, nullptr, &Surface))
+        if (!glfwCreateWindowSurface(VulkanInstance, m_glfwWindow, nullptr, &m_Surface))
         {
             STH_ERR("Surface couldnt be created");
             return;
         }
 
-        SwapChain.Init(*glfwWindow, Surface);
+        m_SwapChain.Init(*m_glfwWindow, m_Surface);
     }
 
     void VulkanWindow::DeInit()
@@ -33,8 +33,8 @@ namespace South
 
         VkInstance VulkanInstance = VulkanContext::Get().GetVulkanInstance();
 
-        SwapChain.DeInit();
-        vkDestroySurfaceKHR(VulkanInstance, Surface, nullptr);
+        m_SwapChain.DeInit();
+        vkDestroySurfaceKHR(VulkanInstance, m_Surface, nullptr);
     }
 
 } // namespace South

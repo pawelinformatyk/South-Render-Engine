@@ -8,7 +8,7 @@ namespace South
     {
     private:
         // Entities on current scene.
-        std::vector<Entity*> Entities;
+        std::vector<Entity*> m_Entities;
     };
 
 } // namespace South

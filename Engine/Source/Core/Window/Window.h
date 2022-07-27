@@ -11,7 +11,6 @@ namespace South
     // Events need to be picked up by this window
     class Window
     {
-
     public:
         virtual void Init();
         virtual void DeInit();
@@ -19,20 +18,20 @@ namespace South
         GLFWwindow* GetglfwWindow() const;
 
     protected:
-        GLFWwindow* glfwWindow = nullptr;
+        GLFWwindow* m_glfwWindow = nullptr;
 
-        uint32_t Width  = 400;
-        uint32_t Height = 460;
+        uint32_t m_Width  = 400;
+        uint32_t m_Height = 460;
 
         // Events
     public:
         using CloseWindowCallback = std::function<void()>;
 
         void ProcessEvents();
-        void SetCloseWindowCallback(const CloseWindowCallback& callback);
+        void SetCloseWindowCallback(const CloseWindowCallback& Callback);
 
     private:
-        CloseWindowCallback closeWindowFN;
+        CloseWindowCallback m_closeWindowFN;
     };
 
 } // namespace South

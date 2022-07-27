@@ -126,7 +126,6 @@
     <ClInclude Include="Source\Core\App\Application.h" />
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\Editor\Scene.h" />
-    <ClInclude Include="Source\GUI.h" />
     <ClInclude Include="Source\Core\Window\Window.h" />
     <ClInclude Include="Source\Core\VulkanContext.h" />
     <ClInclude Include="Source\sthpch.h" />

@@ -10,8 +10,8 @@ namespace South
     void VulkanDevice::Init(VkSurfaceKHR Surface)
     {
         // Lambda to tell us if gpu is suitable. Function returns correct queue it is suitable.
-        auto IsDeviceSuitable =
-            [&RequiredDeviceExtensions = RequiredDeviceExtensions, &Surface = Surface](const VkPhysicalDevice& Device)
+        auto IsDeviceSuitable = [&m_RequiredDeviceExtensions = m_RequiredDeviceExtensions,
+                                 &Surface                    = Surface](const VkPhysicalDevice& Device)
         {
             // Check if device supports swap chain.
             uint32_t ExtensionCount;
@@ -20,8 +20,8 @@ namespace South
             std::vector<VkExtensionProperties> AvailableExtensions(ExtensionCount);
             vkEnumerateDeviceExtensionProperties(Device, nullptr, &ExtensionCount, AvailableExtensions.data());
 
-            std::set<std::string> RequiredExtensionsSet(RequiredDeviceExtensions.begin(),
-                                                        RequiredDeviceExtensions.end());
+            std::set<std::string> RequiredExtensionsSet(m_RequiredDeviceExtensions.begin(),
+                                                        m_RequiredDeviceExtensions.end());
 
             for (const auto& Extension : AvailableExtensions) { RequiredExtensionsSet.erase(Extension.extensionName); }
 
@@ -98,8 +98,8 @@ namespace South
         // Get device if it was found.
         if (DevicesScoreboard.size())
         {
-            PhysicalDevice   = DevicesScoreboard.rbegin()->second.first;
-            QueueFamilyIndex = DevicesScoreboard.rbegin()->second.second;
+            m_PhysicalDevice   = DevicesScoreboard.rbegin()->second.first;
+            m_QueueFamilyIndex = DevicesScoreboard.rbegin()->second.second;
         }
         else
         {
@@ -113,7 +113,7 @@ namespace South
         VkDeviceQueueCreateInfo QCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
-            .queueFamilyIndex = QueueFamilyIndex,
+            .queueFamilyIndex = m_QueueFamilyIndex,
             .queueCount       = 1,
             .pQueuePriorities = &QueuePrio,
         };
@@ -126,24 +126,24 @@ namespace South
             .queueCreateInfoCount    = 1,
             .pQueueCreateInfos       = &QCreateInfo,
             .enabledLayerCount       = 0,
-            .enabledExtensionCount   = static_cast<uint32_t>(RequiredDeviceExtensions.size()),
-            .ppEnabledExtensionNames = RequiredDeviceExtensions.data(),
+            .enabledExtensionCount   = static_cast<uint32_t>(m_RequiredDeviceExtensions.size()),
+            .ppEnabledExtensionNames = m_RequiredDeviceExtensions.data(),
             .pEnabledFeatures        = &DeviceFeatures,
         };
 
-        vkCreateDevice(PhysicalDevice, &CreateInfo, nullptr, &LogicalDevice);
+        vkCreateDevice(m_PhysicalDevice, &CreateInfo, nullptr, &m_LogicalDevice);
 
-        vkGetDeviceQueue(LogicalDevice, QueueFamilyIndex, 0, &Queue);
+        vkGetDeviceQueue(m_LogicalDevice, m_QueueFamilyIndex, 0, &m_Queue);
     }
 
-    void VulkanDevice::DeInit() { vkDestroyDevice(LogicalDevice, nullptr); }
+    void VulkanDevice::DeInit() { vkDestroyDevice(m_LogicalDevice, nullptr); }
 
-    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const { return PhysicalDevice; }
+    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const { return m_PhysicalDevice; }
 
-    VkDevice VulkanDevice::GetDevice() const { return LogicalDevice; }
+    VkDevice VulkanDevice::GetDevice() const { return m_LogicalDevice; }
 
-    uint32_t VulkanDevice::GetQFamilyIndex() const { return QueueFamilyIndex; }
+    uint32_t VulkanDevice::GetQFamilyIndex() const { return m_QueueFamilyIndex; }
 
-    VkQueue VulkanDevice::GetQ() const { return Queue; }
+    VkQueue VulkanDevice::GetQ() const { return m_Queue; }
 
 } // namespace South

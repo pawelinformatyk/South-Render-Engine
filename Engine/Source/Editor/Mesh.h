@@ -11,17 +11,17 @@ namespace South
 
     struct Vertex
     {
-        glm::vec3 pos;
-        glm::vec3 normal;
-        glm::vec2 texCoords;
-        glm::vec3 color;
+        glm::vec3 m_Pos;
+        glm::vec3 m_Normal;
+        glm::vec2 m_TexCoords;
+        glm::vec3 m_Color;
 
         static const VkVertexInputBindingDescription& GetBindingDescription();
         static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
 
     private:
-        static VkVertexInputBindingDescription bindingDesc;
-        static std::array<VkVertexInputAttributeDescription, 4> attributesDescs;
+        static VkVertexInputBindingDescription m_BindingDesc;
+        static std::array<VkVertexInputAttributeDescription, 4> m_AttributesDescs;
     };
 
     // #TODO : One/two/three... meshes - one/two buffer
@@ -31,12 +31,12 @@ namespace South
         StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
 
     private:
-        std::vector<Vertex> vertices;
-        std::vector<uint16_t> indices;
+        std::vector<Vertex> m_Vertices;
+        std::vector<uint16_t> m_Indices;
 
         // VulkanIndexBuffer* indexBuffer;
         // VulkanVertexBuffer* verticesBuffer;
-        SVulkanVertexIndexBuffer* VI_Buffer;
+        SVulkanVertexIndexBuffer* m_VI_Buffer;
     };
 
 

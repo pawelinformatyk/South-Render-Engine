@@ -24,12 +24,12 @@ namespace South
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
 
-        VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
-        std::vector<VkImage> SwapChainImages;
-        VkFormat SwapChainImageFormat;
-        VkExtent2D SwapChainExtent;
-        std::vector<VkImageView> SwapChainImageViews;
-        std::vector<VkFramebuffer> SwapChainFramebuffers;
+        VkSwapchainKHR m_SwapChain = VK_NULL_HANDLE;
+        std::vector<VkImage> m_SwapChainImages;
+        VkFormat m_SwapChainImageFormat;
+        VkExtent2D m_SwapChainExtent;
+        std::vector<VkImageView> m_SwapChainImageViews;
+        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
     };
 
 } // namespace South

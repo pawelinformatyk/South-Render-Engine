@@ -63,38 +63,38 @@ namespace South
 
         bool CheckValidationLayers();
 
-        VkInstance VulkanInstance = VK_NULL_HANDLE;
+        VkInstance m_VulkanInstance = VK_NULL_HANDLE;
 
-        const std::vector<const char*> RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+        const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 #ifdef NDEBUG
-        const bool bEnableValidationLayers = false;
+        const bool m_bEnableValidationLayers = false;
 #else
-        const bool bEnableValidationLayers = true;
+        const bool m_bEnableValidationLayers = true;
 #endif
-        VkDebugUtilsMessengerEXT Messenger;
+        VkDebugUtilsMessengerEXT m_Messenger;
 
-        VkSurfaceKHR Surface     = VK_NULL_HANDLE;
-        VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
-        std::vector<VkImage> SwapChainImages;
-        VkFormat SwapChainImageFormat;
-        VkExtent2D SwapChainExtent;
-        std::vector<VkImageView> SwapChainImageViews;
-        std::vector<VkFramebuffer> SwapChainFramebuffers;
+        VkSurfaceKHR m_Surface     = VK_NULL_HANDLE;
+        VkSwapchainKHR m_SwapChain = VK_NULL_HANDLE;
+        std::vector<VkImage> m_SwapChainImages;
+        VkFormat m_SwapChainImageFormat;
+        VkExtent2D m_SwapChainExtent;
+        std::vector<VkImageView> m_SwapChainImageViews;
+        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
-        VkRenderPass RenderPass         = VK_NULL_HANDLE;
-        VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-        VkPipeline GraphicsPipeline     = VK_NULL_HANDLE;
+        VkRenderPass m_RenderPass         = VK_NULL_HANDLE;
+        VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+        VkPipeline m_GraphicsPipeline     = VK_NULL_HANDLE;
 
-        VkCommandPool CommandPool           = VK_NULL_HANDLE;
-        VkCommandBuffer CommandBuffer       = VK_NULL_HANDLE;
-        VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
-        VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
-        VkFence FlightFence                 = VK_NULL_HANDLE;
+        VkCommandPool m_CommandPool           = VK_NULL_HANDLE;
+        VkCommandBuffer m_CommandBuffer       = VK_NULL_HANDLE;
+        VkSemaphore m_ImageAvailableSemaphore = VK_NULL_HANDLE;
+        VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
+        VkFence m_FlightFence                 = VK_NULL_HANDLE;
 
-        std::unique_ptr<VulkanDevice> Device = nullptr;
-        VulkanVertexIndexBuffer* VI_Buffer   = nullptr;
+        std::unique_ptr<VulkanDevice> m_Device = nullptr;
+        VulkanVertexIndexBuffer* m_VI_Buffer   = nullptr;
 
-        bool bCanTick = false;
+        bool m_bCanTick = false;
     };
 }; // namespace South

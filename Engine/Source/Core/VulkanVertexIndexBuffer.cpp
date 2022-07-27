@@ -17,7 +17,7 @@ namespace South
         VkPhysicalDeviceMemoryProperties MemProperties;
         vkGetPhysicalDeviceMemoryProperties(PhysDev, &MemProperties);
 
-        IndexOffset = vSize;
+        m_IndexOffset = vSize;
 
         VkBufferCreateInfo StagingBufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -58,7 +58,7 @@ namespace South
 
         StaginBufferData = nullptr;
 
-        vkMapMemory(LogicalDev, StagingBufferMemory, IndexOffset, iSize, 0, &StaginBufferData);
+        vkMapMemory(LogicalDev, StagingBufferMemory, m_IndexOffset, iSize, 0, &StaginBufferData);
         memcpy(StaginBufferData, iData, static_cast<size_t>(iSize));
         vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
@@ -73,10 +73,10 @@ namespace South
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &Buffer);
+        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &m_Buffer);
 
         VkMemoryRequirements MemRequirements;
-        vkGetBufferMemoryRequirements(LogicalDev, Buffer, &MemRequirements);
+        vkGetBufferMemoryRequirements(LogicalDev, m_Buffer, &MemRequirements);
 
         VkMemoryAllocateInfo AllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -86,9 +86,9 @@ namespace South
                 FindMemoryType(MemProperties, MemRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &Memory);
+        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &m_Memory);
 
-        vkBindBufferMemory(LogicalDev, Buffer, Memory, 0);
+        vkBindBufferMemory(LogicalDev, m_Buffer, m_Memory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
@@ -128,7 +128,7 @@ namespace South
             .size      = StagingBufferInfo.size,
         };
 
-        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
+        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, m_Buffer, 1, &CopyRegion);
 
         vkEndCommandBuffer(CommandBuffer);
 
@@ -154,13 +154,13 @@ namespace South
     {
         VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
-        vkDestroyBuffer(logicalDev, Buffer, nullptr);
-        vkFreeMemory(logicalDev, Memory, nullptr);
+        vkDestroyBuffer(logicalDev, m_Buffer, nullptr);
+        vkFreeMemory(logicalDev, m_Memory, nullptr);
     }
 
-    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const { return Buffer; }
+    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const { return m_Buffer; }
 
-    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const { return IndexOffset; }
+    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const { return m_IndexOffset; }
 
     uint32_t VulkanVertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
                                                      uint32_t typeFilter, VkMemoryPropertyFlags properties) const

@@ -30,22 +30,22 @@ namespace South
         void AddRotation(glm::vec3 deltaRotation);
 
     private:
-        glm::mat4 view;
-        glm::mat4 projection;
+        glm::mat4 m_View;
+        glm::mat4 m_Projection;
 
         // xyz -  pitch, yaw, roll
         // Roll  - around forward.
         // yaw   - around up.
         // pitch - around right.
 
-        glm::vec3 forward = glm::vec3(0.f, 0.f, 1.f);
-        glm::vec3 right   = glm::vec3(1.f, 0.f, 0.f);
-        glm::vec3 up      = glm::vec3(0.f, 1.f, 0.f);
+        glm::vec3 m_Forward = glm::vec3(0.f, 0.f, 1.f);
+        glm::vec3 m_Rright  = glm::vec3(1.f, 0.f, 0.f);
+        glm::vec3 m_Up      = glm::vec3(0.f, 1.f, 0.f);
 
-        float Fov    = 0.f;
-        float Aspect = 0.f;
-        float Near   = 0.f;
-        float Far    = 0.f;
+        float m_Fov    = 0.f;
+        float m_Aspect = 0.f;
+        float m_Near   = 0.f;
+        float m_Far    = 0.f;
     };
 
 } // namespace South

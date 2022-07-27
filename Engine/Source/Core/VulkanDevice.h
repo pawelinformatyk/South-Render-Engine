@@ -22,15 +22,15 @@ namespace South
         VkQueue GetQ() const;
 
     private:
-        const std::vector<const char*> RequiredDeviceExtensions = {
+        const std::vector<const char*> m_RequiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
 
-        VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
-        VkDevice LogicalDevice          = VK_NULL_HANDLE;
+        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+        VkDevice m_LogicalDevice          = VK_NULL_HANDLE;
 
-        VkQueue Queue             = VK_NULL_HANDLE;
-        uint32_t QueueFamilyIndex = 0;
+        VkQueue m_Queue             = VK_NULL_HANDLE;
+        uint32_t m_QueueFamilyIndex = 0;
     };
 
 

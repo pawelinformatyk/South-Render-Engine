@@ -20,9 +20,9 @@ namespace South
     private:
         VkShaderModule CreateShaderModule(const std::vector<uint32_t>& GlslCode);
 
-        std::string PathToCode;
+        std::string m_PathToCode;
 
-        VkPipelineShaderStageCreateInfo ShaderInfo;
+        VkPipelineShaderStageCreateInfo m_ShaderInfo;
 
         // Static functions
     public:

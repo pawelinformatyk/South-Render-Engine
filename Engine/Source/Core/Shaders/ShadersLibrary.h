@@ -38,7 +38,7 @@ namespace South
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
 
-        std::unordered_map<std::string, VulkanShader*> Shaders;
+        std::unordered_map<std::string, VulkanShader*> m_Shaders;
     };
 
 } // namespace South

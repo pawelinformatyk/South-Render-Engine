@@ -27,20 +27,20 @@ namespace South
         VulkanDevice& Device = VulkanContext::Get().GetCurrentDevice();
         VkDevice LogicDevice = Device.GetDevice();
 
-        for (auto ImageView : SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
+        for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
 
-        vkDestroySwapchainKHR(LogicDevice, SwapChain, nullptr);
+        vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
     }
 
     void VulkanSwapChain::CreateImages(VkDevice LogicDevice)
     {
         uint32_t ImageCount;
-        vkGetSwapchainImagesKHR(LogicDevice, SwapChain, &ImageCount, nullptr);
+        vkGetSwapchainImagesKHR(LogicDevice, m_SwapChain, &ImageCount, nullptr);
 
-        SwapChainImages.resize(ImageCount);
-        vkGetSwapchainImagesKHR(LogicDevice, SwapChain, &ImageCount, SwapChainImages.data());
+        m_SwapChainImages.resize(ImageCount);
+        vkGetSwapchainImagesKHR(LogicDevice, m_SwapChain, &ImageCount, m_SwapChainImages.data());
 
-        SwapChainImageViews.resize(SwapChainImages.size());
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
         VkImageSubresourceRange SubresourceRange{
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -54,16 +54,16 @@ namespace South
             .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .pNext            = nullptr,
             .viewType         = VK_IMAGE_VIEW_TYPE_2D,
-            .format           = SwapChainImageFormat,
+            .format           = m_SwapChainImageFormat,
             .components       = VkComponentMapping(VK_COMPONENT_SWIZZLE_IDENTITY),
             .subresourceRange = SubresourceRange,
         };
 
-        for (size_t i = 0; i < SwapChainImages.size(); i++)
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++)
         {
-            CreateInfo.image = SwapChainImages[i];
+            CreateInfo.image = m_SwapChainImages[i];
 
-            vkCreateImageView(LogicDevice, &CreateInfo, nullptr, &SwapChainImageViews[i]);
+            vkCreateImageView(LogicDevice, &CreateInfo, nullptr, &m_SwapChainImageViews[i]);
         }
     }
 

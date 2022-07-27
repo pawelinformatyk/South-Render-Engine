@@ -66,10 +66,10 @@ namespace South
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        vkCreateBuffer(logicalDev, &bufferInfo, nullptr, &buffer);
+        vkCreateBuffer(logicalDev, &bufferInfo, nullptr, &m_Buffer);
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(logicalDev, buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(logicalDev, m_Buffer, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -79,9 +79,9 @@ namespace South
                 FindMemoryType(memProperties, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        vkAllocateMemory(logicalDev, &allocInfo, nullptr, &memory);
+        vkAllocateMemory(logicalDev, &allocInfo, nullptr, &m_Memory);
 
-        vkBindBufferMemory(logicalDev, buffer, memory, 0);
+        vkBindBufferMemory(logicalDev, m_Buffer, m_Memory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
@@ -121,7 +121,7 @@ namespace South
             .size      = stagingBufferInfo.size,
         };
 
-        vkCmdCopyBuffer(commandBuffer, stagingBuffer, buffer, 1, &copyRegion);
+        vkCmdCopyBuffer(commandBuffer, stagingBuffer, m_Buffer, 1, &copyRegion);
 
         vkEndCommandBuffer(commandBuffer);
 
@@ -147,11 +147,11 @@ namespace South
     {
         VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
-        vkDestroyBuffer(logicalDev, buffer, nullptr);
-        vkFreeMemory(logicalDev, memory, nullptr);
+        vkDestroyBuffer(logicalDev, m_Buffer, nullptr);
+        vkFreeMemory(logicalDev, m_Memory, nullptr);
     }
 
-    VkBuffer VulkanIndexBuffer::GetBuffer() const { return buffer; }
+    VkBuffer VulkanIndexBuffer::GetBuffer() const { return m_Buffer; }
 
     uint32_t VulkanIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
                                                VkMemoryPropertyFlags properties) const

@@ -66,16 +66,16 @@ namespace South
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
         if (!GlfwWindow) { return; }
 
-        if (bEnableValidationLayers && CheckValidationLayers()) { STH_VK_WARN("ValidationsLayers not found."); }
+        if (m_bEnableValidationLayers && CheckValidationLayers()) { STH_VK_WARN("ValidationsLayers not found."); }
 
         CreateInstance();
 
-        if (bEnableValidationLayers) { CreateMessenger(); }
+        if (m_bEnableValidationLayers) { CreateMessenger(); }
 
         CreateSurface(*GlfwWindow);
 
-        Device = std::make_unique<VulkanDevice>();
-        Device->Init(Surface);
+        m_Device = std::make_unique<VulkanDevice>();
+        m_Device->Init(m_Surface);
 
         ShadersLibrary& ShadersLib = ShadersLibrary::Get();
         ShadersLib.Init();
@@ -92,14 +92,14 @@ namespace South
         CreateSyncObjects();
 
         EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        EditorCam.SetProjection(glm::radians(70.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f,
+        EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
                                 200.0f);
 
         PushConstant.Model      = glm::mat4(1.f);
         PushConstant.View       = EditorCam.GetViewMatrix();
         PushConstant.Projection = EditorCam.GetProjectionMatrix();
 
-        bCanTick = true;
+        m_bCanTick = true;
 
         STH_INFO("VulkanContext Initialized.");
     }
@@ -108,44 +108,44 @@ namespace South
     {
         ShadersLibrary::Get().DeInit();
 
-        bCanTick = false;
+        m_bCanTick = false;
 
-        VkDevice LogicDevice = Device->GetDevice();
+        VkDevice LogicDevice = m_Device->GetDevice();
 
-        delete VI_Buffer;
+        delete m_VI_Buffer;
 
         // #TODO : Error with commandbuffer still in use.
-        vkDestroyCommandPool(LogicDevice, CommandPool, nullptr);
+        vkDestroyCommandPool(LogicDevice, m_CommandPool, nullptr);
 
-        for (auto framebuffer : SwapChainFramebuffers) { vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr); }
+        for (auto framebuffer : m_SwapChainFramebuffers) { vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr); }
 
-        vkDestroyPipeline(LogicDevice, GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(LogicDevice, PipelineLayout, nullptr);
-        vkDestroyRenderPass(LogicDevice, RenderPass, nullptr);
+        vkDestroyPipeline(LogicDevice, m_GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(LogicDevice, m_PipelineLayout, nullptr);
+        vkDestroyRenderPass(LogicDevice, m_RenderPass, nullptr);
 
-        for (auto ImageView : SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
+        for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
 
-        vkDestroySwapchainKHR(LogicDevice, SwapChain, nullptr);
+        vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
 
 
-        vkDestroyFence(LogicDevice, FlightFence, nullptr);
-        vkDestroySemaphore(LogicDevice, ImageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(LogicDevice, RenderFinishedSemaphore, nullptr);
+        vkDestroyFence(LogicDevice, m_FlightFence, nullptr);
+        vkDestroySemaphore(LogicDevice, m_ImageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(LogicDevice, m_RenderFinishedSemaphore, nullptr);
 
-        Device->DeInit();
+        m_Device->DeInit();
 
-        if (bEnableValidationLayers) { DestroyMessenger(); }
+        if (m_bEnableValidationLayers) { DestroyMessenger(); }
 
-        vkDestroySurfaceKHR(VulkanInstance, Surface, nullptr);
+        vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
 
-        vkDestroyInstance(VulkanInstance, nullptr);
+        vkDestroyInstance(m_VulkanInstance, nullptr);
 
         STH_INFO("VulkanContext Deinitialized.");
     }
 
     void VulkanContext::Tick()
     {
-        if (!bCanTick) { return; }
+        if (!m_bCanTick) { return; }
 
         // Animation
         {
@@ -155,24 +155,25 @@ namespace South
             PushConstant.Model = glm::scale(PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
         }
 
-        VkDevice LogicDevice  = Device->GetDevice();
-        VkQueue GraphicsQueue = Device->GetQ();
+        VkDevice LogicDevice  = m_Device->GetDevice();
+        VkQueue GraphicsQueue = m_Device->GetQ();
 
         // Wait for the previous frame to finish
-        vkWaitForFences(LogicDevice, 1, &FlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(LogicDevice, 1, &FlightFence);
+        vkWaitForFences(LogicDevice, 1, &m_FlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(LogicDevice, 1, &m_FlightFence);
 
         // Acquire an image from the swap chain
         uint32_t ImageIndex = 0;
-        vkAcquireNextImageKHR(LogicDevice, SwapChain, UINT64_MAX, ImageAvailableSemaphore, VK_NULL_HANDLE, &ImageIndex);
+        vkAcquireNextImageKHR(LogicDevice, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE,
+                              &ImageIndex);
 
         // Submit the recorded command buffer
-        vkResetCommandBuffer(CommandBuffer, 0);
-        RecordCommandBuffer(CommandBuffer, ImageIndex);
+        vkResetCommandBuffer(m_CommandBuffer, 0);
+        RecordCommandBuffer(m_CommandBuffer, ImageIndex);
 
         VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore WaitSemaphores[]      = { ImageAvailableSemaphore };
-        VkSemaphore SignalSemaphores[]    = { RenderFinishedSemaphore };
+        VkSemaphore WaitSemaphores[]      = { m_ImageAvailableSemaphore };
+        VkSemaphore SignalSemaphores[]    = { m_RenderFinishedSemaphore };
 
         VkSubmitInfo SubmitInfo{
             .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -181,14 +182,14 @@ namespace South
             .pWaitSemaphores      = WaitSemaphores,
             .pWaitDstStageMask    = WaitStages,
             .commandBufferCount   = 1,
-            .pCommandBuffers      = &CommandBuffer,
+            .pCommandBuffers      = &m_CommandBuffer,
             .signalSemaphoreCount = 1,
             .pSignalSemaphores    = SignalSemaphores,
         };
 
-        vkQueueSubmit(Device->GetQ(), 1, &SubmitInfo, FlightFence);
+        vkQueueSubmit(m_Device->GetQ(), 1, &SubmitInfo, m_FlightFence);
 
-        VkSwapchainKHR SwapChains[] = { SwapChain };
+        VkSwapchainKHR SwapChains[] = { m_SwapChain };
 
         // Present the swap chain image
         VkPresentInfoKHR SresentInfo{
@@ -205,9 +206,9 @@ namespace South
         vkQueuePresentKHR(GraphicsQueue, &SresentInfo);
     }
 
-    VkInstance VulkanContext::GetVulkanInstance() { return VulkanInstance; }
+    VkInstance VulkanContext::GetVulkanInstance() { return m_VulkanInstance; }
 
-    VulkanDevice& VulkanContext::GetCurrentDevice() { return *Device; }
+    VulkanDevice& VulkanContext::GetCurrentDevice() { return *m_Device; }
 
     void VulkanContext::CreateInstance()
     {
@@ -224,16 +225,17 @@ namespace South
         std::vector<const char*> Extensions = GetRequiredInstanceExtensions();
 
         VkInstanceCreateInfo sCreateInfo{
-            .sType               = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-            .pNext               = nullptr,
-            .pApplicationInfo    = &sAppInfo,
-            .enabledLayerCount   = bEnableValidationLayers ? static_cast<uint32_t>(RequiredValidationLayers.size()) : 0,
-            .ppEnabledLayerNames = bEnableValidationLayers ? RequiredValidationLayers.data() : nullptr,
+            .sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            .pNext            = nullptr,
+            .pApplicationInfo = &sAppInfo,
+            .enabledLayerCount =
+                m_bEnableValidationLayers ? static_cast<uint32_t>(m_RequiredValidationLayers.size()) : 0,
+            .ppEnabledLayerNames     = m_bEnableValidationLayers ? m_RequiredValidationLayers.data() : nullptr,
             .enabledExtensionCount   = static_cast<uint32_t>(Extensions.size()),
             .ppEnabledExtensionNames = Extensions.data(),
         };
 
-        vkCreateInstance(&sCreateInfo, nullptr, &VulkanInstance);
+        vkCreateInstance(&sCreateInfo, nullptr, &m_VulkanInstance);
     }
 
     void VulkanContext::CreateMessenger()
@@ -251,10 +253,10 @@ namespace South
             .pUserData       = nullptr,
         };
 
-        auto func =
-            (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
+                                                                              "vkCreateDebugUtilsMessengerEXT");
 
-        if (func) { func(VulkanInstance, &CreateInfo, nullptr, &Messenger); }
+        if (func) { func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger); }
         else
         {
             STH_VK_WARN("vkCreateDebugUtilsMessengerEXT not found");
@@ -263,17 +265,17 @@ namespace South
 
     void VulkanContext::CreateSurface(GLFWwindow& Window)
     {
-        if (!glfwCreateWindowSurface(VulkanInstance, &Window, nullptr, &Surface)) { return /*error*/; }
+        if (!glfwCreateWindowSurface(m_VulkanInstance, &Window, nullptr, &m_Surface)) { return /*error*/; }
     }
 
     void VulkanContext::CreateSwapChain(GLFWwindow& window)
     {
-        VkPhysicalDevice physDevice = Device->GetPhysicalDevice();
-        VkDevice logicDevice        = Device->GetDevice();
-        uint32_t QueueFamilyIndex   = Device->GetQFamilyIndex();
+        VkPhysicalDevice physDevice = m_Device->GetPhysicalDevice();
+        VkDevice logicDevice        = m_Device->GetDevice();
+        uint32_t QueueFamilyIndex   = m_Device->GetQFamilyIndex();
 
         VkSurfaceCapabilitiesKHR capabilities;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, Surface, &capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, m_Surface, &capabilities);
 
         uint32_t imageCount = capabilities.minImageCount + 1;
         if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
@@ -281,14 +283,14 @@ namespace South
             imageCount = capabilities.maxImageCount;
         }
 
-        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, Surface);
-        VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, Surface);
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, m_Surface);
+        VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, m_Surface);
         VkExtent2D extent                = ChooseSwapExtent(capabilities, window);
 
         VkSwapchainCreateInfoKHR createInfo{
             .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext                 = nullptr,
-            .surface               = Surface,
+            .surface               = m_Surface,
             .minImageCount         = imageCount,
             .imageFormat           = surfaceFormat.format,
             .imageColorSpace       = surfaceFormat.colorSpace,
@@ -305,22 +307,22 @@ namespace South
             .oldSwapchain          = VK_NULL_HANDLE,
         };
 
-        vkCreateSwapchainKHR(logicDevice, &createInfo, nullptr, &SwapChain);
+        vkCreateSwapchainKHR(logicDevice, &createInfo, nullptr, &m_SwapChain);
 
-        vkGetSwapchainImagesKHR(logicDevice, SwapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(logicDevice, m_SwapChain, &imageCount, nullptr);
 
-        SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(logicDevice, SwapChain, &imageCount, SwapChainImages.data());
+        m_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(logicDevice, m_SwapChain, &imageCount, m_SwapChainImages.data());
 
-        SwapChainImageFormat = createInfo.imageFormat;
-        SwapChainExtent      = createInfo.imageExtent;
+        m_SwapChainImageFormat = createInfo.imageFormat;
+        m_SwapChainExtent      = createInfo.imageExtent;
     }
 
     void VulkanContext::CreateImageViews()
     {
-        VkDevice logicDevice = Device->GetDevice();
+        VkDevice logicDevice = m_Device->GetDevice();
 
-        SwapChainImageViews.resize(SwapChainImages.size());
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
         VkImageSubresourceRange subresourceRange{
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -330,26 +332,26 @@ namespace South
             .layerCount     = 1,
         };
 
-        for (size_t i = 0; i < SwapChainImages.size(); i++)
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++)
         {
             VkImageViewCreateInfo sCreateInfo{
                 .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                 .pNext            = nullptr,
-                .image            = SwapChainImages[i],
+                .image            = m_SwapChainImages[i],
                 .viewType         = VK_IMAGE_VIEW_TYPE_2D,
-                .format           = SwapChainImageFormat,
+                .format           = m_SwapChainImageFormat,
                 .components       = VkComponentMapping(VK_COMPONENT_SWIZZLE_IDENTITY),
                 .subresourceRange = subresourceRange,
             };
 
-            vkCreateImageView(logicDevice, &sCreateInfo, nullptr, &SwapChainImageViews[i]);
+            vkCreateImageView(logicDevice, &sCreateInfo, nullptr, &m_SwapChainImageViews[i]);
         }
     }
 
     void VulkanContext::CreateRenderPass()
     {
         VkAttachmentDescription colorAttachment{
-            .format         = SwapChainImageFormat,
+            .format         = m_SwapChainImageFormat,
             .samples        = VK_SAMPLE_COUNT_1_BIT,
             .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
@@ -390,12 +392,12 @@ namespace South
             .pDependencies   = &dependency,
         };
 
-        vkCreateRenderPass(Device->GetDevice(), &renderPassInfo, nullptr, &RenderPass);
+        vkCreateRenderPass(m_Device->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass);
     }
 
     void VulkanContext::CreateGraphicsPipeline()
     {
-        VkDevice logicDevice = Device->GetDevice();
+        VkDevice logicDevice = m_Device->GetDevice();
 
         // #TODO : Check for errors;
         ShadersLibrary& ShadersLib = ShadersLibrary::Get();
@@ -428,15 +430,15 @@ namespace South
         VkViewport viewport{
             .x        = 0.0f,
             .y        = 0.0f,
-            .width    = (float)SwapChainExtent.width,
-            .height   = (float)SwapChainExtent.height,
+            .width    = (float)m_SwapChainExtent.width,
+            .height   = (float)m_SwapChainExtent.height,
             .minDepth = 0.0f,
             .maxDepth = 1.0f,
         };
 
         VkRect2D scissor{
             .offset = { 0, 0 },
-            .extent = SwapChainExtent,
+            .extent = m_SwapChainExtent,
         };
 
         VkPipelineViewportStateCreateInfo viewportState{
@@ -527,7 +529,7 @@ namespace South
             .pPushConstantRanges    = &pushConstantRange,
         };
 
-        vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &PipelineLayout);
+        vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
 
         VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -543,75 +545,75 @@ namespace South
             .pDepthStencilState  = nullptr,
             .pColorBlendState    = &colorBlending,
             //.pDynamicState       = &dynamicState,
-            .layout             = PipelineLayout,
-            .renderPass         = RenderPass,
+            .layout             = m_PipelineLayout,
+            .renderPass         = m_RenderPass,
             .subpass            = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
             .basePipelineIndex  = -1,
         };
 
-        vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &GraphicsPipeline);
+        vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
     }
 
     void VulkanContext::CreateFramebuffers()
     {
-        VkDevice LogicDevice = Device->GetDevice();
+        VkDevice LogicDevice = m_Device->GetDevice();
 
-        SwapChainFramebuffers.resize(SwapChainImageViews.size());
+        m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
 
-        for (auto i = 0; i < SwapChainImageViews.size(); i++)
+        for (auto i = 0; i < m_SwapChainImageViews.size(); i++)
         {
-            VkImageView Attachments[] = { SwapChainImageViews[i] };
+            VkImageView Attachments[] = { m_SwapChainImageViews[i] };
 
             VkFramebufferCreateInfo FramebufferInfo{
                 .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .pNext           = nullptr,
-                .renderPass      = RenderPass,
+                .renderPass      = m_RenderPass,
                 .attachmentCount = 1,
                 .pAttachments    = Attachments,
-                .width           = SwapChainExtent.width,
-                .height          = SwapChainExtent.height,
+                .width           = m_SwapChainExtent.width,
+                .height          = m_SwapChainExtent.height,
                 .layers          = 1,
             };
 
-            vkCreateFramebuffer(LogicDevice, &FramebufferInfo, nullptr, &SwapChainFramebuffers[i]);
+            vkCreateFramebuffer(LogicDevice, &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
         }
     }
 
     void VulkanContext::CreateModelBuffers()
     {
-        VI_Buffer = new VulkanVertexIndexBuffer(
+        m_VI_Buffer = new VulkanVertexIndexBuffer(
             static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertices[0]) * Vertices.size()),
             static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(Indices[0]) * Indices.size()));
     }
 
     void VulkanContext::CreateCommands()
     {
-        VkDevice logicDevice = Device->GetDevice();
+        VkDevice logicDevice = m_Device->GetDevice();
 
         VkCommandPoolCreateInfo PoolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = Device->GetQFamilyIndex(),
+            .queueFamilyIndex = m_Device->GetQFamilyIndex(),
         };
 
-        vkCreateCommandPool(logicDevice, &PoolInfo, nullptr, &CommandPool);
+        vkCreateCommandPool(logicDevice, &PoolInfo, nullptr, &m_CommandPool);
 
         VkCommandBufferAllocateInfo AllocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
-            .commandPool        = CommandPool,
+            .commandPool        = m_CommandPool,
             .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1,
         };
 
-        vkAllocateCommandBuffers(logicDevice, &AllocInfo, &CommandBuffer);
+        vkAllocateCommandBuffers(logicDevice, &AllocInfo, &m_CommandBuffer);
     }
 
     void VulkanContext::CreateSyncObjects()
     {
-        VkDevice LogicDevice = Device->GetDevice();
+        VkDevice LogicDevice = m_Device->GetDevice();
 
         VkSemaphoreCreateInfo SemaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -624,9 +626,9 @@ namespace South
             .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
-        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &ImageAvailableSemaphore);
-        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &RenderFinishedSemaphore);
-        vkCreateFence(LogicDevice, &FenceInfo, nullptr, &FlightFence);
+        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
+        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
+        vkCreateFence(LogicDevice, &FenceInfo, nullptr, &m_FlightFence);
     }
 
     VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
@@ -705,26 +707,26 @@ namespace South
         VkRenderPassBeginInfo RenderPassInfo{
             .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .pNext           = nullptr,
-            .renderPass      = RenderPass,
-            .framebuffer     = SwapChainFramebuffers[imageIndex],
-            .renderArea      = VkRect2D({ 0, 0 }, SwapChainExtent),
+            .renderPass      = m_RenderPass,
+            .framebuffer     = m_SwapChainFramebuffers[imageIndex],
+            .renderArea      = VkRect2D({ 0, 0 }, m_SwapChainExtent),
             .clearValueCount = 1,
             .pClearValues    = &ClearColor,
         };
 
         vkCmdBeginRenderPass(Buffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBindPipeline(Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
+        vkCmdBindPipeline(Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
         // Draw
         {
-            vkCmdPushConstants(Buffer, PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
+            vkCmdPushConstants(Buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
                                &PushConstant);
 
-            VkBuffer MeshBuffer = VI_Buffer->GetVulkanBuffer();
+            VkBuffer MeshBuffer = m_VI_Buffer->GetVulkanBuffer();
             VkDeviceSize Offset = 0;
             vkCmdBindVertexBuffers(Buffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(Buffer, MeshBuffer, VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(Buffer, MeshBuffer, m_VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
 
             vkCmdDrawIndexed(Buffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
         }
@@ -736,9 +738,9 @@ namespace South
 
     void VulkanContext::DestroyMessenger()
     {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(VulkanInstance,
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
                                                                                "vkDestroyDebugUtilsMessengerEXT");
-        if (func) { func(VulkanInstance, Messenger, nullptr); }
+        if (func) { func(m_VulkanInstance, m_Messenger, nullptr); }
         else
         {
             STH_VK_WARN("vkDestroyDebugUtilsMessengerEXT not found");
@@ -752,7 +754,7 @@ namespace South
 
         std::vector<const char*> Extensions(GlfwExtensions, GlfwExtensions + ExtensionCount);
 
-        if (bEnableValidationLayers) { Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
+        if (m_bEnableValidationLayers) { Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
 
         return Extensions;
     }
@@ -765,7 +767,7 @@ namespace South
         std::vector<VkLayerProperties> AvailableLayers(Count);
         vkEnumerateInstanceLayerProperties(&Count, AvailableLayers.data());
 
-        for (const char* ReqLayer : RequiredValidationLayers)
+        for (const char* ReqLayer : m_RequiredValidationLayers)
         {
             bool bFound = false;
 

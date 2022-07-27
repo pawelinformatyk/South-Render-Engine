@@ -22,10 +22,10 @@ namespace South
         uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t typeFilter,
                                 VkMemoryPropertyFlags Properties) const;
 
-        uint32_t IndexOffset = 0;
+        uint32_t m_IndexOffset = 0;
 
-        VkBuffer Buffer       = VK_NULL_HANDLE;
-        VkDeviceMemory Memory = VK_NULL_HANDLE;
+        VkBuffer m_Buffer       = VK_NULL_HANDLE;
+        VkDeviceMemory m_Memory = VK_NULL_HANDLE;
     };
 
 } // namespace South

@@ -15,11 +15,11 @@ namespace South
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        glfwWindow = glfwCreateWindow(Width, Height, Application::GetName(), nullptr, nullptr);
+        m_glfwWindow = glfwCreateWindow(m_Width, m_Height, Application::GetName(), nullptr, nullptr);
 
-        glfwSetWindowUserPointer(glfwWindow, &closeWindowFN);
+        glfwSetWindowUserPointer(m_glfwWindow, &m_closeWindowFN);
 
-        glfwSetWindowCloseCallback(glfwWindow,
+        glfwSetWindowCloseCallback(m_glfwWindow,
                                    [](GLFWwindow* window)
                                    {
                                        auto& callback = *((CloseWindowCallback*)glfwGetWindowUserPointer(window));
@@ -29,15 +29,15 @@ namespace South
 
     void Window::DeInit()
     {
-        glfwDestroyWindow(glfwWindow);
+        glfwDestroyWindow(m_glfwWindow);
 
         glfwTerminate();
     }
 
-    GLFWwindow* Window::GetglfwWindow() const { return glfwWindow; }
+    GLFWwindow* Window::GetglfwWindow() const { return m_glfwWindow; }
 
     void Window::ProcessEvents() { glfwPollEvents(); }
 
-    void Window::SetCloseWindowCallback(const CloseWindowCallback& callback) { closeWindowFN = callback; }
+    void Window::SetCloseWindowCallback(const CloseWindowCallback& Callback) { m_closeWindowFN = Callback; }
 
 } // namespace South

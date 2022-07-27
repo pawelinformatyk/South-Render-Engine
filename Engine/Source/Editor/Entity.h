@@ -11,9 +11,9 @@ namespace South
     class Entity
     {
     private:
-        glm::mat4 Transform;
+        glm::mat4 m_Transform;
 
-        StaticMesh* mesh = nullptr;
+        StaticMesh* m_Mesh = nullptr;
     };
 
 } // namespace South

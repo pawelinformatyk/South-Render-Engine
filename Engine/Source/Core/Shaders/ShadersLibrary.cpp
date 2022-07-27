@@ -25,9 +25,9 @@ namespace South
 
     void ShadersLibrary::DeInit()
     {
-        for (const auto& [Name, Shader] : Shaders) { delete Shader; }
+        for (const auto& [Name, Shader] : m_Shaders) { delete Shader; }
 
-        Shaders.clear();
+        m_Shaders.clear();
 
         STH_INFO("ShadersLibrary Deinitialized - shaders cleaned.");
     }
@@ -38,17 +38,17 @@ namespace South
         auto* NewShader = new VulkanShader(PathToCode, Stages, bCompile);
         if (!NewShader) { return nullptr; }
 
-        Shaders.emplace(Name, NewShader);
+        m_Shaders.emplace(Name, NewShader);
 
         return NewShader;
     }
 
     VulkanShader* ShadersLibrary::GetShader(const std::string& Name)
     {
-        return Shaders.contains(Name) ? Shaders[Name] : nullptr;
+        return m_Shaders.contains(Name) ? m_Shaders[Name] : nullptr;
     }
 
-    const std::unordered_map<std::string, VulkanShader*>& ShadersLibrary::GetShaders() { return Shaders; }
+    const std::unordered_map<std::string, VulkanShader*>& ShadersLibrary::GetShaders() { return m_Shaders; }
 
     shaderc::Compiler& ShadersLibrary::GetCompiler() { return s_Compiler; }
 

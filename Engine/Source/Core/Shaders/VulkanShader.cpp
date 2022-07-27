@@ -15,9 +15,9 @@ namespace South
 
     VulkanShader::VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages,
                                bool bCompile /*= true*/)
-        : PathToCode(inPathToCode)
+        : m_PathToCode(inPathToCode)
     {
-        ShaderInfo = {
+        m_ShaderInfo = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .pNext = nullptr,
             .stage = InStages,
@@ -30,12 +30,12 @@ namespace South
     VulkanShader::~VulkanShader()
     {
         VkDevice LogDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
-        vkDestroyShaderModule(LogDev, ShaderInfo.module, nullptr);
+        vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
     }
 
     void VulkanShader::Compile()
     {
-        const std::ifstream Stream(PathToCode);
+        const std::ifstream Stream(m_PathToCode);
         std::stringstream StrStream;
         StrStream << Stream.rdbuf();
 
@@ -44,10 +44,10 @@ namespace South
         shaderc::Compiler& Compiler             = ShadersLibrary::GetCompiler();
         shaderc::CompileOptions CompilerOptions = ShadersLibrary::GetCompilerOptions();
 
-        const auto ShaderKind = GetShadercShaderKind(ShaderInfo.stage);
+        const auto ShaderKind = GetShadercShaderKind(m_ShaderInfo.stage);
 
         const shaderc::SpvCompilationResult Result =
-            Compiler.CompileGlslToSpv(GlslCode, ShaderKind, PathToCode.data(), CompilerOptions);
+            Compiler.CompileGlslToSpv(GlslCode, ShaderKind, m_PathToCode.data(), CompilerOptions);
 
         if (Result.GetCompilationStatus() != shaderc_compilation_status_success) { return; }
 
@@ -56,10 +56,10 @@ namespace South
 
         VkShaderModule Module = CreateShaderModule(SpirvCode);
 
-        ShaderInfo.module = Module;
+        m_ShaderInfo.module = Module;
     };
 
-    const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const { return ShaderInfo; }
+    const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const { return m_ShaderInfo; }
 
     VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {

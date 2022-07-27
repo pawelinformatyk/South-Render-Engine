@@ -14,7 +14,9 @@ namespace South
         Application();
 
         void Init();
+
         void Run();
+
         void DeInit();
 
         void OnEvent();
@@ -22,11 +24,15 @@ namespace South
         Window& GetWindow() const;
 
     private:
+        void InitGUI();
+        void DrawGUI();
+        void DeInitGUI();
+
         void CloseWindow();
 
-        std::unique_ptr<Window> pWindow = nullptr;
+        std::unique_ptr<Window> m_Window = nullptr;
 
-        bool bRunning = false;
+        bool m_bRunning = false;
 
         // Static functions
     public:
@@ -35,7 +41,7 @@ namespace South
 
         static void Kaboom();
 
-        static inline Application* Instance;
+        static inline Application* s_Instance;
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

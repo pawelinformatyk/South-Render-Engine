@@ -64,10 +64,10 @@ namespace South
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &Buffer);
+        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &m_Buffer);
 
         VkMemoryRequirements MemRequirements;
-        vkGetBufferMemoryRequirements(LogicalDev, Buffer, &MemRequirements);
+        vkGetBufferMemoryRequirements(LogicalDev, m_Buffer, &MemRequirements);
 
         VkMemoryAllocateInfo AllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -77,9 +77,9 @@ namespace South
                 FindMemoryType(MemProperties, MemRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &Memory);
+        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &m_Memory);
 
-        vkBindBufferMemory(LogicalDev, Buffer, Memory, 0);
+        vkBindBufferMemory(LogicalDev, m_Buffer, m_Memory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
@@ -119,7 +119,7 @@ namespace South
             .size      = Size,
         };
 
-        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
+        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, m_Buffer, 1, &CopyRegion);
 
         vkEndCommandBuffer(CommandBuffer);
 
@@ -145,11 +145,11 @@ namespace South
     {
         VkDevice LogicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
 
-        vkDestroyBuffer(LogicalDev, Buffer, nullptr);
-        vkFreeMemory(LogicalDev, Memory, nullptr);
+        vkDestroyBuffer(LogicalDev, m_Buffer, nullptr);
+        vkFreeMemory(LogicalDev, m_Memory, nullptr);
     }
 
-    VkBuffer VulkanVertexBuffer::GetBuffer() const { return Buffer; }
+    VkBuffer VulkanVertexBuffer::GetBuffer() const { return m_Buffer; }
 
     uint32_t VulkanVertexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t TypeFilter,
                                                 VkMemoryPropertyFlags Properties) const
