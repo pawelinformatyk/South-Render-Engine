@@ -12,37 +12,11 @@ namespace South
 
     void Logger::Init()
     {
-        // std::vector<spdlog::sink_ptr> hazelSinks = { std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
-        //                                              std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-        //                                                  "logs/HAZEL.log", true) };
+        s_CoreLogger = spdlog::stdout_color_mt("Core", spdlog::color_mode::always);
+        s_CoreLogger->set_level(spdlog::level::trace);
 
-        // std::vector<spdlog::sink_ptr> appSinks = { std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
-        //                                            std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/APP.log",
-        //                                                                                                true),
-        //                                            std::make_shared<EditorConsoleSink>(1) };
-
-        // std::vector<spdlog::sink_ptr> editorConsoleSinks = { std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-        //                                                          "logs/APP.log", true),
-        //                                                      std::make_shared<EditorConsoleSink>(1) };
-
-        // hazelSinks[0]->set_pattern("%^[%T] %n: %v%$");
-        // hazelSinks[1]->set_pattern("[%T] [%l] %n: %v");
-        // appSinks[0]->set_pattern("%^[%T] %n: %v%$");
-        // appSinks[1]->set_pattern("[%T] [%l] %n: %v");
-        // appSinks[2]->set_pattern("%^[%T] %n: %v%$");
-
-        // for (auto sink : editorConsoleSinks) sink->set_pattern("%^[%T] %n: %v%$");
-        // editorConsoleSinks[0]->set_pattern("[%T] [%l] %n: %v");
-
-        // s_CoreLogger = std::make_shared<spdlog::logger>("HAZEL", hazelSinks.begin(), hazelSinks.end());
-        // s_CoreLogger->set_level(spdlog::level::trace);
-
-        // s_VulkanLogger = std::make_shared<spdlog::logger>("APP", appSinks.begin(), appSinks.end());
-        // s_VulkanLogger->set_level(spdlog::level::trace);
-
-        // s_EditorConsoleLogger =
-        //     std::make_shared<spdlog::logger>("Console", editorConsoleSinks.begin(), editorConsoleSinks.end());
-        // s_EditorConsoleLogger->set_level(spdlog::level::trace);
+        s_VulkanLogger = spdlog::stdout_color_mt("Vulkan", spdlog::color_mode::always);
+        s_VulkanLogger->set_level(spdlog::level::trace);
     }
 
     void Logger::DeInit()

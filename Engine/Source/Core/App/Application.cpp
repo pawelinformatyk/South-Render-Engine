@@ -72,10 +72,9 @@ namespace South
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
-
         // IMGUI style and font
         {
-            io.Fonts->AddFontFromFileTTF("..\\ExternalLibraries\\ImGui\\Include\\misc\\fonts\\DroidSans.ttf", 17);
+            io.Fonts->AddFontFromFileTTF("..\\ExternalLibraries\\ImGui\\misc\\fonts\\DroidSans.ttf", 17);
 
             ImVec4* colors                         = ImGui::GetStyle().Colors;
             colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
