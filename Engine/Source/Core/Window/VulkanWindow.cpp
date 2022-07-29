@@ -17,7 +17,7 @@ namespace South
 
         VkInstance VulkanInstance = VulkanContext::Get().GetVulkanInstance();
 
-        // Initialize surface.
+        // Initialize vulkan surface.
         if (!glfwCreateWindowSurface(VulkanInstance, m_glfwWindow, nullptr, &m_Surface))
         {
             STH_ERR("Surface couldnt be created");

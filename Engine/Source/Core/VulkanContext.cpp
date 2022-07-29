@@ -15,39 +15,43 @@
 #include "glm.hpp"
 #include <gtx/string_cast.hpp>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
 namespace South
 {
-    std::random_device Dev;
-    std::mt19937 Rng(Dev());
-    std::uniform_real_distribution<float> Dist(0.f, 1.f);
+    std::random_device g_Dev;
+    std::mt19937 g_Rng(g_Dev());
+    std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
 
     // NDC space
-    const std::vector<Vertex> Vertices = { {
-                                               glm::vec3(-0.5f, -0.5f, 0.f),
-                                               glm::vec3(0.f),
-                                               glm::vec2(0.f),
-                                               glm::vec3(1.f, 1.f, 1),
-                                           },
-                                           {
-                                               glm::vec3(0.5f, -0.5f, 0.f),
-                                               glm::vec3(0.f),
-                                               glm::vec2(0.f),
-                                               glm::vec3(Dist(Rng), Dist(Rng), Dist(Rng)),
-                                           },
-                                           {
-                                               glm::vec3(0.5f, 0.5f, 0.f),
-                                               glm::vec3(0.f),
-                                               glm::vec2(0.f),
-                                               glm::vec3(Dist(Rng), Dist(Rng), Dist(Rng)),
-                                           },
-                                           {
-                                               glm::vec3(-0.5f, 0.5f, 0.f),
-                                               glm::vec3(0.f),
-                                               glm::vec2(0.f),
-                                               glm::vec3(Dist(Rng), Dist(Rng), Dist(Rng)),
-                                           } };
+    const std::vector<Vertex> g_Vertices = { {
+                                                 glm::vec3(-0.5f, -0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(1.f, 1.f, 1),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, -0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, 0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(-0.5f, 0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             } };
 
-    const std::vector<uint32_t> Indices = { 0, 1, 2, 2, 3, 0 };
+    const std::vector<uint32_t> g_Indices = { 0, 1, 2, 2, 3, 0 };
 
     // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
     // Projection too.
@@ -56,10 +60,15 @@ namespace South
         glm::mat4 Model;
         glm::mat4 View;
         glm::mat4 Projection;
-    };
+    } g_PushConstant;
 
-    Camera EditorCam;
-    PushConstant PushConstant;
+    Camera g_EditorCam;
+
+    VulkanContext& VulkanContext::Get()
+    {
+        static VulkanContext Instance;
+        return Instance;
+    }
 
     void VulkanContext::Init()
     {
@@ -77,10 +86,9 @@ namespace South
         m_Device = std::make_unique<VulkanDevice>();
         m_Device->Init(m_Surface);
 
-        ShadersLibrary& ShadersLib = ShadersLibrary::Get();
-        ShadersLib.Init();
-        ShadersLib.AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
-        ShadersLib.AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+        ShadersLibrary::Init();
+        ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
+        ShadersLibrary::AddShader("Base_F", "Resources/Shaders/Base.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
         CreateSwapChain(*GlfwWindow);
         CreateImageViews();
@@ -91,13 +99,13 @@ namespace South
         CreateCommands();
         CreateSyncObjects();
 
-        EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
-                                200.0f);
+        g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        g_EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
+                                  200.0f);
 
-        PushConstant.Model      = glm::mat4(1.f);
-        PushConstant.View       = EditorCam.GetViewMatrix();
-        PushConstant.Projection = EditorCam.GetProjectionMatrix();
+        g_PushConstant.Model      = glm::mat4(1.f);
+        g_PushConstant.View       = g_EditorCam.GetViewMatrix();
+        g_PushConstant.Projection = g_EditorCam.GetProjectionMatrix();
 
         m_bCanTick = true;
 
@@ -106,7 +114,7 @@ namespace South
 
     void VulkanContext::DeInit()
     {
-        ShadersLibrary::Get().DeInit();
+        ShadersLibrary::DeInit();
 
         m_bCanTick = false;
 
@@ -151,8 +159,9 @@ namespace South
         {
             static int16_t i = 0;
             ++i;
-            PushConstant.Model = glm::rotate(PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-            PushConstant.Model = glm::scale(PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
+            g_PushConstant.Model =
+                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
         }
 
         VkDevice LogicDevice  = m_Device->GetDevice();
@@ -206,10 +215,6 @@ namespace South
         vkQueuePresentKHR(GraphicsQueue, &SresentInfo);
     }
 
-    VkInstance VulkanContext::GetVulkanInstance() { return m_VulkanInstance; }
-
-    VulkanDevice& VulkanContext::GetCurrentDevice() { return *m_Device; }
-
     void VulkanContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
@@ -236,31 +241,6 @@ namespace South
         };
 
         vkCreateInstance(&sCreateInfo, nullptr, &m_VulkanInstance);
-    }
-
-    void VulkanContext::CreateMessenger()
-    {
-        VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
-            .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-            .pNext           = nullptr,
-            .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-            .pfnUserCallback = ValidationMessageCallback,
-            .pUserData       = nullptr,
-        };
-
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
-                                                                              "vkCreateDebugUtilsMessengerEXT");
-
-        if (func) { func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger); }
-        else
-        {
-            STH_VK_WARN("vkCreateDebugUtilsMessengerEXT not found");
-        }
     }
 
     void VulkanContext::CreateSurface(GLFWwindow& Window)
@@ -400,9 +380,8 @@ namespace South
         VkDevice logicDevice = m_Device->GetDevice();
 
         // #TODO : Check for errors;
-        ShadersLibrary& ShadersLib = ShadersLibrary::Get();
-        const auto& vertShader     = *ShadersLib.GetShader("Base_V");
-        const auto& fragShader     = *ShadersLib.GetShader("Base_F");
+        const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
+        const auto& fragShader = *ShadersLibrary::GetShader("Base_F");
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
 
@@ -517,7 +496,7 @@ namespace South
         VkPushConstantRange pushConstantRange{
             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset     = 0,
-            .size       = sizeof(PushConstant),
+            .size       = sizeof(g_PushConstant),
         };
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{
@@ -582,9 +561,10 @@ namespace South
 
     void VulkanContext::CreateModelBuffers()
     {
-        m_VI_Buffer = new VulkanVertexIndexBuffer(
-            static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertices[0]) * Vertices.size()),
-            static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(Indices[0]) * Indices.size()));
+        m_VI_Buffer = new VulkanVertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
+                                                  static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
+                                                  static_cast<const void*>(g_Indices.data()),
+                                                  static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
     }
 
     void VulkanContext::CreateCommands()
@@ -641,7 +621,7 @@ namespace South
 
         for (const auto& Format : AvailableFormats)
         {
-            if (Format.format == VK_FORMAT_B8G8R8A8_SRGB && Format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            if (Format.format == VK_FORMAT_B8G8R8A8_UNORM && Format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 return Format;
             }
@@ -720,20 +700,145 @@ namespace South
 
         // Draw
         {
-            vkCmdPushConstants(Buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstant),
-                               &PushConstant);
+            vkCmdPushConstants(Buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(g_PushConstant),
+                               &g_PushConstant);
 
             VkBuffer MeshBuffer = m_VI_Buffer->GetVulkanBuffer();
             VkDeviceSize Offset = 0;
             vkCmdBindVertexBuffers(Buffer, 0, 1, &MeshBuffer, &Offset);
             vkCmdBindIndexBuffer(Buffer, MeshBuffer, m_VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexed(Buffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(Buffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
+        }
+
+        // GUI
+        {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            // DrawTitleBar();
+            ImGui::Begin("TitleBar", nullptr,
+                         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking);
+            {
+
+                ImGui::BeginMenuBar();
+                {
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("File"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("Project Settings"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("Editor Settings"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+                    if (ImGui::BeginMenu("View"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+                }
+                ImGui::EndMenuBar();
+
+                ImGui::BeginMenuBar();
+                {
+                    if (ImGui::Button("_")) { Application::Get().MinimiseApplication(true); }
+
+                    if (ImGui::Button("[]")) { Application::Get().MaximiseApplication(); }
+
+                    if (ImGui::Button("X")) { Application::Get().CloseApplication(); }
+                }
+                ImGui::EndMenuBar();
+            }
+            ImGui::End();
+
+            ImGui::ShowDemoWindow();
+
+            ImGui::Render();
+
+            ImDrawData* DrawData = ImGui::GetDrawData();
+
+            ImGui_ImplVulkan_RenderDrawData(DrawData, Buffer);
         }
 
         vkCmdEndRenderPass(Buffer);
 
         vkEndCommandBuffer(Buffer);
+
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+
+    std::vector<const char*> VulkanContext::GetRequiredInstanceExtensions()
+    {
+        uint32_t ExtensionCount     = 0;
+        const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&ExtensionCount);
+
+        std::vector<const char*> Extensions(GlfwExtensions, GlfwExtensions + ExtensionCount);
+
+        if (m_bEnableValidationLayers) { Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
+
+        return Extensions;
+    }
+
+    void VulkanContext::CreateMessenger()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
+            .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            .pNext           = nullptr,
+            .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+            .pfnUserCallback = ValidationMessageCallback,
+            .pUserData       = nullptr,
+        };
+
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
+                                                                              "vkCreateDebugUtilsMessengerEXT");
+
+        if (func) { func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger); }
+        else
+        {
+            STH_VK_WARN("vkCreateDebugUtilsMessengerEXT not found");
+        }
     }
 
     void VulkanContext::DestroyMessenger()
@@ -747,16 +852,23 @@ namespace South
         }
     }
 
-    std::vector<const char*> VulkanContext::GetRequiredInstanceExtensions()
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
     {
-        uint32_t ExtensionCount     = 0;
-        const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&ExtensionCount);
+        if (pCallbackData)
+        {
+            switch (messageSeverity)
+            {
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: STH_VK_ERR(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: STH_VK_WARN(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: STH_VK_INFO(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: STH_VK_TRACE(pCallbackData->pMessage); break;
+            }
+        }
 
-        std::vector<const char*> Extensions(GlfwExtensions, GlfwExtensions + ExtensionCount);
-
-        if (m_bEnableValidationLayers) { Extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
-
-        return Extensions;
+        // Return always false.
+        return VK_FALSE;
     }
 
     bool VulkanContext::CheckValidationLayers()
@@ -786,29 +898,4 @@ namespace South
         return true;
     }
 
-    // Static functions
-
-    VulkanContext& VulkanContext::Get()
-    {
-        static VulkanContext Instance;
-        return Instance;
-    }
-
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
-    {
-        if (pCallbackData)
-        {
-            switch (messageSeverity)
-            {
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: STH_VK_ERR(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: STH_VK_WARN(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: STH_VK_INFO(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: STH_VK_TRACE(pCallbackData->pMessage); break;
-            }
-        }
-
-        return VK_FALSE;
-    }
 } // namespace South

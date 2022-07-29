@@ -2,6 +2,8 @@
 
 #include "Core/Window/Window.h"
 
+// #TODO : Init - not deleting memory?
+
 namespace South
 {
     class VulkanContext;
@@ -11,37 +13,43 @@ namespace South
     class Application
     {
     public:
-        Application();
+        static const char* GetName() { return "SouthRenderEngine"; }
 
-        void Init();
-
-        void Run();
-
-        void DeInit();
-
-        void OnEvent();
-
-        Window& GetWindow() const;
-
-    private:
-        void InitGUI();
-        void DrawGUI();
-        void DeInitGUI();
-
-        void CloseWindow();
-
-        std::unique_ptr<Window> m_Window = nullptr;
-
-        bool m_bRunning = false;
-
-        // Static functions
-    public:
-        static const char* GetName();
-        static Application& Get();
+        static Application& Get() { return *s_Instance; };
 
         static void Kaboom();
 
         static inline Application* s_Instance;
+
+    public:
+        Application() { s_Instance = this; }
+
+        void Run();
+
+        Window& GetWindow() const { return *m_Window; }
+
+    private:
+        void Init();
+        void DeInit();
+
+        void InitGUI();
+        void DrawGUI();
+        void DeInitGUI();
+
+        bool m_bRunning = false;
+
+        //~ Events and Windows.
+    public:
+        void CloseApplication();
+        void MaximiseApplication();
+        void MinimiseApplication(bool bMinimized);
+
+    private:
+        std::unique_ptr<Window> m_Window = nullptr;
+
+        bool m_WindowMinimized = false;
+
+        //~ Events and Windows.
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

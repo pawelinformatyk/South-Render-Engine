@@ -13,9 +13,11 @@ namespace South
     // Class holding all "global" vulkan related variables.
     class VulkanContext
     {
+        // ~Static
     public:
         static VulkanContext& Get();
 
+        // ~Static
     public:
         VulkanContext(VulkanContext const&) = delete;
         void operator=(VulkanContext const&) = delete;
@@ -24,20 +26,17 @@ namespace South
         void DeInit();
         void Tick();
 
-        VkInstance GetVulkanInstance();
-        VulkanDevice& GetCurrentDevice();
-
-    private:
-        static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+        VkInstance GetVulkanInstance() const { return m_VulkanInstance; }
+        VulkanDevice& GetCurrentDevice() const { return *m_Device; };
+        VkRenderPass GetRenderPass() const { return m_RenderPass; };
+        VkCommandBuffer GetCommandBuffer() const { return m_CommandBuffer; }
+        VkCommandPool GetCommandPool() const { return m_CommandPool; }
 
     private:
         VulkanContext(){};
         ~VulkanContext(){};
 
         void CreateInstance();
-        void CreateMessenger();
 
         void CreateSurface(GLFWwindow& Window);
         void CreateSwapChain(GLFWwindow& Window);
@@ -57,22 +56,9 @@ namespace South
 
         void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-        void DestroyMessenger();
-
         std::vector<const char*> GetRequiredInstanceExtensions();
 
-        bool CheckValidationLayers();
-
         VkInstance m_VulkanInstance = VK_NULL_HANDLE;
-
-        const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
-
-#ifdef NDEBUG
-        const bool m_bEnableValidationLayers = false;
-#else
-        const bool m_bEnableValidationLayers = true;
-#endif
-        VkDebugUtilsMessengerEXT m_Messenger;
 
         VkSurfaceKHR m_Surface     = VK_NULL_HANDLE;
         VkSwapchainKHR m_SwapChain = VK_NULL_HANDLE;
@@ -96,5 +82,28 @@ namespace South
         VulkanVertexIndexBuffer* m_VI_Buffer   = nullptr;
 
         bool m_bCanTick = false;
+
+        //~ Validations layers.
+    private:
+        void CreateMessenger();
+        void DestroyMessenger();
+
+        static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+
+        bool CheckValidationLayers();
+
+        const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+
+#ifdef NDEBUG
+        const bool m_bEnableValidationLayers = false;
+#else
+        const bool m_bEnableValidationLayers = true;
+#endif
+
+        VkDebugUtilsMessengerEXT m_Messenger;
+
+        //~ Validations layers.
     };
 }; // namespace South

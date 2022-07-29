@@ -8,6 +8,7 @@
 namespace South
 {
 
+    // Shouldbe there exists sth as vulkan window - code should be moved to renderer or smt.
     class VulkanWindow : Window
     {
     public:

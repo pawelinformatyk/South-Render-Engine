@@ -14,17 +14,35 @@ namespace South
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-        m_glfwWindow = glfwCreateWindow(m_Width, m_Height, Application::GetName(), nullptr, nullptr);
+        auto* Monitor              = glfwGetPrimaryMonitor();
+        const GLFWvidmode* VidMode = glfwGetVideoMode(Monitor);
+        m_glfwWindow = glfwCreateWindow(VidMode->width, VidMode->height, Application::GetName(), nullptr, nullptr);
 
-        glfwSetWindowUserPointer(m_glfwWindow, &m_closeWindowFN);
+        glfwMaximizeWindow(m_glfwWindow);
 
-        glfwSetWindowCloseCallback(m_glfwWindow,
-                                   [](GLFWwindow* window)
-                                   {
-                                       auto& callback = *((CloseWindowCallback*)glfwGetWindowUserPointer(window));
-                                       callback();
-                                   });
+        // Events
+        {
+            glfwSetWindowUserPointer(m_glfwWindow, &m_WindowUserData);
+
+            // #TODO : Should app dispatch events or window.
+            // What is prettier? I Think app.
+            // Its the same in the end.
+            // And why not just functions. I GUESS JUST TEST AND SEE LMAO
+
+            glfwSetWindowIconifyCallback(m_glfwWindow,
+                                         [](GLFWwindow* Window, int Iconified)
+                                         {
+                                             WindowUserData* UserData =
+                                                 static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
+
+                                             if (UserData && UserData->IconifyWindowFunction)
+                                             {
+                                                 UserData->IconifyWindowFunction(Iconified);
+                                             }
+                                         });
+        }
     }
 
     void Window::DeInit()
@@ -34,10 +52,8 @@ namespace South
         glfwTerminate();
     }
 
-    GLFWwindow* Window::GetglfwWindow() const { return m_glfwWindow; }
-
     void Window::ProcessEvents() { glfwPollEvents(); }
 
-    void Window::SetCloseWindowCallback(const CloseWindowCallback& Callback) { m_closeWindowFN = Callback; }
+    void Window::Iconify(bool bMinimised) { glfwIconifyWindow(m_glfwWindow); }
 
 } // namespace South

@@ -7,38 +7,30 @@
 
 namespace South
 {
-    class VulkanShader;
 
     // Library containing all named compiled shaders in unordererd map.
     // #TODO : Should be part of asset manager?
+    // Part of rendered but idk?
     class ShadersLibrary
     {
     public:
-        static ShadersLibrary& Get();
+        static void Init();
+        static void DeInit();
 
-        ShadersLibrary(ShadersLibrary const&) = delete;
-        void operator=(ShadersLibrary const&) = delete;
+        static VulkanShader* AddShader(const std::string& Name, const std::string& PathToCode,
+                                       VkShaderStageFlagBits Stages, bool bCompile = true);
+        static VulkanShader* GetShader(const std::string& Name);
 
-        void Init();
-        void DeInit();
-
-        VulkanShader* AddShader(const std::string& Name, const std::string& PathToCode, VkShaderStageFlagBits Stages,
-                                bool bCompile = true);
-        VulkanShader* GetShader(const std::string& Name);
-
-        const std::unordered_map<std::string, VulkanShader*>& GetShaders();
+        static const std::unordered_map<std::string, VulkanShader*>& GetShaders();
 
         static shaderc::Compiler& GetCompiler();
         static shaderc::CompileOptions& GetCompilerOptions();
 
     private:
-        ShadersLibrary(){};
-        ~ShadersLibrary(){};
-
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
 
-        std::unordered_map<std::string, VulkanShader*> m_Shaders;
+        static std::unordered_map<std::string, VulkanShader*> s_Shaders;
     };
 
 } // namespace South

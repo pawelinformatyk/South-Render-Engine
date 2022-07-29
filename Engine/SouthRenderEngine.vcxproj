@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\AssetManager\AssetManager.cpp" />
     <ClCompile Include="Source\Core\Log\Logger.cpp" />
     <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
     <ClCompile Include="Source\Core\Window\VulkanWindow.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="Source\Core\VulkanSwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\AssetManager\AssetManager.h" />
     <ClInclude Include="Source\Core\Log\Logger.h" />
     <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
     <ClInclude Include="Source\Core\Window\VulkanWindow.h" />

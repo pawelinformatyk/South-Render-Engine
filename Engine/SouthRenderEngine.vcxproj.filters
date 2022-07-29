@@ -72,6 +72,9 @@
     <ClCompile Include="Source\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\AssetManager\AssetManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\App\Application.h">
@@ -126,6 +129,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Log\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\AssetManager\AssetManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
