@@ -4,7 +4,6 @@
 
 int main(int argc, char** argv)
 {
-
     South::Logger::Init();
 
     STH_INFO("Application Start");

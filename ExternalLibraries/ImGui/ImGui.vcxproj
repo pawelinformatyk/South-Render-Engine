@@ -11,24 +11,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\imconfig.h" />
-    <ClInclude Include="Include\imgui.h" />
-    <ClInclude Include="Include\imgui_impl_glfw.h" />
-    <ClInclude Include="Include\imgui_impl_vulkan.h" />
-    <ClInclude Include="Include\imgui_internal.h" />
-    <ClInclude Include="Include\imstb_rectpack.h" />
-    <ClInclude Include="Include\imstb_textedit.h" />
-    <ClInclude Include="Include\imstb_truetype.h" />
+    <ClInclude Include="backends\imgui_impl_glfw.h" />
+    <ClInclude Include="backends\imgui_impl_vulkan.h" />
+    <ClInclude Include="imconfig.h" />
+    <ClInclude Include="imgui.h" />
+    <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imstb_rectpack.h" />
+    <ClInclude Include="imstb_textedit.h" />
+    <ClInclude Include="imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Include\imgui.cpp" />
-    <ClCompile Include="Include\imgui_demo.cpp" />
-    <ClCompile Include="Include\imgui_draw.cpp" />
-    <ClCompile Include="Include\imgui_impl_glfw.cpp" />
-    <ClCompile Include="Include\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="Include\imgui_tables.cpp" />
-    <ClCompile Include="Include\imgui_widgets.cpp" />
-    <ClCompile Include="Include\vulkan_example.cpp" />
+    <ClCompile Include="backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="backends\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="examples\example_glfw_vulkan\main.cpp" />
+    <ClCompile Include="imgui.cpp" />
+    <ClCompile Include="imgui_demo.cpp" />
+    <ClCompile Include="imgui_draw.cpp" />
+    <ClCompile Include="imgui_tables.cpp" />
+    <ClCompile Include="imgui_widgets.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -36,6 +36,7 @@
     <ProjectGuid>{790e703f-e2d8-4549-9de9-58b64c48d8f7}</ProjectGuid>
     <RootNamespace>ImGui</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>ImGui</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -78,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\GLFW\include\;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\GLFW\include\;C:\Dev\VulkanSDK\Include;$(ProjectDir);$(ProjectDir)\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -97,7 +98,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\GLFW\include\;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ExternalLibraries\GLFW\include\;C:\Dev\VulkanSDK\Include;$(ProjectDir);$(ProjectDir)\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
