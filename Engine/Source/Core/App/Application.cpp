@@ -18,7 +18,7 @@ namespace South
 
         while (m_bRunning)
         {
-            m_Window->ProcessEvents();
+            ProcessEvents();
 
             if (m_WindowMinimized) { continue; }
 
@@ -264,6 +264,8 @@ namespace South
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
+
+    void Application::ProcessEvents() { m_Window->ProcessEvents(); }
 
     void Application::CloseApplication() { m_bRunning = false; }
 

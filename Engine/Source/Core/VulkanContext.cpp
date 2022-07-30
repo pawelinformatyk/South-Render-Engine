@@ -787,8 +787,6 @@ namespace South
             }
             ImGui::End();
 
-            ImGui::ShowDemoWindow();
-
             ImGui::Render();
 
             ImDrawData* DrawData = ImGui::GetDrawData();

@@ -40,6 +40,8 @@ namespace South
 
         //~ Events and Windows.
     public:
+        void ProcessEvents();
+
         void CloseApplication();
         void MaximiseApplication();
         void MinimiseApplication(bool bMinimized);
