@@ -95,7 +95,7 @@ namespace South
 
         // IMGUI style and font
         {
-            io.Fonts->AddFontFromFileTTF("..\\ExternalLibraries\\ImGui\\misc\\fonts\\DroidSans.ttf", 17);
+            io.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", 17);
 
             ImVec4* colors                         = ImGui::GetStyle().Colors;
             colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
