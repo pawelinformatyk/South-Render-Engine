@@ -1,9 +1,9 @@
 #include "sthpch.h"
 
 #include "Core/App/Application.h"
-#include "Core/VulkanContext.h"
-#include "Core/AssetManager/AssetManager.h"
-#include "Core/AssetManager/AssetManager.h"
+#include "Core/Renderer/Renderer.h"
+#include "Core/FileSystem/FileSystem.h"
+#include "Core/FileSystem/FileSystem.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -11,6 +11,23 @@
 
 namespace South
 {
+
+    void Application::Kaboom()
+    {
+        STH_CRIT("Kaboom");
+
+        *(int*)0 = 0;
+    }
+
+    Application::Application()
+    {
+        if (s_Instance) { return; }
+
+        s_Instance = this;
+        m_Window   = std::make_unique<Window>();
+    }
+
+    Application::~Application() { s_Instance = nullptr; }
 
     void Application::Run()
     {
@@ -20,31 +37,35 @@ namespace South
         {
             ProcessEvents();
 
-            if (m_WindowMinimized) { continue; }
+            Renderer::BeginFrame();
+            {
+                // Submit to RendererContext
 
-            VulkanContext::Get().Tick();
+                // Renderer::Submit([]() {});
+                Renderer::Draw();
+            }
+            Renderer::EndFrame();
 
-            DrawGUI();
+            Renderer::Flush();
         }
 
         DeInit();
     }
 
-    void Application::Kaboom()
-    {
-        STH_CRIT("Kaboom");
-
-        *(int*)0 = 0;
-    }
 
 
     void Application::Init()
     {
-        m_Window = std::make_unique<Window>();
+        if (!m_Window)
+        {
+            STH_ERR("Cannot initialised application. Window was not created.");
+            return;
+        }
+
         m_Window->SetIconifyWindowCallback([this](bool bMinimised) { MinimiseApplication(bMinimised); });
         m_Window->Init();
 
-        VulkanContext::Get().Init();
+        Renderer::Init();
 
         InitGUI();
 
@@ -55,7 +76,7 @@ namespace South
     {
         DeInitGUI();
 
-        VulkanContext::Get().DeInit();
+        Renderer::DeInit();
 
         m_Window->SetIconifyWindowCallback([](bool bMinimised) {});
 
@@ -160,7 +181,7 @@ namespace South
 
         ImGui_ImplGlfw_InitForVulkan(m_Window->GetglfwWindow(), true);
 
-        const VulkanContext& RendererContext = VulkanContext::Get();
+        const RendererContext& RendererContext = Renderer::GetContext();
 
         const VulkanDevice& GPU = RendererContext.GetCurrentDevice();
 
@@ -232,30 +253,6 @@ namespace South
         vkDeviceWaitIdle(GPU.GetDevice());
 
         ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
-
-    void Application::DrawGUI()
-    {
-        // ImGui_ImplVulkan_NewFrame();
-        // ImGui_ImplGlfw_NewFrame();
-        // ImGui::NewFrame();
-
-        //{
-        //    ImGui::Begin("VSouth");
-        //    {
-        //        ImGui::Text("This is some useful text."); // Display some text (you can use a format strings too)
-        //    }
-        //    ImGui::End();
-        //}
-
-        // ImGui::Render();
-        // ImGui::UpdatePlatformWindows();
-        // ImGui::RenderPlatformWindowsDefault();
-
-        // ImDrawData* DrawData      = ImGui::GetDrawData();
-        // VkCommandBuffer CmdBuffer = VulkanContext::Get().GetCommandBuffer();
-
-        // ImGui_ImplVulkan_RenderDrawData(DrawData, CmdBuffer);
     }
 
     void Application::DeInitGUI()

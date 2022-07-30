@@ -4,7 +4,7 @@
 
 namespace South
 {
-    class AssetManager
+    class FileSystem
     {
     public:
         static const char* GetFontsDirectory() { return "misc\\fonts\\"; };

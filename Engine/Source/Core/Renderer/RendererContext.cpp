@@ -1,77 +1,52 @@
 #include "sthpch.h"
 
-#include "Core/VulkanContext.h"
+#include "Core/Renderer/RendererContext.h"
+#include "Core/Renderer/Renderer.h"
 
 #include "Core/App/Application.h"
 #include "Core/VulkanVertexIndexBuffer.h"
 #include "Core/Shaders/VulkanShader.h"
 #include "Core/Shaders/ShadersLibrary.h"
 
-#include "Editor/Mesh.h"
-#include "Editor/Camera.h"
-
 #include <GLFW/glfw3.h>
-
-#include "glm.hpp"
-#include <gtx/string_cast.hpp>
-
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
 
 namespace South
 {
-    std::random_device g_Dev;
-    std::mt19937 g_Rng(g_Dev());
-    std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
 
-    // NDC space
-    const std::vector<Vertex> g_Vertices = { {
-                                                 glm::vec3(-0.5f, -0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(1.f, 1.f, 1),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, -0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, 0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(-0.5f, 0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             } };
-
-    const std::vector<uint32_t> g_Indices = { 0, 1, 2, 2, 3, 0 };
-
-    // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
-    // Projection too.
-    struct PushConstant
+    void RendererContext::Init()
     {
-        glm::mat4 Model;
-        glm::mat4 View;
-        glm::mat4 Projection;
-    } g_PushConstant;
+        std::random_device g_Dev;
+        std::mt19937 g_Rng(g_Dev());
+        std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
 
-    Camera g_EditorCam;
+        // NDC space
+        m_Vertices = { {
+                           glm::vec3(-0.5f, -0.5f, 0.f),
+                           glm::vec3(0.f),
+                           glm::vec2(0.f),
+                           glm::vec3(1.f, 1.f, 1),
+                       },
+                       {
+                           glm::vec3(0.5f, -0.5f, 0.f),
+                           glm::vec3(0.f),
+                           glm::vec2(0.f),
+                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                       },
+                       {
+                           glm::vec3(0.5f, 0.5f, 0.f),
+                           glm::vec3(0.f),
+                           glm::vec2(0.f),
+                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                       },
+                       {
+                           glm::vec3(-0.5f, 0.5f, 0.f),
+                           glm::vec3(0.f),
+                           glm::vec2(0.f),
+                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                       } };
 
-    VulkanContext& VulkanContext::Get()
-    {
-        static VulkanContext Instance;
-        return Instance;
-    }
+        m_Indices = { 0, 1, 2, 2, 3, 0 };
 
-    void VulkanContext::Init()
-    {
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
         if (!GlfwWindow) { return; }
 
@@ -99,24 +74,21 @@ namespace South
         CreateCommands();
         CreateSyncObjects();
 
-        g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        g_EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
+
+        m_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        m_EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
                                   200.0f);
 
-        g_PushConstant.Model      = glm::mat4(1.f);
-        g_PushConstant.View       = g_EditorCam.GetViewMatrix();
-        g_PushConstant.Projection = g_EditorCam.GetProjectionMatrix();
+        m_PushConstant.Model      = glm::mat4(1.f);
+        m_PushConstant.View       = m_EditorCam.GetViewMatrix();
+        m_PushConstant.Projection = m_EditorCam.GetProjectionMatrix();
 
-        m_bCanTick = true;
-
-        STH_INFO("VulkanContext Initialized.");
+        STH_INFO("RendererContext Initialized.");
     }
 
-    void VulkanContext::DeInit()
+    void RendererContext::DeInit()
     {
         ShadersLibrary::DeInit();
-
-        m_bCanTick = false;
 
         VkDevice LogicDevice = m_Device->GetDevice();
 
@@ -136,10 +108,6 @@ namespace South
         vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
 
 
-        vkDestroyFence(LogicDevice, m_FlightFence, nullptr);
-        vkDestroySemaphore(LogicDevice, m_ImageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(LogicDevice, m_RenderFinishedSemaphore, nullptr);
-
         m_Device->DeInit();
 
         if (m_bEnableValidationLayers) { DestroyMessenger(); }
@@ -148,74 +116,10 @@ namespace South
 
         vkDestroyInstance(m_VulkanInstance, nullptr);
 
-        STH_INFO("VulkanContext Deinitialized.");
+        STH_INFO("RendererContext Deinitialized.");
     }
 
-    void VulkanContext::Tick()
-    {
-        if (!m_bCanTick) { return; }
-
-        // Animation
-        {
-            static int16_t i = 0;
-            ++i;
-            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-            g_PushConstant.Model =
-                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
-        }
-
-        VkDevice LogicDevice  = m_Device->GetDevice();
-        VkQueue GraphicsQueue = m_Device->GetQ();
-
-        // Wait for the previous frame to finish
-        vkWaitForFences(LogicDevice, 1, &m_FlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(LogicDevice, 1, &m_FlightFence);
-
-        // Acquire an image from the swap chain
-        uint32_t ImageIndex = 0;
-        vkAcquireNextImageKHR(LogicDevice, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE,
-                              &ImageIndex);
-
-        // Submit the recorded command buffer
-        vkResetCommandBuffer(m_CommandBuffer, 0);
-        RecordCommandBuffer(m_CommandBuffer, ImageIndex);
-
-        VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore WaitSemaphores[]      = { m_ImageAvailableSemaphore };
-        VkSemaphore SignalSemaphores[]    = { m_RenderFinishedSemaphore };
-
-        VkSubmitInfo SubmitInfo{
-            .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .pNext                = nullptr,
-            .waitSemaphoreCount   = 1,
-            .pWaitSemaphores      = WaitSemaphores,
-            .pWaitDstStageMask    = WaitStages,
-            .commandBufferCount   = 1,
-            .pCommandBuffers      = &m_CommandBuffer,
-            .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = SignalSemaphores,
-        };
-
-        vkQueueSubmit(m_Device->GetQ(), 1, &SubmitInfo, m_FlightFence);
-
-        VkSwapchainKHR SwapChains[] = { m_SwapChain };
-
-        // Present the swap chain image
-        VkPresentInfoKHR SresentInfo{
-            .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-            .pNext              = nullptr,
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores    = SignalSemaphores,
-            .swapchainCount     = 1,
-            .pSwapchains        = SwapChains,
-            .pImageIndices      = &ImageIndex,
-            .pResults           = nullptr,
-        };
-
-        vkQueuePresentKHR(GraphicsQueue, &SresentInfo);
-    }
-
-    void VulkanContext::CreateInstance()
+    void RendererContext::CreateInstance()
     {
         VkApplicationInfo sAppInfo{
             .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -243,12 +147,12 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &m_VulkanInstance);
     }
 
-    void VulkanContext::CreateSurface(GLFWwindow& Window)
+    void RendererContext::CreateSurface(GLFWwindow& Window)
     {
         if (!glfwCreateWindowSurface(m_VulkanInstance, &Window, nullptr, &m_Surface)) { return /*error*/; }
     }
 
-    void VulkanContext::CreateSwapChain(GLFWwindow& window)
+    void RendererContext::CreateSwapChain(GLFWwindow& window)
     {
         VkPhysicalDevice physDevice = m_Device->GetPhysicalDevice();
         VkDevice logicDevice        = m_Device->GetDevice();
@@ -298,7 +202,7 @@ namespace South
         m_SwapChainExtent      = createInfo.imageExtent;
     }
 
-    void VulkanContext::CreateImageViews()
+    void RendererContext::CreateImageViews()
     {
         VkDevice logicDevice = m_Device->GetDevice();
 
@@ -328,7 +232,7 @@ namespace South
         }
     }
 
-    void VulkanContext::CreateRenderPass()
+    void RendererContext::CreateRenderPass()
     {
         VkAttachmentDescription colorAttachment{
             .format         = m_SwapChainImageFormat,
@@ -375,7 +279,7 @@ namespace South
         vkCreateRenderPass(m_Device->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass);
     }
 
-    void VulkanContext::CreateGraphicsPipeline()
+    void RendererContext::CreateGraphicsPipeline()
     {
         VkDevice logicDevice = m_Device->GetDevice();
 
@@ -496,7 +400,7 @@ namespace South
         VkPushConstantRange pushConstantRange{
             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset     = 0,
-            .size       = sizeof(g_PushConstant),
+            .size       = sizeof(m_PushConstant),
         };
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{
@@ -534,7 +438,7 @@ namespace South
         vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
     }
 
-    void VulkanContext::CreateFramebuffers()
+    void RendererContext::CreateFramebuffers()
     {
         VkDevice LogicDevice = m_Device->GetDevice();
 
@@ -559,15 +463,15 @@ namespace South
         }
     }
 
-    void VulkanContext::CreateModelBuffers()
+    void RendererContext::CreateModelBuffers()
     {
-        m_VI_Buffer = new VulkanVertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
-                                                  static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
-                                                  static_cast<const void*>(g_Indices.data()),
-                                                  static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
+        m_VI_Buffer = new VulkanVertexIndexBuffer(static_cast<const void*>(m_Vertices.data()),
+                                                  static_cast<uint32_t>(sizeof(m_Vertices[0]) * m_Vertices.size()),
+                                                  static_cast<const void*>(m_Indices.data()),
+                                                  static_cast<uint32_t>(sizeof(m_Indices[0]) * m_Indices.size()));
     }
 
-    void VulkanContext::CreateCommands()
+    void RendererContext::CreateCommands()
     {
         VkDevice logicDevice = m_Device->GetDevice();
 
@@ -591,7 +495,7 @@ namespace South
         vkAllocateCommandBuffers(logicDevice, &AllocInfo, &m_CommandBuffer);
     }
 
-    void VulkanContext::CreateSyncObjects()
+    void RendererContext::CreateSyncObjects()
     {
         VkDevice LogicDevice = m_Device->GetDevice();
 
@@ -611,7 +515,7 @@ namespace South
         vkCreateFence(LogicDevice, &FenceInfo, nullptr, &m_FlightFence);
     }
 
-    VkSurfaceFormatKHR VulkanContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         uint32_t FormatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &FormatCount, nullptr);
@@ -630,7 +534,7 @@ namespace South
         return AvailableFormats[0];
     }
 
-    VkPresentModeKHR VulkanContext::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkPresentModeKHR RendererContext::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         // Presentation mode.
         uint32_t PresentModesCount;
@@ -648,7 +552,7 @@ namespace South
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities, GLFWwindow& Window)
+    VkExtent2D RendererContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities, GLFWwindow& Window)
     {
         if (Capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
         {
@@ -670,139 +574,7 @@ namespace South
         }
     }
 
-    void VulkanContext::RecordCommandBuffer(VkCommandBuffer Buffer, uint32_t imageIndex)
-    {
-        VkCommandBufferBeginInfo BeginInfo{
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .pNext            = nullptr,
-            .flags            = 0,
-            .pInheritanceInfo = nullptr,
-        };
-
-        vkBeginCommandBuffer(Buffer, &BeginInfo);
-
-        // #TODO : Pipeline static value?
-        VkClearValue ClearColor = { { 0.008f, 0.008f, 0.008f, 1.f } };
-
-        VkRenderPassBeginInfo RenderPassInfo{
-            .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext           = nullptr,
-            .renderPass      = m_RenderPass,
-            .framebuffer     = m_SwapChainFramebuffers[imageIndex],
-            .renderArea      = VkRect2D({ 0, 0 }, m_SwapChainExtent),
-            .clearValueCount = 1,
-            .pClearValues    = &ClearColor,
-        };
-
-        vkCmdBeginRenderPass(Buffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(Buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
-
-        // Draw
-        {
-            vkCmdPushConstants(Buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(g_PushConstant),
-                               &g_PushConstant);
-
-            VkBuffer MeshBuffer = m_VI_Buffer->GetVulkanBuffer();
-            VkDeviceSize Offset = 0;
-            vkCmdBindVertexBuffers(Buffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(Buffer, MeshBuffer, m_VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
-
-            vkCmdDrawIndexed(Buffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
-        }
-
-        // GUI
-        {
-            ImGui_ImplVulkan_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-
-            // DrawTitleBar();
-            ImGui::Begin("TitleBar", nullptr,
-                         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
-                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking);
-            {
-
-                ImGui::BeginMenuBar();
-                {
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("File"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Project Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Editor Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-                    if (ImGui::BeginMenu("View"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-                }
-                ImGui::EndMenuBar();
-
-                ImGui::BeginMenuBar();
-                {
-                    if (ImGui::Button("_")) { Application::Get().MinimiseApplication(true); }
-
-                    if (ImGui::Button("[]")) { Application::Get().MaximiseApplication(); }
-
-                    if (ImGui::Button("X")) { Application::Get().CloseApplication(); }
-                }
-                ImGui::EndMenuBar();
-            }
-            ImGui::End();
-
-            ImGui::Render();
-
-            ImDrawData* DrawData = ImGui::GetDrawData();
-
-            ImGui_ImplVulkan_RenderDrawData(DrawData, Buffer);
-        }
-
-        vkCmdEndRenderPass(Buffer);
-
-        vkEndCommandBuffer(Buffer);
-
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-    }
-
-    std::vector<const char*> VulkanContext::GetRequiredInstanceExtensions()
+    std::vector<const char*> RendererContext::GetRequiredInstanceExtensions()
     {
         uint32_t ExtensionCount     = 0;
         const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&ExtensionCount);
@@ -814,7 +586,7 @@ namespace South
         return Extensions;
     }
 
-    void VulkanContext::CreateMessenger()
+    void RendererContext::CreateMessenger()
     {
         VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
             .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -839,7 +611,7 @@ namespace South
         }
     }
 
-    void VulkanContext::DestroyMessenger()
+    void RendererContext::DestroyMessenger()
     {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
                                                                                "vkDestroyDebugUtilsMessengerEXT");
@@ -850,7 +622,7 @@ namespace South
         }
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::ValidationMessageCallback(
+    VKAPI_ATTR VkBool32 VKAPI_CALL RendererContext::ValidationMessageCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
     {
@@ -869,7 +641,7 @@ namespace South
         return VK_FALSE;
     }
 
-    bool VulkanContext::CheckValidationLayers()
+    bool RendererContext::CheckValidationLayers()
     {
         uint32_t Count;
         vkEnumerateInstanceLayerProperties(&Count, nullptr);

@@ -2,7 +2,7 @@
 
 #include "Core/VulkanSwapChain.h"
 
-#include "Core/VulkanContext.h"
+#include "Core/Renderer/Renderer.h"
 #include "Core/VulkanDevice.h"
 
 #include <GLFW/glfw3.h>
@@ -12,7 +12,7 @@ namespace South
 
     void VulkanSwapChain::Init(GLFWwindow& Window, VkSurfaceKHR InSurface)
     {
-        VulkanDevice& Device = VulkanContext::Get().GetCurrentDevice();
+        VulkanDevice& Device = Renderer::GetContext().GetCurrentDevice();
 
         VkPhysicalDevice PhysDevice = Device.GetPhysicalDevice();
         VkDevice LogicDevice        = Device.GetDevice();
@@ -24,7 +24,7 @@ namespace South
 
     void VulkanSwapChain::DeInit()
     {
-        VulkanDevice& Device = VulkanContext::Get().GetCurrentDevice();
+        VulkanDevice& Device = Renderer::GetContext().GetCurrentDevice();
         VkDevice LogicDevice = Device.GetDevice();
 
         for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }

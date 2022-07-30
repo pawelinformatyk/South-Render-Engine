@@ -6,12 +6,12 @@
 
 namespace South
 {
-    class VulkanContext;
 
     // Input, window resize,close,open, events,
     // run loop, what decides what keep app going
     class Application
     {
+        // ~Static
     public:
         static const char* GetName() { return "SouthRenderEngine"; }
 
@@ -19,10 +19,13 @@ namespace South
 
         static void Kaboom();
 
-        static inline Application* s_Instance;
+    private:
+        static inline Application* s_Instance = nullptr;
 
+        // ~Static
     public:
-        Application() { s_Instance = this; }
+        Application();
+        ~Application();
 
         void Run();
 
@@ -33,7 +36,6 @@ namespace South
         void DeInit();
 
         void InitGUI();
-        void DrawGUI();
         void DeInitGUI();
 
         bool m_bRunning = false;

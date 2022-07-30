@@ -2,6 +2,7 @@
 
 #include "Core/Window/Window.h"
 #include "Core/App/Application.h"
+#include "Core/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
 

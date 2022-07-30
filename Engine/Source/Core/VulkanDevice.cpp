@@ -1,7 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/VulkanDevice.h"
-#include "Core/VulkanContext.h"
+#include "Core/Renderer/Renderer.h"
 #include <optional>
 
 namespace South
@@ -75,7 +75,7 @@ namespace South
             return Score;
         };
 
-        VkInstance VulkanInstance = VulkanContext::Get().GetVulkanInstance();
+        VkInstance VulkanInstance = Renderer::GetContext().GetVulkanInstance();
 
         // Get vector of devices.
         uint32_t DevicesCount = 0;

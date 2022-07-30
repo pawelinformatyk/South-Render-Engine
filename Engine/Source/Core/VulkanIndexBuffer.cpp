@@ -1,7 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/VulkanIndexBuffer.h"
-#include "Core/VulkanContext.h"
+#include "Core/Renderer/Renderer.h"
 #include "Core/VulkanDevice.h"
 
 namespace South
@@ -10,7 +10,7 @@ namespace South
     VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size)
     {
         // #TODO : Asserts
-        const VulkanDevice& vulkanDev = VulkanContext::Get().GetCurrentDevice();
+        const VulkanDevice& vulkanDev = Renderer::GetContext().GetCurrentDevice();
         VkDevice logicalDev           = vulkanDev.GetDevice();
         VkPhysicalDevice physDev      = vulkanDev.GetPhysicalDevice();
 
@@ -145,7 +145,7 @@ namespace South
 
     VulkanIndexBuffer::~VulkanIndexBuffer()
     {
-        VkDevice logicalDev = VulkanContext::Get().GetCurrentDevice().GetDevice();
+        VkDevice logicalDev = Renderer::GetContext().GetCurrentDevice().GetDevice();
 
         vkDestroyBuffer(logicalDev, m_Buffer, nullptr);
         vkFreeMemory(logicalDev, m_Memory, nullptr);

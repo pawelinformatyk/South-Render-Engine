@@ -1,6 +1,13 @@
 #pragma once
 
+#include "Core/Renderer/RendererContext.h"
 #include "Core/VulkanDevice.h"
+#include "Editor/Mesh.h"
+#include "Editor/Camera.h"
+
+#include "glm.hpp"
+#include <gtx/string_cast.hpp>
+
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -11,20 +18,13 @@ namespace South
     class VulkanVertexIndexBuffer;
 
     // Class holding all "global" vulkan related variables.
-    class VulkanContext
+    class RendererContext
     {
-        // ~Static
-    public:
-        static VulkanContext& Get();
+        friend class Renderer;
 
-        // ~Static
     public:
-        VulkanContext(VulkanContext const&) = delete;
-        void operator=(VulkanContext const&) = delete;
-
-        void Init();
-        void DeInit();
-        void Tick();
+        virtual void Init();
+        virtual void DeInit();
 
         VkInstance GetVulkanInstance() const { return m_VulkanInstance; }
         VulkanDevice& GetCurrentDevice() const { return *m_Device; };
@@ -33,9 +33,6 @@ namespace South
         VkCommandPool GetCommandPool() const { return m_CommandPool; }
 
     private:
-        VulkanContext(){};
-        ~VulkanContext(){};
-
         void CreateInstance();
 
         void CreateSurface(GLFWwindow& Window);
@@ -53,8 +50,6 @@ namespace South
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
-
-        void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
         std::vector<const char*> GetRequiredInstanceExtensions();
 
@@ -81,7 +76,19 @@ namespace South
         std::unique_ptr<VulkanDevice> m_Device = nullptr;
         VulkanVertexIndexBuffer* m_VI_Buffer   = nullptr;
 
-        bool m_bCanTick = false;
+        std::vector<Vertex> m_Vertices;
+        std::vector<uint32_t> m_Indices;
+
+        // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
+        // Projection too.
+        struct PushConstant
+        {
+            glm::mat4 Model;
+            glm::mat4 View;
+            glm::mat4 Projection;
+        } m_PushConstant;
+
+        Camera m_EditorCam;
 
         //~ Validations layers.
     private:

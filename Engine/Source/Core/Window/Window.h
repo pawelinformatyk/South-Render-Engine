@@ -17,7 +17,7 @@ namespace South
 
         GLFWwindow* GetglfwWindow() const { return m_glfwWindow; }
 
-    protected:
+    private:
         GLFWwindow* m_glfwWindow = nullptr;
 
         //~ Events
