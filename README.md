@@ -1,4 +1,7 @@
-# BLENDER-NODES-OPENGL-DIRECTX
+Vulkan Render Engine version 01101100.01101101.01100001.01101111. 
+
+TODOs 
+BLENDER-NODES-OPENGL-DIRECTX
 
 3D MODELS TO 2D SHADER/PIXELATED
 raytracer to postprocess (or some shit) pixelart 
