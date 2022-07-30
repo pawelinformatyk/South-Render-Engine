@@ -1,5 +1,8 @@
 Vulkan Render Engine version 01101100.01101101.01100001.01101111. 
 
+![image](https://user-images.githubusercontent.com/57636589/181995289-3c7cfffb-fa7c-49b3-b596-d5559cdc9cff.png)
+
+
 TODOs 
 BLENDER-NODES-OPENGL-DIRECTX
 
@@ -21,15 +24,6 @@ maybe focus on rendering side and create bigger application with nodes like blen
 
 https://en.wikipedia.org/wiki/Oren–Nayar_reflectance_model
 
-
-
-
-
-LICENSESSSSSSS
-
-
-
 PIORUNY 
 
-
-LSD  KWAS
+LSD  KWAS MUST HAVE
