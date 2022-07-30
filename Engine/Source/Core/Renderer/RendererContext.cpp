@@ -1,13 +1,12 @@
 #include "sthpch.h"
 
-#include "Core/Renderer/RendererContext.h"
-#include "Core/Renderer/Renderer.h"
-
 #include "Core/App/Application.h"
-#include "Core/VulkanVertexIndexBuffer.h"
-#include "Core/Shaders/VulkanShader.h"
+#include "Core/Renderer/Renderer.h"
+#include "Core/Renderer/RendererContext.h"
 #include "Core/Shaders/ShadersLibrary.h"
-
+#include "Core/Shaders/VulkanShader.h"
+#include "Core/VulkanDevice.h"
+#include "Editor/Mesh.h"
 #include <GLFW/glfw3.h>
 
 namespace South
@@ -15,38 +14,6 @@ namespace South
 
     void RendererContext::Init()
     {
-        std::random_device g_Dev;
-        std::mt19937 g_Rng(g_Dev());
-        std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
-
-        // NDC space
-        m_Vertices = { {
-                           glm::vec3(-0.5f, -0.5f, 0.f),
-                           glm::vec3(0.f),
-                           glm::vec2(0.f),
-                           glm::vec3(1.f, 1.f, 1),
-                       },
-                       {
-                           glm::vec3(0.5f, -0.5f, 0.f),
-                           glm::vec3(0.f),
-                           glm::vec2(0.f),
-                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                       },
-                       {
-                           glm::vec3(0.5f, 0.5f, 0.f),
-                           glm::vec3(0.f),
-                           glm::vec2(0.f),
-                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                       },
-                       {
-                           glm::vec3(-0.5f, 0.5f, 0.f),
-                           glm::vec3(0.f),
-                           glm::vec2(0.f),
-                           glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                       } };
-
-        m_Indices = { 0, 1, 2, 2, 3, 0 };
-
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
         if (!GlfwWindow) { return; }
 
@@ -70,18 +37,8 @@ namespace South
         CreateRenderPass();
         CreateGraphicsPipeline();
         CreateFramebuffers();
-        CreateModelBuffers();
         CreateCommands();
         CreateSyncObjects();
-
-
-        m_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        m_EditorCam.SetProjection(glm::radians(70.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f,
-                                  200.0f);
-
-        m_PushConstant.Model      = glm::mat4(1.f);
-        m_PushConstant.View       = m_EditorCam.GetViewMatrix();
-        m_PushConstant.Projection = m_EditorCam.GetProjectionMatrix();
 
         STH_INFO("RendererContext Initialized.");
     }
@@ -91,8 +48,6 @@ namespace South
         ShadersLibrary::DeInit();
 
         VkDevice LogicDevice = m_Device->GetDevice();
-
-        delete m_VI_Buffer;
 
         // #TODO : Error with commandbuffer still in use.
         vkDestroyCommandPool(LogicDevice, m_CommandPool, nullptr);
@@ -400,7 +355,7 @@ namespace South
         VkPushConstantRange pushConstantRange{
             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset     = 0,
-            .size       = sizeof(m_PushConstant),
+            .size       = sizeof(PushConstant),
         };
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{
@@ -461,14 +416,6 @@ namespace South
 
             vkCreateFramebuffer(LogicDevice, &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
         }
-    }
-
-    void RendererContext::CreateModelBuffers()
-    {
-        m_VI_Buffer = new VulkanVertexIndexBuffer(static_cast<const void*>(m_Vertices.data()),
-                                                  static_cast<uint32_t>(sizeof(m_Vertices[0]) * m_Vertices.size()),
-                                                  static_cast<const void*>(m_Indices.data()),
-                                                  static_cast<uint32_t>(sizeof(m_Indices[0]) * m_Indices.size()));
     }
 
     void RendererContext::CreateCommands()

@@ -101,6 +101,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\App\GraphicalInterface.cpp" />
     <ClCompile Include="Source\Core\Renderer\RendererContext.cpp" />
     <ClCompile Include="Source\Core\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\Core\FileSystem\FileSystem.cpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="Source\Core\VulkanSwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\App\GraphicalInterface.h" />
     <ClInclude Include="Source\Core\Renderer\RendererContext.h" />
     <ClInclude Include="Source\Core\Renderer\Renderer.h" />
     <ClInclude Include="Source\Core\FileSystem\FileSystem.h" />

@@ -5,13 +5,6 @@
 namespace South
 {
 
-    enum ERenderingAPI
-    {
-        Vulkan,
-        DirectX,
-        OpenGL,
-    };
-
     // Should be able to be initialised, deinitialised and render objects (using commands).
     // It decides for itself whether renderer should be vulkan, opengl, directx...
     class Renderer
@@ -22,15 +15,16 @@ namespace South
 
         static void BeginFrame();
 
-        static void Submit(std::function<void()>&);
-        static void Draw();
+        // static void Submit(std::function<void()>&);
+
+        static void DrawExampleScene();
 
         static void EndFrame();
 
         // Q submit etc.
-        static void Flush();
+        static void Present();
 
-        static class RendererContext& GetContext() { return *s_Context; };
+        static RendererContext& GetContext() { return *s_Context; };
 
     private:
         inline static RendererContext* s_Context = nullptr;

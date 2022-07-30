@@ -1,15 +1,55 @@
 #include "sthpch.h"
 
-#include "Core/Renderer/Renderer.h"
 #include "Core/App/Application.h"
+#include "Core/Renderer/Renderer.h"
+#include "Core/VulkanDevice.h"
 #include "Core/VulkanVertexIndexBuffer.h"
-
+#include "Editor/Camera.h"
+#include "Editor/Mesh.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include <gtx/string_cast.hpp>
 
 namespace South
 {
+
+    std::random_device g_Dev;
+    std::mt19937 g_Rng(g_Dev());
+    std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
+
+    // NDC space
+    const std::vector<Vertex> g_Vertices = { {
+                                                 glm::vec3(-0.5f, -0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(1.f, 1.f, 1),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, -0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, 0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(-0.5f, 0.5f, 0.f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             } };
+
+    std::vector<int> g_Indices = { 0, 1, 2, 2, 3, 0 };
+
+    VulkanVertexIndexBuffer* g_ModelBuffer = nullptr;
+
+    PushConstant g_PushConstant;
+    Camera g_EditorCam;
 
     void Renderer::Init()
     {
@@ -17,11 +57,29 @@ namespace South
 
         s_Context = new RendererContext;
         s_Context->Init();
+
+        g_ModelBuffer = new VulkanVertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
+                                                    static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
+                                                    static_cast<const void*>(g_Indices.data()),
+                                                    static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
+
+
+        g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        g_EditorCam.SetProjection(glm::radians(70.0f),
+                                  s_Context->m_SwapChainExtent.width / (float)s_Context->m_SwapChainExtent.height, 0.1f,
+                                  200.0f);
+
+
+        g_PushConstant.Model      = glm::mat4(1.f);
+        g_PushConstant.View       = g_EditorCam.GetViewMatrix();
+        g_PushConstant.Projection = g_EditorCam.GetProjectionMatrix();
     }
 
     void Renderer::DeInit()
     {
         if (!s_Context) { return; };
+
+        delete g_ModelBuffer;
 
         s_Context->DeInit();
 
@@ -35,10 +93,9 @@ namespace South
         {
             static int16_t i = 0;
             ++i;
-            s_Context->m_PushConstant.Model =
-                glm::rotate(s_Context->m_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-            s_Context->m_PushConstant.Model =
-                glm::scale(s_Context->m_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
+            g_PushConstant.Model =
+                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
         }
 
         auto& Device = s_Context->GetCurrentDevice();
@@ -85,106 +142,21 @@ namespace South
         vkCmdBindPipeline(CmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, s_Context->m_GraphicsPipeline);
     }
 
-    void Renderer::Submit(std::function<void()>&) {}
-
-    void Renderer::Draw()
+    void Renderer::DrawExampleScene()
     {
         VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
 
         // Draw
         {
             vkCmdPushConstants(CmdBuffer, s_Context->m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                               sizeof(s_Context->m_PushConstant), &s_Context->m_PushConstant);
+                               sizeof(g_PushConstant), &g_PushConstant);
 
-            VkBuffer MeshBuffer = s_Context->m_VI_Buffer->GetVulkanBuffer();
+            VkBuffer MeshBuffer = g_ModelBuffer->GetVulkanBuffer();
             VkDeviceSize Offset = 0;
             vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, s_Context->m_VI_Buffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, g_ModelBuffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(s_Context->m_Indices.size()), 1, 0, 0, 0);
-        }
-
-        // GUI
-        {
-            ImGui_ImplVulkan_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-
-            // DrawTitleBar();
-            ImGui::Begin("TitleBar", nullptr,
-                         ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
-                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking);
-            {
-
-                ImGui::BeginMenuBar();
-                {
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("File"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Project Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Editor Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-                    if (ImGui::BeginMenu("View"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-                }
-                ImGui::EndMenuBar();
-
-                ImGui::BeginMenuBar();
-                {
-                    if (ImGui::Button("_")) { Application::Get().MinimiseApplication(true); }
-
-                    if (ImGui::Button("[]")) { Application::Get().MaximiseApplication(); }
-
-                    if (ImGui::Button("X")) { Application::Get().CloseApplication(); }
-                }
-                ImGui::EndMenuBar();
-            }
-            ImGui::End();
-
-            ImGui::Render();
-
-            ImDrawData* DrawData = ImGui::GetDrawData();
-
-            ImGui_ImplVulkan_RenderDrawData(DrawData, CmdBuffer);
+            vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
         }
     }
 
@@ -195,12 +167,9 @@ namespace South
         vkCmdEndRenderPass(CmdBuffer);
 
         vkEndCommandBuffer(CmdBuffer);
-
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
     }
 
-    void Renderer::Flush()
+    void Renderer::Present()
     {
         VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         VkSemaphore WaitSemaphores[]      = { s_Context->m_ImageAvailableSemaphore };

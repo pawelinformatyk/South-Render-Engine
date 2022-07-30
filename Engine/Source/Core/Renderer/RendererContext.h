@@ -1,13 +1,6 @@
 #pragma once
 
-#include "Core/Renderer/RendererContext.h"
-#include "Core/VulkanDevice.h"
-#include "Editor/Mesh.h"
-#include "Editor/Camera.h"
-
 #include "glm.hpp"
-#include <gtx/string_cast.hpp>
-
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -15,7 +8,15 @@ struct GLFWwindow;
 namespace South
 {
     class VulkanDevice;
-    class VulkanVertexIndexBuffer;
+
+    // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
+    // Projection too.
+    struct PushConstant
+    {
+        glm::mat4 Model;
+        glm::mat4 View;
+        glm::mat4 Projection;
+    };
 
     // Class holding all "global" vulkan related variables.
     class RendererContext
@@ -74,21 +75,6 @@ namespace South
         VkFence m_FlightFence                 = VK_NULL_HANDLE;
 
         std::unique_ptr<VulkanDevice> m_Device = nullptr;
-        VulkanVertexIndexBuffer* m_VI_Buffer   = nullptr;
-
-        std::vector<Vertex> m_Vertices;
-        std::vector<uint32_t> m_Indices;
-
-        // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
-        // Projection too.
-        struct PushConstant
-        {
-            glm::mat4 Model;
-            glm::mat4 View;
-            glm::mat4 Projection;
-        } m_PushConstant;
-
-        Camera m_EditorCam;
 
         //~ Validations layers.
     private:

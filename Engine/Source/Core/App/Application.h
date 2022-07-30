@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/App/GraphicalInterface.h"
 #include "Core/Window/Window.h"
 
 // #TODO : Init - not deleting memory?
@@ -35,12 +36,14 @@ namespace South
         void Init();
         void DeInit();
 
-        void InitGUI();
-        void DeInitGUI();
+        std::unique_ptr<GraphicalInterface> m_GUI = nullptr;
+        std::unique_ptr<Window> m_Window          = nullptr;
 
         bool m_bRunning = false;
 
-        //~ Events and Windows.
+        bool m_WindowMinimized = false;
+
+        //~ Events
     public:
         void ProcessEvents();
 
@@ -48,12 +51,7 @@ namespace South
         void MaximiseApplication();
         void MinimiseApplication(bool bMinimized);
 
-    private:
-        std::unique_ptr<Window> m_Window = nullptr;
-
-        bool m_WindowMinimized = false;
-
-        //~ Events and Windows.
+        //~ Events.
     };
 
     // Renderer -> move vulkan functions to this. I mean like instance etc.

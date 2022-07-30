@@ -24,7 +24,7 @@ CompactNamespaces: 'false'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 Cpp11BracedListStyle: 'false'
 FixNamespaceComments: 'true'
-IncludeBlocks: Regroup
+IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 IndentPPDirectives: AfterHash
 IndentWidth: '4'
@@ -34,7 +34,7 @@ MaxEmptyLinesToKeep: '4'
 NamespaceIndentation: All
 ObjCBlockIndentWidth: '4'
 PointerAlignment: Left
-SortIncludes: 'false'
+SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterCStyleCast: 'false'
 SpaceAfterLogicalNot: 'false'
