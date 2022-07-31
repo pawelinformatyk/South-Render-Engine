@@ -1,15 +1,14 @@
 #include "sthpch.h"
 
-#include "Core/App/Application.h"
-#include "Core/Renderer/Renderer.h"
 #include "Core/Window/Window.h"
-
 #include <GLFW/glfw3.h>
 
 namespace South
 {
 
-    void Window::Init()
+    void Window::Init(const WindowKeyPressedCallback& InOnKeyPressedCallback,
+                      const WindowIconifiedCallback& InOnIconifiedCallback,
+                      const WindowMaximisedCallback& InOnMaximisedCallback)
     {
         glfwInit();
 
@@ -17,20 +16,33 @@ namespace South
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-        GLFWmonitor* Monitor       = glfwGetPrimaryMonitor();
-        const GLFWvidmode* VidMode = glfwGetVideoMode(Monitor);
-        m_glfwWindow = glfwCreateWindow(VidMode->width, VidMode->height, Application::GetName(), nullptr, nullptr);
+        m_glfwWindow = glfwCreateWindow(m_Specification.Width,
+                                        m_Specification.Height,
+                                        m_Specification.Name.c_str(),
+                                        nullptr,
+                                        nullptr);
 
-        glfwMaximizeWindow(m_glfwWindow);
+        if (m_Specification.bFullscreen) { glfwMaximizeWindow(m_glfwWindow); }
 
         // Events
         {
+            m_WindowUserData.OnWindowKeyPressed = InOnKeyPressedCallback;
+            m_WindowUserData.OnWindowIconified  = InOnIconifiedCallback;
+            m_WindowUserData.OnWindowMaximised  = InOnMaximisedCallback;
+
             glfwSetWindowUserPointer(m_glfwWindow, &m_WindowUserData);
 
-            // #TODO : Should app dispatch events or window.
-            // What is prettier? I Think app.
-            // Its the same in the end.
-            // And why not just functions. I GUESS JUST TEST AND SEE LMAO
+            glfwSetKeyCallback(m_glfwWindow,
+                               [](GLFWwindow* Window, int Key, int Scancode, int Action, int Mods)
+                               {
+                                   WindowUserData* UserData =
+                                       static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
+
+                                   if (UserData && UserData->OnWindowKeyPressed)
+                                   {
+                                       UserData->OnWindowKeyPressed(Key, Scancode, Action, Mods);
+                                   }
+                               });
 
             glfwSetWindowIconifyCallback(m_glfwWindow,
                                          [](GLFWwindow* Window, int Iconified)
@@ -38,11 +50,23 @@ namespace South
                                              WindowUserData* UserData =
                                                  static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
 
-                                             if (UserData && UserData->IconifyWindowFunction)
+                                             if (UserData && UserData->OnWindowIconified)
                                              {
-                                                 UserData->IconifyWindowFunction(Iconified);
+                                                 UserData->OnWindowIconified(Iconified);
                                              }
                                          });
+
+            glfwSetWindowMaximizeCallback(m_glfwWindow,
+                                          [](GLFWwindow* Window, int Maximized)
+                                          {
+                                              WindowUserData* UserData =
+                                                  static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
+
+                                              if (UserData && UserData->OnWindowMaximised)
+                                              {
+                                                  UserData->OnWindowMaximised();
+                                              }
+                                          });
         }
     }
 
@@ -55,6 +79,16 @@ namespace South
 
     void Window::ProcessEvents() { glfwPollEvents(); }
 
-    void Window::Iconify(bool bMinimised) { glfwIconifyWindow(m_glfwWindow); }
+    void Window::Minimise()
+    {
+        // #TODO : Edit m_Specification.
+        glfwIconifyWindow(m_glfwWindow);
+    }
+
+    void Window::Maximise()
+    {
+        // #TODO : Edit m_Specification.
+        glfwMaximizeWindow(m_glfwWindow);
+    }
 
 } // namespace South

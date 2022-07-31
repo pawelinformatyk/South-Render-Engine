@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/Shaders/VulkanShader.h"
+#include "Core/Shaders/Shader.h"
 
-#include "vulkan/vulkan_core.h"
 #include "shaderc/shaderc.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace South
 {
@@ -17,11 +17,11 @@ namespace South
         static void Init();
         static void DeInit();
 
-        static VulkanShader* AddShader(const std::string& Name, const std::string& PathToCode,
-                                       VkShaderStageFlagBits Stages, bool bCompile = true);
-        static VulkanShader* GetShader(const std::string& Name);
+        static Shader* AddShader(const std::string& Name, const std::string& PathToCode, VkShaderStageFlagBits Stages,
+                                 bool bCompile = true);
+        static Shader* GetShader(const std::string& Name);
 
-        static const std::unordered_map<std::string, VulkanShader*>& GetShaders();
+        static const std::unordered_map<std::string, Shader*>& GetShaders();
 
         static shaderc::Compiler& GetCompiler();
         static shaderc::CompileOptions& GetCompilerOptions();
@@ -30,7 +30,7 @@ namespace South
         static shaderc::Compiler s_Compiler;
         static shaderc::CompileOptions s_CompilerOptions;
 
-        static std::unordered_map<std::string, VulkanShader*> s_Shaders;
+        static std::unordered_map<std::string, Shader*> s_Shaders;
     };
 
 } // namespace South

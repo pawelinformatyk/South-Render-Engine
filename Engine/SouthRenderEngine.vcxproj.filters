@@ -30,10 +30,10 @@
     <ClCompile Include="Source\Core\VulkanDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp">
+    <ClCompile Include="Source\Core\VertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp">
+    <ClCompile Include="Source\Core\IndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Mesh.cpp">
@@ -45,19 +45,19 @@
     <ClCompile Include="Source\Editor\Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\VulkanVertexIndexBuffer.cpp">
+    <ClCompile Include="Source\Core\VertexIndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\Shaders\VulkanShader.cpp">
+    <ClCompile Include="Source\Core\Shaders\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\VulkanSwapChain.cpp">
+    <ClCompile Include="Source\Core\SwapChain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Main.cpp">
@@ -95,10 +95,10 @@
     <ClInclude Include="Source\Core\VulkanDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\VulkanVertexBuffer.h">
+    <ClInclude Include="Source\Core\VertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\VulkanIndexBuffer.h">
+    <ClInclude Include="Source\Core\IndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Mesh.h">
@@ -110,19 +110,19 @@
     <ClInclude Include="Source\Editor\Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\VulkanVertexIndexBuffer.h">
+    <ClInclude Include="Source\Core\VertexIndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Shaders\VulkanShader.h">
+    <ClInclude Include="Source\Core\Shaders\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\VulkanSwapChain.h">
+    <ClInclude Include="Source\Core\SwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\FileSystem\FileSystem.h">

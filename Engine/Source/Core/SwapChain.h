@@ -7,11 +7,11 @@ struct GLFWwindow;
 namespace South
 {
 
-    class VulkanSwapChain
+    class SwapChain
     {
     public:
-        VulkanSwapChain();
-        ~VulkanSwapChain();
+        SwapChain();
+        ~SwapChain();
 
         void Init(GLFWwindow& Window, VkSurfaceKHR InSurface);
         void DeInit();

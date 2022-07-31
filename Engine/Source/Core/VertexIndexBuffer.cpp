@@ -1,14 +1,13 @@
 #include "sthpch.h"
 
 #include "Core/Renderer/Renderer.h"
+#include "Core/VertexIndexBuffer.h"
 #include "Core/VulkanDevice.h"
-#include "Core/VulkanVertexIndexBuffer.h"
 
 namespace South
 {
 
-    VulkanVertexIndexBuffer::VulkanVertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData,
-                                                     uint32_t iSize)
+    VertexIndexBuffer::VertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData, uint32_t iSize)
     {
         const VulkanDevice& VulkanDev = Renderer::GetContext().GetGpuDevice();
         VkDevice LogicalDev           = VulkanDev.GetDevice();
@@ -150,7 +149,7 @@ namespace South
         vkFreeMemory(LogicalDev, StagingBufferMemory, nullptr);
     }
 
-    VulkanVertexIndexBuffer::~VulkanVertexIndexBuffer()
+    VertexIndexBuffer::~VertexIndexBuffer()
     {
         VkDevice logicalDev = Renderer::GetContext().GetGpuDevice().GetDevice();
 
@@ -158,12 +157,12 @@ namespace South
         vkFreeMemory(logicalDev, m_Memory, nullptr);
     }
 
-    VkBuffer VulkanVertexIndexBuffer::GetVulkanBuffer() const { return m_Buffer; }
+    VkBuffer VertexIndexBuffer::GetVulkanBuffer() const { return m_Buffer; }
 
-    uint32_t VulkanVertexIndexBuffer::GetIndexOffset() const { return m_IndexOffset; }
+    uint32_t VertexIndexBuffer::GetIndexOffset() const { return m_IndexOffset; }
 
-    uint32_t VulkanVertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
-                                                     uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+    uint32_t VertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+                                               VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {

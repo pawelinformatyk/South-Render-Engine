@@ -1,17 +1,17 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
 #include "shaderc/shaderc.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace South
 {
     // #TODO : Shader should be aware of pushConstants, desriptors etc.? Look Record function in context.
     // #TODO : Cache compiled shaders (spirv) in some directory.
-    class VulkanShader
+    class Shader
     {
     public:
-        VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
-        ~VulkanShader();
+        Shader(const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
+        ~Shader();
 
         void Compile();
 

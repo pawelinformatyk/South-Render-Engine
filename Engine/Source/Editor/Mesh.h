@@ -1,12 +1,12 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
 #include "glm.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace South
 {
-    class VulkanIndexBuffer;
-    class VulkanVertexBuffer;
+    class VertexIndexBuffer;
+    class VertexBuffer;
     class SVulkanVertexIndexBuffer;
 
     struct Vertex
@@ -34,8 +34,8 @@ namespace South
         std::vector<Vertex> m_Vertices;
         std::vector<uint16_t> m_Indices;
 
-        // VulkanIndexBuffer* indexBuffer;
-        // VulkanVertexBuffer* verticesBuffer;
+        // VertexIndexBuffer* indexBuffer;
+        // VertexBuffer* verticesBuffer;
         SVulkanVertexIndexBuffer* m_VI_Buffer;
     };
 

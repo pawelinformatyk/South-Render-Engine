@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     delete App;
 
     STH_INFO("");
-    STH_INFO("Application Shutdown.");
+    STH_INFO("Application End");
 
     South::Logger::DeInit();
 

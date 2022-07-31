@@ -156,16 +156,17 @@ namespace South
 
             ImGui::BeginMenuBar();
             {
-                // #TODO : Should be calls to window - makes more sense -> app propagates this.
-                if (ImGui::Button("_")) { Application::Get().MinimiseApplication(true); }
+                if (ImGui::Button("_")) { Application::Get().Minimise(); }
 
-                if (ImGui::Button("[]")) { Application::Get().MaximiseApplication(); }
+                if (ImGui::Button("[]")) { Application::Get().Maximise(); }
 
-                if (ImGui::Button("X")) { Application::Get().CloseApplication(); }
+                if (ImGui::Button("X")) { Application::Get().Close(); }
             }
             ImGui::EndMenuBar();
         }
         ImGui::End();
+
+        ImGui::ShowDemoWindow();
     }
 
     void GraphicalInterface::EndFrame()

@@ -2,8 +2,8 @@
 
 #include "Core/App/Application.h"
 #include "Core/Renderer/Renderer.h"
+#include "Core/VertexIndexBuffer.h"
 #include "Core/VulkanDevice.h"
-#include "Core/VulkanVertexIndexBuffer.h"
 #include "Editor/Camera.h"
 #include "Editor/Mesh.h"
 #include "imgui.h"
@@ -46,7 +46,7 @@ namespace South
 
     std::vector<int> g_Indices = { 0, 1, 2, 2, 3, 0 };
 
-    VulkanVertexIndexBuffer* g_ModelBuffer = nullptr;
+    VertexIndexBuffer* g_ModelBuffer = nullptr;
 
     PushConstant g_PushConstant;
     Camera g_EditorCam;
@@ -58,10 +58,10 @@ namespace South
         s_Context = new RendererContext;
         s_Context->Init();
 
-        g_ModelBuffer = new VulkanVertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
-                                                    static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
-                                                    static_cast<const void*>(g_Indices.data()),
-                                                    static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
+        g_ModelBuffer = new VertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
+                                              static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
+                                              static_cast<const void*>(g_Indices.data()),
+                                              static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
 
 
         g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));

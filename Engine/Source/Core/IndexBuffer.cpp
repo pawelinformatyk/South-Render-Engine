@@ -1,13 +1,13 @@
 #include "sthpch.h"
 
+#include "Core/IndexBuffer.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/VulkanDevice.h"
-#include "Core/VulkanIndexBuffer.h"
 
 namespace South
 {
 
-    VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size)
+    IndexBuffer::IndexBuffer(const void* data, uint32_t size)
     {
         // #TODO : Asserts
         const VulkanDevice& vulkanDev = Renderer::GetContext().GetGpuDevice();
@@ -143,7 +143,7 @@ namespace South
         vkFreeMemory(logicalDev, stagingBufferMemory, nullptr);
     }
 
-    VulkanIndexBuffer::~VulkanIndexBuffer()
+    IndexBuffer::~IndexBuffer()
     {
         VkDevice logicalDev = Renderer::GetContext().GetGpuDevice().GetDevice();
 
@@ -151,10 +151,10 @@ namespace South
         vkFreeMemory(logicalDev, m_Memory, nullptr);
     }
 
-    VkBuffer VulkanIndexBuffer::GetBuffer() const { return m_Buffer; }
+    VkBuffer IndexBuffer::GetBuffer() const { return m_Buffer; }
 
-    uint32_t VulkanIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
-                                               VkMemoryPropertyFlags properties) const
+    uint32_t IndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+                                         VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {

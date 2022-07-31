@@ -43,11 +43,16 @@ namespace South
 
         //~ Events
     public:
+        void Minimise();
+        void Maximise();
+        void Close();
+
+    private:
         void ProcessEvents();
 
-        void CloseApplication();
-        void MaximiseApplication();
-        void MinimiseApplication(bool bMinimized);
+        void OnKeyPressed(int Key, int Scancode, int Action, int Mods);
+        void OnIconifiedWindow(bool bIconified);
+        void OnMaximiseWindow();
 
         //~ Events.
     };

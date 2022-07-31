@@ -122,11 +122,11 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">sthpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Source\Core\VulkanDevice.cpp" />
-    <ClCompile Include="Source\Core\VulkanVertexBuffer.cpp" />
-    <ClCompile Include="Source\Core\VulkanIndexBuffer.cpp" />
-    <ClCompile Include="Source\Core\VulkanVertexIndexBuffer.cpp" />
-    <ClCompile Include="Source\Core\Shaders\VulkanShader.cpp" />
-    <ClCompile Include="Source\Core\VulkanSwapChain.cpp" />
+    <ClCompile Include="Source\Core\VertexBuffer.cpp" />
+    <ClCompile Include="Source\Core\IndexBuffer.cpp" />
+    <ClCompile Include="Source\Core\VertexIndexBuffer.cpp" />
+    <ClCompile Include="Source\Core\Shaders\Shader.cpp" />
+    <ClCompile Include="Source\Core\SwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\App\GraphicalInterface.h" />
@@ -144,11 +144,11 @@
     <ClInclude Include="Source\Core\Window\Window.h" />
     <ClInclude Include="Source\sthpch.h" />
     <ClInclude Include="Source\Core\VulkanDevice.h" />
-    <ClInclude Include="Source\Core\VulkanVertexBuffer.h" />
-    <ClInclude Include="Source\Core\VulkanIndexBuffer.h" />
-    <ClInclude Include="Source\Core\VulkanVertexIndexBuffer.h" />
-    <ClInclude Include="Source\Core\Shaders\VulkanShader.h" />
-    <ClInclude Include="Source\Core\VulkanSwapChain.h" />
+    <ClInclude Include="Source\Core\VertexBuffer.h" />
+    <ClInclude Include="Source\Core\IndexBuffer.h" />
+    <ClInclude Include="Source\Core\VertexIndexBuffer.h" />
+    <ClInclude Include="Source\Core\Shaders\Shader.h" />
+    <ClInclude Include="Source\Core\SwapChain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

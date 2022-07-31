@@ -3,8 +3,8 @@
 #include "Core/App/Application.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Renderer/RendererContext.h"
+#include "Core/Shaders/Shader.h"
 #include "Core/Shaders/ShadersLibrary.h"
-#include "Core/Shaders/VulkanShader.h"
 #include "Core/VulkanDevice.h"
 #include "Editor/Mesh.h"
 #include <GLFW/glfw3.h>

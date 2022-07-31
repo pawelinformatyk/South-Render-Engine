@@ -1,6 +1,6 @@
 #include "sthpch.h"
 
-#include "Core/Shaders/VulkanShader.h"
+#include "Core/Shaders/Shader.h"
 
 #include "Core/Renderer/Renderer.h"
 #include "Core/Shaders/ShadersLibrary.h"
@@ -13,8 +13,7 @@
 namespace South
 {
 
-    VulkanShader::VulkanShader(const std::string& inPathToCode, VkShaderStageFlagBits InStages,
-                               bool bCompile /*= true*/)
+    Shader::Shader(const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile /*= true*/)
         : m_PathToCode(inPathToCode)
     {
         m_ShaderInfo = {
@@ -27,13 +26,13 @@ namespace South
         if (bCompile) { Compile(); }
     }
 
-    VulkanShader::~VulkanShader()
+    Shader::~Shader()
     {
         VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
         vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
     }
 
-    void VulkanShader::Compile()
+    void Shader::Compile()
     {
         const std::ifstream Stream(m_PathToCode);
         std::stringstream StrStream;
@@ -59,9 +58,9 @@ namespace South
         m_ShaderInfo.module = Module;
     };
 
-    const VkPipelineShaderStageCreateInfo& VulkanShader::GetInfo() const { return m_ShaderInfo; }
+    const VkPipelineShaderStageCreateInfo& Shader::GetInfo() const { return m_ShaderInfo; }
 
-    VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
+    VkShaderModule Shader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
         VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
         VkShaderModule Module;
@@ -78,7 +77,7 @@ namespace South
         return Module;
     }
 
-    shaderc_shader_kind VulkanShader::GetShadercShaderKind(VkShaderStageFlagBits InStages)
+    shaderc_shader_kind Shader::GetShadercShaderKind(VkShaderStageFlagBits InStages)
     {
         switch (InStages)
         {

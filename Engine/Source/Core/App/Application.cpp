@@ -16,11 +16,16 @@ namespace South
 
     Application::Application()
     {
-        if (s_Instance) { return; }
-
         s_Instance = this;
-        m_Window   = std::make_unique<Window>();
-        m_GUI      = std::make_unique<GraphicalInterface>();
+
+        m_Window = std::make_unique<Window>(WindowCreateInfo{
+            .bFullscreen = true,
+            .Width       = 540,
+            .Height      = 540,
+            .Name        = GetName(),
+        });
+
+        m_GUI = std::make_unique<GraphicalInterface>();
     }
 
     Application::~Application() { s_Instance = nullptr; }
@@ -51,8 +56,10 @@ namespace South
 
     void Application::Init()
     {
-        m_Window->SetIconifyWindowCallback([this](bool bMinimised) { MinimiseApplication(bMinimised); });
-        m_Window->Init();
+        m_Window->Init([this](int Key, int Scancode, int Action, int Mods)
+                       { OnKeyPressed(Key, Scancode, Action, Mods); },
+                       [this](bool bIconified) { OnIconifiedWindow(bIconified); },
+                       [this]() { OnMaximiseWindow(); });
 
         Renderer::Init();
 
@@ -69,24 +76,31 @@ namespace South
 
         Renderer::DeInit();
 
-        m_Window->SetIconifyWindowCallback([](bool bMinimised) {});
         m_Window->DeInit();
     }
 
-    void Application::ProcessEvents() { m_Window->ProcessEvents(); }
-
-    void Application::CloseApplication() { m_bRunning = false; }
-
-    void Application::MaximiseApplication() {}
-
-    void Application::MinimiseApplication(bool bMinimized)
+    void Application::ProcessEvents()
     {
-        // #TODO : Reduce FPS instead of this flag.
-        // if (m_WindowMinimized == bMinimized) { return; }
-
-        // m_WindowMinimized = bMinimized;
-
-        // if (m_Window) { m_Window->Iconify(bMinimized); }
+        if (m_Window) { m_Window->ProcessEvents(); }
     }
+
+    void Application::OnKeyPressed(int Key, int Scancode, int Action, int Mods) {}
+
+    void Application::Minimise()
+    {
+        if (m_Window) { m_Window->Minimise(); }
+    }
+
+    void Application::Maximise()
+    {
+        if (m_Window) { m_Window->Maximise(); }
+    }
+
+    void Application::OnIconifiedWindow(bool bIconified) {}
+
+    void Application::OnMaximiseWindow() {}
+
+    void Application::Close() { m_bRunning = false; }
+
 
 } // namespace South

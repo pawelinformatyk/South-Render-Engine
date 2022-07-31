@@ -1,6 +1,6 @@
 #include "sthpch.h"
 
-#include "Core/VulkanSwapChain.h"
+#include "Core/SwapChain.h"
 
 #include "Core/Renderer/Renderer.h"
 #include "Core/VulkanDevice.h"
@@ -10,7 +10,7 @@
 namespace South
 {
 
-    void VulkanSwapChain::Init(GLFWwindow& Window, VkSurfaceKHR InSurface)
+    void SwapChain::Init(GLFWwindow& Window, VkSurfaceKHR InSurface)
     {
         VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
 
@@ -22,7 +22,7 @@ namespace South
         CreateImages(LogicDevice);
     }
 
-    void VulkanSwapChain::DeInit()
+    void SwapChain::DeInit()
     {
         VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
         VkDevice LogicDevice = Device.GetDevice();
@@ -32,7 +32,7 @@ namespace South
         vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
     }
 
-    void VulkanSwapChain::CreateImages(VkDevice LogicDevice)
+    void SwapChain::CreateImages(VkDevice LogicDevice)
     {
         uint32_t ImageCount;
         vkGetSwapchainImagesKHR(LogicDevice, m_SwapChain, &ImageCount, nullptr);
@@ -67,7 +67,7 @@ namespace South
         }
     }
 
-    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkSurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         uint32_t FormatCount;
         vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &FormatCount, nullptr);
@@ -86,7 +86,7 @@ namespace South
         return AvailableFormats[0];
     }
 
-    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkPresentModeKHR SwapChain::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         // Presentation mode.
         uint32_t PresentModesCount;
@@ -104,7 +104,7 @@ namespace South
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities, GLFWwindow& Window)
+    VkExtent2D SwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities, GLFWwindow& Window)
     {
         if (Capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
         {
@@ -126,7 +126,7 @@ namespace South
         }
     }
 
-    void VulkanSwapChain::CreateSwapChain(VkPhysicalDevice PhysDevice, VkDevice LogicDevice, uint32_t QueueFamilyIndex)
+    void SwapChain::CreateSwapChain(VkPhysicalDevice PhysDevice, VkDevice LogicDevice, uint32_t QueueFamilyIndex)
     {
         throw std::logic_error("The method or operation is not implemented.");
     }
