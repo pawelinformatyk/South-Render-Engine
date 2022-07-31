@@ -98,7 +98,7 @@ namespace South
                 glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
         }
 
-        auto& Device = s_Context->GetCurrentDevice();
+        const auto& Device = s_Context->GetGpuDevice();
 
         VkDevice LogicDevice  = Device.GetDevice();
         VkQueue GraphicsQueue = Device.GetQ();
@@ -114,7 +114,7 @@ namespace South
         // Submit the recorded command buffer
         vkResetCommandBuffer(s_Context->m_CommandBuffer, 0);
 
-        VkCommandBufferBeginInfo BeginInfo{
+        const VkCommandBufferBeginInfo BeginInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext            = nullptr,
             .flags            = 0,
@@ -125,9 +125,9 @@ namespace South
         vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
 
         // #TODO : Pipeline static value?
-        VkClearValue ClearColor = { { 0.008f, 0.008f, 0.008f, 1.f } };
+        const VkClearValue ClearColor = { { 0.008f, 0.008f, 0.008f, 1.f } };
 
-        VkRenderPassBeginInfo RenderPassInfo{
+        const VkRenderPassBeginInfo RenderPassInfo{
             .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .pNext           = nullptr,
             .renderPass      = s_Context->m_RenderPass,
@@ -171,11 +171,11 @@ namespace South
 
     void Renderer::Present()
     {
-        VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore WaitSemaphores[]      = { s_Context->m_ImageAvailableSemaphore };
-        VkSemaphore SignalSemaphores[]    = { s_Context->m_RenderFinishedSemaphore };
+        const VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        const VkSemaphore WaitSemaphores[]      = { s_Context->m_ImageAvailableSemaphore };
+        const VkSemaphore SignalSemaphores[]    = { s_Context->m_RenderFinishedSemaphore };
 
-        VkSubmitInfo SubmitInfo{
+        const VkSubmitInfo SubmitInfo{
             .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext                = nullptr,
             .waitSemaphoreCount   = 1,
@@ -187,12 +187,12 @@ namespace South
             .pSignalSemaphores    = SignalSemaphores,
         };
 
-        vkQueueSubmit(s_Context->GetCurrentDevice().GetQ(), 1, &SubmitInfo, s_Context->m_FlightFence);
+        vkQueueSubmit(s_Context->GetGpuDevice().GetQ(), 1, &SubmitInfo, s_Context->m_FlightFence);
 
-        VkSwapchainKHR SwapChains[] = { s_Context->m_SwapChain };
+        const VkSwapchainKHR SwapChains[] = { s_Context->m_SwapChain };
 
         // Present the swap chain image
-        VkPresentInfoKHR SresentInfo{
+        const VkPresentInfoKHR SresentInfo{
             .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .pNext              = nullptr,
             .waitSemaphoreCount = 1,
@@ -203,7 +203,7 @@ namespace South
             .pResults           = nullptr,
         };
 
-        vkQueuePresentKHR(s_Context->GetCurrentDevice().GetQ(), &SresentInfo);
+        vkQueuePresentKHR(s_Context->GetGpuDevice().GetQ(), &SresentInfo);
     }
 
 } // namespace South

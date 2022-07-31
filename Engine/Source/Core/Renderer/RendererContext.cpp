@@ -76,7 +76,7 @@ namespace South
 
     void RendererContext::CreateInstance()
     {
-        VkApplicationInfo sAppInfo{
+        const VkApplicationInfo sAppInfo{
             .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext              = nullptr,
             .pApplicationName   = Application::GetName(),
@@ -86,9 +86,9 @@ namespace South
             .apiVersion         = VK_MAKE_API_VERSION(0, 1, 3, 0),
         };
 
-        std::vector<const char*> Extensions = GetRequiredInstanceExtensions();
+        const std::vector<const char*> Extensions = GetRequiredInstanceExtensions();
 
-        VkInstanceCreateInfo sCreateInfo{
+        const VkInstanceCreateInfo sCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext            = nullptr,
             .pApplicationInfo = &sAppInfo,
@@ -122,11 +122,11 @@ namespace South
             imageCount = capabilities.maxImageCount;
         }
 
-        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, m_Surface);
-        VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, m_Surface);
-        VkExtent2D extent                = ChooseSwapExtent(capabilities, window);
+        const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, m_Surface);
+        const VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, m_Surface);
+        const VkExtent2D extent                = ChooseSwapExtent(capabilities, window);
 
-        VkSwapchainCreateInfoKHR createInfo{
+        const VkSwapchainCreateInfoKHR createInfo{
             .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext                 = nullptr,
             .surface               = m_Surface,
@@ -163,7 +163,7 @@ namespace South
 
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
-        VkImageSubresourceRange subresourceRange{
+        const VkImageSubresourceRange subresourceRange{
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
             .baseMipLevel   = 0,
             .levelCount     = 1,
@@ -189,7 +189,7 @@ namespace South
 
     void RendererContext::CreateRenderPass()
     {
-        VkAttachmentDescription colorAttachment{
+        const VkAttachmentDescription colorAttachment{
             .format         = m_SwapChainImageFormat,
             .samples        = VK_SAMPLE_COUNT_1_BIT,
             .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -200,18 +200,18 @@ namespace South
             .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
         };
 
-        VkAttachmentReference colorAttachmentRef{
+        const VkAttachmentReference colorAttachmentRef{
             .attachment = 0,
             .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         };
 
-        VkSubpassDescription subpass{
+        const VkSubpassDescription subpass{
             .pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .colorAttachmentCount = 1,
             .pColorAttachments    = &colorAttachmentRef,
         };
 
-        VkSubpassDependency dependency{
+        const VkSubpassDependency dependency{
             .srcSubpass    = VK_SUBPASS_EXTERNAL,
             .dstSubpass    = 0,
             .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -220,7 +220,7 @@ namespace South
             .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
         };
 
-        VkRenderPassCreateInfo renderPassInfo{
+        const VkRenderPassCreateInfo renderPassInfo{
             .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
             .pNext           = nullptr,
             .attachmentCount = 1,
@@ -242,13 +242,13 @@ namespace South
         const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
         const auto& fragShader = *ShadersLibrary::GetShader("Base_F");
 
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
+        const VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
 
         const auto& bindingDesc     = Vertex::GetBindingDescription();
         const auto& attributesDescs = Vertex::GetAttributesDescriptions();
 
         // Inputs to vertext shader.
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+        const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
             .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .pNext                           = nullptr,
             .vertexBindingDescriptionCount   = 1,
@@ -257,7 +257,7 @@ namespace South
             .pVertexAttributeDescriptions    = attributesDescs.data(),
         };
 
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+        const VkPipelineInputAssemblyStateCreateInfo inputAssembly{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             .pNext                  = nullptr,
             .topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -265,7 +265,7 @@ namespace South
         };
 
         // Viewport and scissors.
-        VkViewport viewport{
+        const VkViewport viewport{
             .x        = 0.0f,
             .y        = 0.0f,
             .width    = (float)m_SwapChainExtent.width,
@@ -274,12 +274,12 @@ namespace South
             .maxDepth = 1.0f,
         };
 
-        VkRect2D scissor{
+        const VkRect2D scissor{
             .offset = { 0, 0 },
             .extent = m_SwapChainExtent,
         };
 
-        VkPipelineViewportStateCreateInfo viewportState{
+        const VkPipelineViewportStateCreateInfo viewportState{
             .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .pNext         = nullptr,
             .viewportCount = 1,
@@ -289,7 +289,7 @@ namespace South
         };
 
         // Rasterizer.
-        VkPipelineRasterizationStateCreateInfo rasterizer{
+        const VkPipelineRasterizationStateCreateInfo rasterizer{
             .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             .pNext                   = nullptr,
             .depthClampEnable        = VK_FALSE,
@@ -305,7 +305,7 @@ namespace South
         };
 
         // Multisampling - antialiasing
-        VkPipelineMultisampleStateCreateInfo multisampling{
+        const VkPipelineMultisampleStateCreateInfo multisampling{
             .sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             .pNext                 = nullptr,
             .rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT,
@@ -319,7 +319,7 @@ namespace South
         // #TODO : Depth and stecncil testing.
 
         // Color blending
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{
+        const VkPipelineColorBlendAttachmentState colorBlendAttachment{
             .blendEnable         = VK_TRUE,
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -331,7 +331,7 @@ namespace South
                               VK_COLOR_COMPONENT_A_BIT,
         };
 
-        VkPipelineColorBlendStateCreateInfo colorBlending{
+        const VkPipelineColorBlendStateCreateInfo colorBlending{
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .pNext           = nullptr,
             .logicOpEnable   = VK_FALSE,
@@ -342,9 +342,9 @@ namespace South
         };
 
         // Dynamic state - dynamically change pipeline paremeters.
-        std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
+        const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
 
-        VkPipelineDynamicStateCreateInfo dynamicState{
+        const VkPipelineDynamicStateCreateInfo dynamicState{
             .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
             .pNext             = nullptr,
             .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
@@ -352,13 +352,13 @@ namespace South
         };
 
         // Pipeline layout - uniforms in shaders.
-        VkPushConstantRange pushConstantRange{
+        const VkPushConstantRange pushConstantRange{
             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset     = 0,
             .size       = sizeof(PushConstant),
         };
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+        const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext                  = nullptr,
             .setLayoutCount         = 0,
@@ -369,7 +369,7 @@ namespace South
 
         vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
 
-        VkGraphicsPipelineCreateInfo pipelineInfo{
+        const VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext               = nullptr,
             .stageCount          = 2,
@@ -401,9 +401,9 @@ namespace South
 
         for (auto i = 0; i < m_SwapChainImageViews.size(); i++)
         {
-            VkImageView Attachments[] = { m_SwapChainImageViews[i] };
+            const VkImageView Attachments[] = { m_SwapChainImageViews[i] };
 
-            VkFramebufferCreateInfo FramebufferInfo{
+            const VkFramebufferCreateInfo FramebufferInfo{
                 .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .pNext           = nullptr,
                 .renderPass      = m_RenderPass,
@@ -422,7 +422,7 @@ namespace South
     {
         VkDevice logicDevice = m_Device->GetDevice();
 
-        VkCommandPoolCreateInfo PoolInfo{
+        const VkCommandPoolCreateInfo PoolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
@@ -431,7 +431,7 @@ namespace South
 
         vkCreateCommandPool(logicDevice, &PoolInfo, nullptr, &m_CommandPool);
 
-        VkCommandBufferAllocateInfo AllocInfo{
+        const VkCommandBufferAllocateInfo AllocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
             .commandPool        = m_CommandPool,
@@ -446,12 +446,12 @@ namespace South
     {
         VkDevice LogicDevice = m_Device->GetDevice();
 
-        VkSemaphoreCreateInfo SemaphoreInfo{
+        const VkSemaphoreCreateInfo SemaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,
         };
 
-        VkFenceCreateInfo FenceInfo{
+        const VkFenceCreateInfo FenceInfo{
             .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
             .pNext = nullptr,
             .flags = VK_FENCE_CREATE_SIGNALED_BIT,
@@ -535,7 +535,7 @@ namespace South
 
     void RendererContext::CreateMessenger()
     {
-        VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
+        const VkDebugUtilsMessengerCreateInfoEXT CreateInfo{
             .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
             .pNext           = nullptr,
             .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
@@ -548,8 +548,8 @@ namespace South
             .pUserData       = nullptr,
         };
 
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
-                                                                              "vkCreateDebugUtilsMessengerEXT");
+        const auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
+                                                                                    "vkCreateDebugUtilsMessengerEXT");
 
         if (func) { func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger); }
         else
@@ -560,8 +560,8 @@ namespace South
 
     void RendererContext::DestroyMessenger()
     {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
-                                                                               "vkDestroyDebugUtilsMessengerEXT");
+        const auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
+                                                                                     "vkDestroyDebugUtilsMessengerEXT");
         if (func) { func(m_VulkanInstance, m_Messenger, nullptr); }
         else
         {

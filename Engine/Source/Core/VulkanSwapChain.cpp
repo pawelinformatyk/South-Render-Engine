@@ -12,7 +12,7 @@ namespace South
 
     void VulkanSwapChain::Init(GLFWwindow& Window, VkSurfaceKHR InSurface)
     {
-        VulkanDevice& Device = Renderer::GetContext().GetCurrentDevice();
+        VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
 
         VkPhysicalDevice PhysDevice = Device.GetPhysicalDevice();
         VkDevice LogicDevice        = Device.GetDevice();
@@ -24,7 +24,7 @@ namespace South
 
     void VulkanSwapChain::DeInit()
     {
-        VulkanDevice& Device = Renderer::GetContext().GetCurrentDevice();
+        VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
         VkDevice LogicDevice = Device.GetDevice();
 
         for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
@@ -42,7 +42,7 @@ namespace South
 
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
-        VkImageSubresourceRange SubresourceRange{
+        const VkImageSubresourceRange SubresourceRange{
             .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
             .baseMipLevel   = 0,
             .levelCount     = 1,

@@ -2,8 +2,8 @@
 
 #include "Core/Shaders/VulkanShader.h"
 
-#include "Core/Shaders/ShadersLibrary.h"
 #include "Core/Renderer/Renderer.h"
+#include "Core/Shaders/ShadersLibrary.h"
 #include "Core/VulkanDevice.h"
 
 #include <fstream>
@@ -29,7 +29,7 @@ namespace South
 
     VulkanShader::~VulkanShader()
     {
-        VkDevice LogDev = Renderer::GetContext().GetCurrentDevice().GetDevice();
+        VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
         vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
     }
 
@@ -63,7 +63,7 @@ namespace South
 
     VkShaderModule VulkanShader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
-        VkDevice LogDev = Renderer::GetContext().GetCurrentDevice().GetDevice();
+        VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
         VkShaderModule Module;
 
         VkShaderModuleCreateInfo CreateInfo{

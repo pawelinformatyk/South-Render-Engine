@@ -16,7 +16,7 @@ namespace South
         void EndFrame();
 
     private:
-        void SetStyle();
+        void SetupStyleAndFonts();
     };
 
 } // namespace South

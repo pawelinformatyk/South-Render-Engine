@@ -29,6 +29,7 @@ namespace South
     private:
         inline static RendererContext* s_Context = nullptr;
 
+        // Image from swapchain.
         inline static uint32_t s_ImageIndex = 0;
     };
 

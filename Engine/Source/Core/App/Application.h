@@ -3,8 +3,6 @@
 #include "Core/App/GraphicalInterface.h"
 #include "Core/Window/Window.h"
 
-// #TODO : Init - not deleting memory?
-
 namespace South
 {
 

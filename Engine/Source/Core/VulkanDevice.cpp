@@ -1,7 +1,7 @@
 #include "sthpch.h"
 
-#include "Core/VulkanDevice.h"
 #include "Core/Renderer/Renderer.h"
+#include "Core/VulkanDevice.h"
 #include <optional>
 
 namespace South
@@ -110,7 +110,7 @@ namespace South
         // Set logical device and queue.
         const float QueuePrio = 1.f;
 
-        VkDeviceQueueCreateInfo QCreateInfo{
+        const VkDeviceQueueCreateInfo QCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
             .queueFamilyIndex = m_QueueFamilyIndex,
@@ -118,9 +118,9 @@ namespace South
             .pQueuePriorities = &QueuePrio,
         };
 
-        VkPhysicalDeviceFeatures DeviceFeatures{};
+        const VkPhysicalDeviceFeatures DeviceFeatures{};
 
-        VkDeviceCreateInfo CreateInfo{
+        const VkDeviceCreateInfo CreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext                   = nullptr,
             .queueCreateInfoCount    = 1,

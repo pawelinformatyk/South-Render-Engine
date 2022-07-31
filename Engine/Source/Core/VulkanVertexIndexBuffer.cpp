@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
-#include "Core/VulkanVertexIndexBuffer.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/VulkanDevice.h"
+#include "Core/VulkanVertexIndexBuffer.h"
 
 namespace South
 {
@@ -10,7 +10,7 @@ namespace South
     VulkanVertexIndexBuffer::VulkanVertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData,
                                                      uint32_t iSize)
     {
-        const VulkanDevice& VulkanDev = Renderer::GetContext().GetCurrentDevice();
+        const VulkanDevice& VulkanDev = Renderer::GetContext().GetGpuDevice();
         VkDevice LogicalDev           = VulkanDev.GetDevice();
         VkPhysicalDevice PhysDev      = VulkanDev.GetPhysicalDevice();
 
@@ -19,7 +19,7 @@ namespace South
 
         m_IndexOffset = vSize;
 
-        VkBufferCreateInfo StagingBufferInfo{
+        const VkBufferCreateInfo StagingBufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
             .size        = vSize + iSize,
@@ -33,7 +33,7 @@ namespace South
         VkMemoryRequirements StagingMemRequirements;
         vkGetBufferMemoryRequirements(LogicalDev, StagingBuffer, &StagingMemRequirements);
 
-        VkMemoryAllocateInfo StagingAllocInfo{
+        const VkMemoryAllocateInfo StagingAllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .pNext          = nullptr,
             .allocationSize = StagingMemRequirements.size,
@@ -64,7 +64,7 @@ namespace South
 
         // Actual buffer.
 
-        VkBufferCreateInfo BufferInfo{
+        const VkBufferCreateInfo BufferInfo{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext = nullptr,
             .size  = StagingBufferInfo.size,
@@ -93,7 +93,7 @@ namespace South
         // Copy data from staging buffer to actual buffer.
 
         // #TODO : Should create every time I create buffer?
-        VkCommandPoolCreateInfo PoolInfo{
+        const VkCommandPoolCreateInfo PoolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
@@ -103,7 +103,7 @@ namespace South
         VkCommandPool CommandPool = VK_NULL_HANDLE;
         vkCreateCommandPool(LogicalDev, &PoolInfo, nullptr, &CommandPool);
 
-        VkCommandBufferAllocateInfo CommandAllocInfo{
+        const VkCommandBufferAllocateInfo CommandAllocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
             .commandPool        = CommandPool,
@@ -114,7 +114,7 @@ namespace South
         VkCommandBuffer CommandBuffer;
         vkAllocateCommandBuffers(LogicalDev, &CommandAllocInfo, &CommandBuffer);
 
-        VkCommandBufferBeginInfo BeginInfo{
+        const VkCommandBufferBeginInfo BeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext = nullptr,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
@@ -122,7 +122,7 @@ namespace South
 
         vkBeginCommandBuffer(CommandBuffer, &BeginInfo);
 
-        VkBufferCopy CopyRegion{
+        const VkBufferCopy CopyRegion{
             .srcOffset = 0,
             .dstOffset = 0,
             .size      = StagingBufferInfo.size,
@@ -132,7 +132,7 @@ namespace South
 
         vkEndCommandBuffer(CommandBuffer);
 
-        VkSubmitInfo SubmitInfo{
+        const VkSubmitInfo SubmitInfo{
             .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext              = nullptr,
             .commandBufferCount = 1,
@@ -152,7 +152,7 @@ namespace South
 
     VulkanVertexIndexBuffer::~VulkanVertexIndexBuffer()
     {
-        VkDevice logicalDev = Renderer::GetContext().GetCurrentDevice().GetDevice();
+        VkDevice logicalDev = Renderer::GetContext().GetGpuDevice().GetDevice();
 
         vkDestroyBuffer(logicalDev, m_Buffer, nullptr);
         vkFreeMemory(logicalDev, m_Memory, nullptr);

@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
-#include "Core/Window/Window.h"
 #include "Core/App/Application.h"
 #include "Core/Renderer/Renderer.h"
+#include "Core/Window/Window.h"
 
 #include <GLFW/glfw3.h>
 
@@ -17,7 +17,7 @@ namespace South
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-        auto* Monitor              = glfwGetPrimaryMonitor();
+        GLFWmonitor* Monitor       = glfwGetPrimaryMonitor();
         const GLFWvidmode* VidMode = glfwGetVideoMode(Monitor);
         m_glfwWindow = glfwCreateWindow(VidMode->width, VidMode->height, Application::GetName(), nullptr, nullptr);
 

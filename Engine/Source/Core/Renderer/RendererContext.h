@@ -28,7 +28,7 @@ namespace South
         virtual void DeInit();
 
         VkInstance GetVulkanInstance() const { return m_VulkanInstance; }
-        VulkanDevice& GetCurrentDevice() const { return *m_Device; };
+        VulkanDevice& GetGpuDevice() const { return *m_Device; };
         VkRenderPass GetRenderPass() const { return m_RenderPass; };
         VkCommandBuffer GetCommandBuffer() const { return m_CommandBuffer; }
         VkCommandPool GetCommandPool() const { return m_CommandPool; }
