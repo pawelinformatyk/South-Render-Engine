@@ -58,7 +58,7 @@ namespace South
     {
         m_Window->Init([this](int Key, int Scancode, int Action, int Mods)
                        { OnKeyPressed(Key, Scancode, Action, Mods); },
-                       [this](bool bIconified) { OnIconifiedWindow(bIconified); },
+                       [this](int bIconified) { OnIconifiedWindow(bIconified); },
                        [this]() { OnMaximiseWindow(); });
 
         Renderer::Init();
@@ -96,7 +96,7 @@ namespace South
         if (m_Window) { m_Window->Maximise(); }
     }
 
-    void Application::OnIconifiedWindow(bool bIconified) {}
+    void Application::OnIconifiedWindow(int bIconified) {}
 
     void Application::OnMaximiseWindow() {}
 

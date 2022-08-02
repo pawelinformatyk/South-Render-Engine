@@ -23,6 +23,7 @@ namespace South
     public:
         Window(const WindowCreateInfo& InCreateInfo) : m_Specification(InCreateInfo){};
 
+        // Init glfw window and setup events.
         void Init(const WindowKeyPressedCallback& InOnKeyPressedCallback,
                   const WindowIconifiedCallback& InOnIconifiedCallback,
                   const WindowMaximisedCallback& InOnMaximisedCallbackCallback);

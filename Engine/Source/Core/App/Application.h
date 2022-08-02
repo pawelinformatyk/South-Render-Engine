@@ -6,8 +6,6 @@
 namespace South
 {
 
-    // Input, window resize,close,open, events,
-    // run loop, what decides what keep app going
     class Application
     {
         // ~Static
@@ -39,8 +37,6 @@ namespace South
 
         bool m_bRunning = false;
 
-        bool m_WindowMinimized = false;
-
         //~ Events
     public:
         void Minimise();
@@ -51,7 +47,7 @@ namespace South
         void ProcessEvents();
 
         void OnKeyPressed(int Key, int Scancode, int Action, int Mods);
-        void OnIconifiedWindow(bool bIconified);
+        void OnIconifiedWindow(int bIconified);
         void OnMaximiseWindow();
 
         //~ Events.
