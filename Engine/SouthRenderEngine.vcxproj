@@ -130,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\App\GraphicalInterface.h" />
+    <ClInclude Include="Source\Core\Events\EventsInterface.h" />
     <ClInclude Include="Source\Core\Renderer\RendererContext.h" />
     <ClInclude Include="Source\Core\Renderer\Renderer.h" />
     <ClInclude Include="Source\Core\FileSystem\FileSystem.h" />

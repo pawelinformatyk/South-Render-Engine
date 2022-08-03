@@ -37,6 +37,8 @@ namespace South
 
         bool m_bRunning = false;
 
+        float m_FrameTimeSeconds = 0.f;
+
         //~ Events
     public:
         void Minimise();

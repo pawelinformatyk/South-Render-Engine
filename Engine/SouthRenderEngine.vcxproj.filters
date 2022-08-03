@@ -140,6 +140,9 @@
     <ClInclude Include="Source\Core\App\GraphicalInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Core\Events\EventsInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\base.frag" />

@@ -3,6 +3,7 @@
 #include "Core/App/Application.h"
 #include "Core/FileSystem/FileSystem.h"
 #include "Core/Renderer/Renderer.h"
+#include <chrono>
 
 namespace South
 {
@@ -38,17 +39,22 @@ namespace South
         {
             ProcessEvents();
 
+            std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
+
             Renderer::BeginFrame();
             m_GUI->BeginFrame();
             {
                 Renderer::DrawExampleScene();
 
-                m_GUI->Draw();
+                m_GUI->Draw(m_FrameTimeSeconds);
             }
             m_GUI->EndFrame();
             Renderer::EndFrame();
 
             Renderer::Present();
+
+            std::chrono::time_point FrameEndTime = std::chrono::high_resolution_clock::now();
+            m_FrameTimeSeconds                   = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
         }
 
         DeInit();

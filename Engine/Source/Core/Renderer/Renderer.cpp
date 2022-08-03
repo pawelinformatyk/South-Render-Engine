@@ -42,9 +42,35 @@ namespace South
                                                  glm::vec3(0.f),
                                                  glm::vec2(0.f),
                                                  glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+
+                                             // Second square.
+                                             {
+                                                 glm::vec3(-0.5f, -0.5f, -0.5f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(1.f, 1.f, 1),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, -0.5f, -0.5f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(0.5f, 0.5f, -0.5f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
+                                             },
+                                             {
+                                                 glm::vec3(-0.5f, 0.5f, -0.5f),
+                                                 glm::vec3(0.f),
+                                                 glm::vec2(0.f),
+                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
                                              } };
 
-    std::vector<int> g_Indices = { 0, 1, 2, 2, 3, 0 };
+    const std::vector<uint16_t> g_Indices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
 
     VertexIndexBuffer* g_ModelBuffer = nullptr;
 
@@ -66,7 +92,8 @@ namespace South
 
         g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         g_EditorCam.SetProjection(glm::radians(70.0f),
-                                  s_Context->m_SwapChainExtent.width / (float)s_Context->m_SwapChainExtent.height, 0.1f,
+                                  s_Context->m_SwapChainExtent.width / (float)s_Context->m_SwapChainExtent.height,
+                                  0.1f,
                                   200.0f);
 
 
@@ -89,15 +116,6 @@ namespace South
 
     void Renderer::BeginFrame()
     {
-        // Animation
-        {
-            static int16_t i = 0;
-            ++i;
-            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-            g_PushConstant.Model =
-                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
-        }
-
         const auto& Device = s_Context->GetGpuDevice();
 
         VkDevice LogicDevice  = Device.GetDevice();
@@ -108,8 +126,12 @@ namespace South
         vkResetFences(LogicDevice, 1, &s_Context->m_FlightFence);
 
         // Acquire an image from the swap chain
-        vkAcquireNextImageKHR(LogicDevice, s_Context->m_SwapChain, UINT64_MAX, s_Context->m_ImageAvailableSemaphore,
-                              VK_NULL_HANDLE, &s_ImageIndex);
+        vkAcquireNextImageKHR(LogicDevice,
+                              s_Context->m_SwapChain,
+                              UINT64_MAX,
+                              s_Context->m_ImageAvailableSemaphore,
+                              VK_NULL_HANDLE,
+                              &s_ImageIndex);
 
         // Submit the recorded command buffer
         vkResetCommandBuffer(s_Context->m_CommandBuffer, 0);
@@ -144,17 +166,30 @@ namespace South
 
     void Renderer::DrawExampleScene()
     {
+        // Animation
+        {
+            static int16_t i = 0;
+            ++i;
+            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
+            g_PushConstant.Model =
+                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+        }
+
         VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
 
         // Draw
         {
-            vkCmdPushConstants(CmdBuffer, s_Context->m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                               sizeof(g_PushConstant), &g_PushConstant);
+            vkCmdPushConstants(CmdBuffer,
+                               s_Context->m_PipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT,
+                               0,
+                               sizeof(g_PushConstant),
+                               &g_PushConstant);
 
             VkBuffer MeshBuffer = g_ModelBuffer->GetVulkanBuffer();
             VkDeviceSize Offset = 0;
             vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, g_ModelBuffer->GetIndexOffset(), VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, g_ModelBuffer->GetIndexOffset(), VK_INDEX_TYPE_UINT16);
 
             vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
         }

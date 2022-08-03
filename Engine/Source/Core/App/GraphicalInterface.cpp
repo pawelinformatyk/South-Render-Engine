@@ -87,82 +87,102 @@ namespace South
         ImGui::NewFrame();
     }
 
-    void GraphicalInterface::Draw()
+    void GraphicalInterface::Draw(float FrameTime_Seconds)
     {
+        const ImGuiStyle& Style = ImGui::GetStyle();
+
         const ImGuiViewport* Viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(Viewport->Pos);
         ImGui::SetNextWindowSize(Viewport->Size);
 
-        const ImGuiWindowFlags TitleBarFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
-                                               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-                                               ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground |
-                                               ImGuiWindowFlags_NoDocking;
+        const ImGuiWindowFlags TitleBarFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
+                                               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                                               ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking;
 
-        ImGui::Begin("TitleBar", nullptr, TitleBarFlags);
+        // TitleBar : Options, control buttons etc.
+        ImGui::Begin(Application::GetName(), nullptr, TitleBarFlags);
         {
-            ImGui::BeginMenuBar();
+            ImGui::BeginGroup();
             {
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("File"))
+                ImGui::BeginMenuBar();
                 {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
+                    if (ImGui::BeginMenu("File"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
 
-                    ImGui::EndMenu();
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("Project Settings"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("Editor Settings"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
+
+                    if (ImGui::BeginMenu("View"))
+                    {
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+                        ImGui::MenuItem("Option");
+
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::Separator();
                 }
+                ImGui::EndMenuBar();
 
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("Project Settings"))
+                ImGui::BeginMenuBar();
                 {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
+                    float ControlButtonsWidth = ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x +
+                                                ImGui::CalcTextSize("X").x + Style.ItemSpacing.x * 2.f +
+                                                Style.FramePadding.x * 6.f;
 
-                    ImGui::EndMenu();
+                    // Title bar is always size of the window so I can get that instead of using GetCursor...
+                    ImGui::SetCursorPosX(Viewport->Size.x - ControlButtonsWidth - 6.f);
+
+                    if (ImGui::Button("_")) { Application::Get().Minimise(); }
+
+                    if (ImGui::Button("[ ]")) { Application::Get().Maximise(); }
+
+                    if (ImGui::Button("X")) { Application::Get().Close(); }
                 }
-
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("Editor Settings"))
-                {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("View"))
-                {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
+                ImGui::EndMenuBar();
             }
-            ImGui::EndMenuBar();
+            ImGui::EndGroup();
+        }
+        ImGui::End();
 
-            ImGui::BeginMenuBar();
-            {
-                if (ImGui::Button("_")) { Application::Get().Minimise(); }
-
-                if (ImGui::Button("[]")) { Application::Get().Maximise(); }
-
-                if (ImGui::Button("X")) { Application::Get().Close(); }
-            }
-            ImGui::EndMenuBar();
+        ImGui::Begin("Statistics");
+        {
+            ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f),
+                               "FrameTime : \n\t%f s\n\t%f ms",
+                               FrameTime_Seconds,
+                               FrameTime_Seconds * 1e3);
         }
         ImGui::End();
 
@@ -199,7 +219,7 @@ namespace South
         Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
         Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
         Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-        Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+        Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.4156f, 0.3529f, 0.8039f, 1.00f);
         Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
         Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
         Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
@@ -207,8 +227,8 @@ namespace South
         Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
         Colors[ImGuiCol_SliderGrab]            = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
         Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
-        Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
-        Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
+        Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+        Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.70f);
         Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
         Colors[ImGuiCol_Header]                = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
         Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);

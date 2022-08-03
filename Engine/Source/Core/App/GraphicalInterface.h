@@ -11,7 +11,7 @@ namespace South
 
         void BeginFrame();
 
-        void Draw();
+        void Draw(float FrameTimeSeconds);
 
         void EndFrame();
 
