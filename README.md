@@ -28,3 +28,5 @@ https://en.wikipedia.org/wiki/Oren–Nayar_reflectance_model
 PIORUNY 
 
 LSD  KWAS MUST HAVE
+
+Shader realtime editing - cached also
