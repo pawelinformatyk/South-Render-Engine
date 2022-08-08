@@ -25,6 +25,7 @@ namespace South
 
     public:
         virtual void Init();
+
         virtual void DeInit();
 
         VkInstance GetVulkanInstance() const { return m_VulkanInstance; }
@@ -32,6 +33,7 @@ namespace South
         VkRenderPass GetRenderPass() const { return m_RenderPass; };
         VkCommandBuffer GetCommandBuffer() const { return m_CommandBuffer; }
         VkCommandPool GetCommandPool() const { return m_CommandPool; }
+        VkDescriptorPool GetDescriptorPool() const { return m_DescriptorPool; }
 
     private:
         void CreateInstance();
@@ -47,6 +49,8 @@ namespace South
         void CreateModelBuffers();
         void CreateCommands();
         void CreateSyncObjects();
+
+        void CreateDescriptorPool();
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
         VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
@@ -68,22 +72,26 @@ namespace South
         VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
         VkPipeline m_GraphicsPipeline     = VK_NULL_HANDLE;
 
+        VkDescriptorPool m_DescriptorPool;
+
         VkCommandPool m_CommandPool           = VK_NULL_HANDLE;
         VkCommandBuffer m_CommandBuffer       = VK_NULL_HANDLE;
         VkSemaphore m_ImageAvailableSemaphore = VK_NULL_HANDLE;
         VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
         VkFence m_FlightFence                 = VK_NULL_HANDLE;
 
-        std::unique_ptr<VulkanDevice> m_Device = nullptr;
+        VulkanDevice* m_Device = nullptr;
 
         //~ Validations layers.
     private:
         void CreateMessenger();
         void DestroyMessenger();
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+        static VKAPI_ATTR VkBool32 VKAPI_CALL
+            ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                      void* pUserData);
 
         bool CheckValidationLayers();
 

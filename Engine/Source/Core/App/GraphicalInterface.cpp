@@ -28,29 +28,6 @@ namespace South
 
         const VulkanDevice& GPU = Context.GetGpuDevice();
 
-        const VkDescriptorPoolSize PoolSizes[] = { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
-
-        const VkDescriptorPoolCreateInfo PoolInfo = {
-            .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-            .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-            .maxSets       = 1000 * IM_ARRAYSIZE(PoolSizes),
-            .poolSizeCount = (uint32_t)IM_ARRAYSIZE(PoolSizes),
-            .pPoolSizes    = PoolSizes,
-        };
-
-        VkDescriptorPool DescriptorPool;
-        vkCreateDescriptorPool(GPU.GetDevice(), &PoolInfo, VK_NULL_HANDLE, &DescriptorPool);
-
         // #TODO : Remove this struct later.
         ImGui_ImplVulkan_InitInfo initInfo = {
             .Instance        = Context.GetVulkanInstance(),
@@ -59,7 +36,7 @@ namespace South
             .QueueFamily     = GPU.GetQFamilyIndex(),
             .Queue           = GPU.GetQ(),
             .PipelineCache   = VK_NULL_HANDLE,
-            .DescriptorPool  = DescriptorPool,
+            .DescriptorPool  = Context.GetDescriptorPool(),
             .Subpass         = 0,
             .MinImageCount   = 2,
             .ImageCount      = 2,
@@ -75,6 +52,8 @@ namespace South
 
     void GraphicalInterface::DeInit()
     {
+        vkDeviceWaitIdle(Renderer::GetContext().GetGpuDevice().GetDevice());
+
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();

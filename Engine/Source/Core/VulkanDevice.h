@@ -5,16 +5,22 @@
 namespace South
 {
 
-    // Class wrapper around vulkan devices : physical and logical.
-    // Has also variables related to queues, because they are retrieved from devices.
+    // #TODO : Move queues and logical device to another class? There can be more of them sooo unlike GPU.
     class VulkanDevice
     {
     public:
-        VulkanDevice(){};
-        ~VulkanDevice(){};
+        struct CreateInfo
+        {
+            VkInstance VulkanInstance = nullptr;
+            VkSurfaceKHR Surface      = nullptr;
+            std::vector<const char*> RequiredGPUExtensions;
+            std::vector<VkPhysicalDeviceFeatures> RequiredGPUFeatures;
+            VkPhysicalDeviceType GPUType;
+            VkQueueFlagBits QueueFlags;
+        };
 
-        void Init(VkSurfaceKHR Surface);
-        void DeInit();
+        static VulkanDevice* Create(const CreateInfo& InCreateInfo);
+        static void Destroy(VulkanDevice* InDevice);
 
         VkPhysicalDevice GetPhysicalDevice() const;
         VkDevice GetDevice() const;
@@ -22,15 +28,26 @@ namespace South
         VkQueue GetQ() const;
 
     private:
-        const std::vector<const char*> m_RequiredDeviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        };
+        static std::vector<VkPhysicalDevice>
+            FindSuitableGraphicCards(VkInstance VulkanInstance,
+                                     VkSurfaceKHR Surface,
+                                     const std::vector<const char*>& RequiredDeviceExtensions,
+                                     VkPhysicalDeviceType GPUType);
+        static std::optional<uint32_t>
+            FindQueueFamily(VkPhysicalDevice GPU, VkSurfaceKHR Surface, VkQueueFlagBits Flags);
+        static VkPhysicalDevice PickBestGPU(const std::vector<VkPhysicalDevice>& GPUs);
 
-        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-        VkDevice m_LogicalDevice          = VK_NULL_HANDLE;
+        // Graphic card that was found based on requirements from CreateInfo.
+        VkPhysicalDevice m_GraphicCard = VK_NULL_HANDLE;
 
-        VkQueue m_Queue             = VK_NULL_HANDLE;
-        uint32_t m_QueueFamilyIndex = 0;
+        // Interface for GPU.
+        VkDevice m_LogicalDevice = VK_NULL_HANDLE;
+
+        // Family queue that allows only a subset of commands specified in CreateInfo.QueueFlags.
+        uint32_t m_QueueFamily = 0;
+
+        // Handle to interface with queues from LogicalDevice.
+        VkQueue m_Queue = VK_NULL_HANDLE;
     };
 
 

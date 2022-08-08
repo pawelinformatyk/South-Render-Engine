@@ -19,7 +19,7 @@ namespace South
     {
         s_Instance = this;
 
-        m_Window = std::make_unique<Window>(WindowCreateInfo{
+        m_Window = std::make_unique<Window>(Window::CreateInfo{
             .bFullscreen = true,
             .Width       = 540,
             .Height      = 540,

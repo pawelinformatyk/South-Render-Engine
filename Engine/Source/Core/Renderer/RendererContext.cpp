@@ -25,8 +25,15 @@ namespace South
 
         CreateSurface(*GlfwWindow);
 
-        m_Device = std::make_unique<VulkanDevice>();
-        m_Device->Init(m_Surface);
+        m_Device = VulkanDevice::Create(VulkanDevice::CreateInfo {
+            .VulkanInstance = m_VulkanInstance,
+            .Surface=m_Surface,
+            .RequiredGPUExtensions = {
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME,/*To allow drawing on window*/
+            },
+            .GPUType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
+            .QueueFlags = VK_QUEUE_GRAPHICS_BIT,
+        });
 
         ShadersLibrary::Init();
         ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
@@ -40,6 +47,10 @@ namespace South
         CreateCommands();
         CreateSyncObjects();
 
+
+        CreateDescriptorPool();
+
+
         STH_INFO("RendererContext Initialized.");
     }
 
@@ -49,7 +60,12 @@ namespace South
 
         VkDevice LogicDevice = m_Device->GetDevice();
 
-        // #TODO : Error with commandbuffer still in use.
+        vkDestroyDescriptorPool(LogicDevice, m_DescriptorPool, nullptr);
+
+        vkDestroySemaphore(LogicDevice, m_RenderFinishedSemaphore, nullptr);
+        vkDestroySemaphore(LogicDevice, m_ImageAvailableSemaphore, nullptr);
+        vkDestroyFence(LogicDevice, m_FlightFence, nullptr);
+
         vkDestroyCommandPool(LogicDevice, m_CommandPool, nullptr);
 
         for (auto framebuffer : m_SwapChainFramebuffers) { vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr); }
@@ -63,11 +79,12 @@ namespace South
         vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
 
 
-        m_Device->DeInit();
-
         if (m_bEnableValidationLayers) { DestroyMessenger(); }
 
         vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
+
+        VulkanDevice::Destroy(m_Device);
+        m_Device = nullptr;
 
         vkDestroyInstance(m_VulkanInstance, nullptr);
 
@@ -462,6 +479,31 @@ namespace South
         vkCreateFence(LogicDevice, &FenceInfo, nullptr, &m_FlightFence);
     }
 
+    void RendererContext::CreateDescriptorPool()
+    {
+        const VkDescriptorPoolSize PoolSizes[] = { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+                                                   { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
+
+        const VkDescriptorPoolCreateInfo CreateInfo = {
+            .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+            .maxSets       = 1000 * (sizeof(PoolSizes) / sizeof(PoolSizes[0])),
+            .poolSizeCount = static_cast<uint32_t>(sizeof(PoolSizes) / sizeof(PoolSizes[0])),
+            .pPoolSizes    = PoolSizes,
+        };
+
+        vkCreateDescriptorPool(m_Device->GetDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
+    }
+
     VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
     {
         uint32_t FormatCount;
@@ -488,7 +530,9 @@ namespace South
         vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &PresentModesCount, nullptr);
 
         std::vector<VkPresentModeKHR> AvailablePresentModes(PresentModesCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &PresentModesCount,
+        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice,
+                                                  inSurface,
+                                                  &PresentModesCount,
                                                   AvailablePresentModes.data());
 
         for (const auto& PresentMode : AvailablePresentModes)
@@ -569,18 +613,28 @@ namespace South
         }
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL RendererContext::ValidationMessageCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    VKAPI_ATTR VkBool32 VKAPI_CALL
+        RendererContext::ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                   VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                   void* pUserData)
     {
         if (pCallbackData)
         {
             switch (messageSeverity)
             {
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: STH_VK_ERR(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: STH_VK_WARN(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: STH_VK_INFO(pCallbackData->pMessage); break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: STH_VK_TRACE(pCallbackData->pMessage); break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+                    STH_VK_ERR(pCallbackData->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                    STH_VK_WARN(pCallbackData->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+                    STH_VK_INFO(pCallbackData->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+                    STH_VK_TRACE(pCallbackData->pMessage);
+                    break;
             }
         }
 
