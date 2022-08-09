@@ -100,9 +100,11 @@ namespace South
         g_PushConstant.Model      = glm::mat4(1.f);
         g_PushConstant.View       = g_EditorCam.GetViewMatrix();
         g_PushConstant.Projection = g_EditorCam.GetProjectionMatrix();
+
+        STH_INFO("Renderer Initialized");
     }
 
-    void Renderer::DeInit()
+    void Renderer::Deinit()
     {
         if (!s_Context) { return; };
 
@@ -112,6 +114,8 @@ namespace South
 
         delete s_Context;
         s_Context = nullptr;
+
+        STH_INFO("Renderer Deinitialized");
     }
 
     void Renderer::BeginFrame()

@@ -15,9 +15,11 @@ namespace South
     {
     public:
         static void Init();
-        static void DeInit();
+        static void Deinit();
 
-        static Shader* AddShader(const std::string& Name, const std::string& PathToCode, VkShaderStageFlagBits Stages,
+        static Shader* AddShader(const std::string& Name,
+                                 const std::string& PathToCode,
+                                 VkShaderStageFlagBits Stages,
                                  bool bCompile = true);
         static Shader* GetShader(const std::string& Name);
 
@@ -25,6 +27,8 @@ namespace South
 
         static shaderc::Compiler& GetCompiler();
         static shaderc::CompileOptions& GetCompilerOptions();
+
+        static const char* GetShaderStageToString(VkShaderStageFlagBits Stage);
 
     private:
         static shaderc::Compiler s_Compiler;

@@ -5,7 +5,6 @@
 namespace South
 {
 
-    // #TODO : Move queues and logical device to another class? There can be more of them sooo unlike GPU.
     class VulkanDevice
     {
     public:

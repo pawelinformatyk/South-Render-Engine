@@ -47,16 +47,12 @@ namespace South
         CreateCommands();
         CreateSyncObjects();
 
-
         CreateDescriptorPool();
-
-
-        STH_INFO("RendererContext Initialized.");
     }
 
     void RendererContext::DeInit()
     {
-        ShadersLibrary::DeInit();
+        ShadersLibrary::Deinit();
 
         VkDevice LogicDevice = m_Device->GetDevice();
 
@@ -87,8 +83,6 @@ namespace South
         m_Device = nullptr;
 
         vkDestroyInstance(m_VulkanInstance, nullptr);
-
-        STH_INFO("RendererContext Deinitialized.");
     }
 
     void RendererContext::CreateInstance()

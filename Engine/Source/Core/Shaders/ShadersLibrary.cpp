@@ -14,25 +14,29 @@ namespace South
         s_CompilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
         s_CompilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-        STH_INFO("ShadersLibrary Initialized.");
+        STH_INFO("ShadersLibrary : Initialized.");
     }
 
-    void ShadersLibrary::DeInit()
+    void ShadersLibrary::Deinit()
     {
         for (const auto& [Name, Shader] : s_Shaders) { delete Shader; }
 
         s_Shaders.clear();
 
-        STH_INFO("ShadersLibrary Deinitialized - shaders cleaned.");
+        STH_INFO("ShadersLibrary : Deinitialized");
     }
 
-    Shader* ShadersLibrary::AddShader(const std::string& Name, const std::string& PathToCode,
-                                      VkShaderStageFlagBits Stages, bool bCompile /*= true*/)
+    Shader* ShadersLibrary::AddShader(const std::string& Name,
+                                      const std::string& PathToCode,
+                                      VkShaderStageFlagBits Stages,
+                                      bool bCompile /*= true*/)
     {
         auto* NewShader = new Shader(PathToCode, Stages, bCompile);
         if (!NewShader) { return nullptr; }
 
         s_Shaders.emplace(Name, NewShader);
+
+        STH_INFO("ShadersLibrary : {:s}-shader {:s} added.", GetShaderStageToString(Stages), Name);
 
         return NewShader;
     }
@@ -47,5 +51,18 @@ namespace South
     shaderc::Compiler& ShadersLibrary::GetCompiler() { return s_Compiler; }
 
     shaderc::CompileOptions& ShadersLibrary::GetCompilerOptions() { return s_CompilerOptions; }
+
+    const char* ShadersLibrary::GetShaderStageToString(VkShaderStageFlagBits Stage)
+    {
+        switch (Stage)
+        {
+            case VK_SHADER_STAGE_VERTEX_BIT:
+                return "vertex";
+            case VK_SHADER_STAGE_FRAGMENT_BIT:
+                return "fragment";
+            default:
+                return "IDC";
+        }
+    }
 
 } // namespace South

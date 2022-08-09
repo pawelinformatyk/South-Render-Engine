@@ -80,7 +80,7 @@ namespace South
 
         m_GUI->DeInit();
 
-        Renderer::DeInit();
+        Renderer::Deinit();
 
         m_Window->DeInit();
     }

@@ -11,7 +11,7 @@ namespace South
     {
     public:
         static void Init();
-        static void DeInit();
+        static void Deinit();
 
         static void BeginFrame();
 
