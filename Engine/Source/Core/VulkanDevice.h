@@ -40,7 +40,7 @@ namespace South
         // Graphic card that was found based on requirements from CreateInfo.
         VkPhysicalDevice m_GraphicCard = VK_NULL_HANDLE;
 
-        // Interface for GPU.
+        // Interface for GPU. Queues are created along LogicalDevice.
         VkDevice m_LogicalDevice = VK_NULL_HANDLE;
 
         // Family queue that allows only a subset of commands specified in CreateInfo.QueueFlags.

@@ -9,9 +9,12 @@ namespace South
 
     VertexIndexBuffer::VertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData, uint32_t iSize)
     {
-        const VulkanDevice& VulkanDev = Renderer::GetContext().GetGpuDevice();
-        VkDevice LogicalDev           = VulkanDev.GetDevice();
-        VkPhysicalDevice PhysDev      = VulkanDev.GetPhysicalDevice();
+        const RendererContext& Context = Renderer::GetContext();
+        const VulkanDevice& VulkanDev  = Context.GetGpuDevice();
+        VkDevice LogicalDev            = VulkanDev.GetDevice();
+        VkPhysicalDevice PhysDev       = VulkanDev.GetPhysicalDevice();
+        VkCommandPool CmdPool          = Context.GetCommandPool();
+        VkCommandBuffer CmdBuffer      = Context.GetCommandBuffer();
 
         VkPhysicalDeviceMemoryProperties MemProperties;
         vkGetPhysicalDeviceMemoryProperties(PhysDev, &MemProperties);
@@ -37,7 +40,8 @@ namespace South
             .pNext          = nullptr,
             .allocationSize = StagingMemRequirements.size,
             .memoryTypeIndex =
-                FindMemoryType(MemProperties, StagingMemRequirements.memoryTypeBits,
+                FindMemoryType(MemProperties,
+                               StagingMemRequirements.memoryTypeBits,
                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
 
         };
@@ -91,35 +95,13 @@ namespace South
 
         // Copy data from staging buffer to actual buffer.
 
-        // #TODO : Should create every time I create buffer?
-        const VkCommandPoolCreateInfo PoolInfo{
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .pNext            = nullptr,
-            .flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-            .queueFamilyIndex = VulkanDev.GetQFamilyIndex(),
-        };
-
-        VkCommandPool CommandPool = VK_NULL_HANDLE;
-        vkCreateCommandPool(LogicalDev, &PoolInfo, nullptr, &CommandPool);
-
-        const VkCommandBufferAllocateInfo CommandAllocInfo{
-            .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .pNext              = nullptr,
-            .commandPool        = CommandPool,
-            .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1,
-        };
-
-        VkCommandBuffer CommandBuffer;
-        vkAllocateCommandBuffers(LogicalDev, &CommandAllocInfo, &CommandBuffer);
-
         const VkCommandBufferBeginInfo BeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext = nullptr,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         };
 
-        vkBeginCommandBuffer(CommandBuffer, &BeginInfo);
+        vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
 
         const VkBufferCopy CopyRegion{
             .srcOffset = 0,
@@ -127,23 +109,21 @@ namespace South
             .size      = StagingBufferInfo.size,
         };
 
-        vkCmdCopyBuffer(CommandBuffer, StagingBuffer, m_Buffer, 1, &CopyRegion);
+        vkCmdCopyBuffer(CmdBuffer, StagingBuffer, m_Buffer, 1, &CopyRegion);
 
-        vkEndCommandBuffer(CommandBuffer);
+        vkEndCommandBuffer(CmdBuffer);
 
         const VkSubmitInfo SubmitInfo{
             .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext              = nullptr,
             .commandBufferCount = 1,
-            .pCommandBuffers    = &CommandBuffer,
+            .pCommandBuffers    = &CmdBuffer,
         };
 
         VkQueue GraphicsQueue = VulkanDev.GetQ();
 
         vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(GraphicsQueue);
-
-        vkFreeCommandBuffers(LogicalDev, CommandPool, 1, &CommandBuffer);
 
         vkDestroyBuffer(LogicalDev, StagingBuffer, nullptr);
         vkFreeMemory(LogicalDev, StagingBufferMemory, nullptr);
@@ -161,7 +141,8 @@ namespace South
 
     uint32_t VertexIndexBuffer::GetIndexOffset() const { return m_IndexOffset; }
 
-    uint32_t VertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+    uint32_t VertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
+                                               uint32_t typeFilter,
                                                VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)

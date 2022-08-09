@@ -26,7 +26,7 @@ namespace South
         const VkDeviceQueueCreateInfo QCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
-            .flags            = 0x0,
+            .flags            = 0x00,
             .queueFamilyIndex = QueueFamily.value(),
             .queueCount       = 1,
             .pQueuePriorities = &QueuePrio,
@@ -35,7 +35,7 @@ namespace South
         const VkDeviceCreateInfo LogicDeviceCreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext                   = nullptr,
-            .flags                   = 0x0,
+            .flags                   = 0x00,
             .queueCreateInfoCount    = 1,
             .pQueueCreateInfos       = &QCreateInfo,
             .enabledExtensionCount   = static_cast<uint32_t>(InInfo.RequiredGPUExtensions.size()),
@@ -145,6 +145,7 @@ namespace South
             VkBool32 bPresentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(GPU, QueueFamilyIndex, Surface, &bPresentSupport);
 
+            // Present and Graphic queue in one.
             if (bPresentSupport && (QueueFamilies[QueueFamilyIndex].queueFlags & Flags))
             {
                 return std::optional<uint32_t>(QueueFamilyIndex);
