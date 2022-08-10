@@ -30,3 +30,5 @@ PIORUNY
 LSD  KWAS MUST HAVE
 
 Shader realtime editing - cached also
+
+Drawing with pencil
