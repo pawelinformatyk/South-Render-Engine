@@ -32,3 +32,5 @@ LSD  KWAS MUST HAVE
 Shader realtime editing - cached also
 
 Drawing with pencil
+
+Visualization of number generators
