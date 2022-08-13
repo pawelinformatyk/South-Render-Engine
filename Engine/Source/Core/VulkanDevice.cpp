@@ -15,37 +15,42 @@ namespace South
                                                                             InInfo.GPUType);
         if (!GPUs.size()) { return nullptr; }
 
-        //#TODO : Rate and pick the best gpu.
+        const float QueuePrio[3] = { 1.f, 1.f, 1.f };
 
-        const std::optional<uint32_t> QueueFamily = FindQueueFamily(GPUs[0], InInfo.Surface, InInfo.QueueFlags);
-        if (!QueueFamily.has_value()) { return nullptr; }
+        const std::optional<uint32_t> GQueueFamily = FindQueueFamily(GPUs[0], nullptr, VK_QUEUE_GRAPHICS_BIT);
 
-        // Set logical device and queue.
-        const float QueuePrio = 1.f;
+        const std::optional<uint32_t> PQueueFamily =
+            FindQueueFamily(GPUs[0], InInfo.Surface, VK_QUEUE_FLAG_BITS_MAX_ENUM);
 
-        const VkDeviceQueueCreateInfo QCreateInfo{
+        const std::optional<uint32_t> TQueueFamily = FindQueueFamily(GPUs[0], nullptr, VK_QUEUE_TRANSFER_BIT);
+
+        const VkDeviceQueueCreateInfo GraphicCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = 0x00,
-            .queueFamilyIndex = QueueFamily.value(),
-            .queueCount       = 1,
-            .pQueuePriorities = &QueuePrio,
+            .queueFamilyIndex = GQueueFamily.value(),
+            .queueCount       = 3,
+            .pQueuePriorities = QueuePrio,
         };
+
+        const std::vector<VkDeviceQueueCreateInfo> QueuesCreateInfo = { GraphicCreateInfo };
 
         const VkDeviceCreateInfo LogicDeviceCreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext                   = nullptr,
             .flags                   = 0x00,
-            .queueCreateInfoCount    = 1,
-            .pQueueCreateInfos       = &QCreateInfo,
+            .queueCreateInfoCount    = static_cast<uint32_t>(QueuesCreateInfo.size()),
+            .pQueueCreateInfos       = QueuesCreateInfo.data(),
             .enabledExtensionCount   = static_cast<uint32_t>(InInfo.RequiredGPUExtensions.size()),
             .ppEnabledExtensionNames = InInfo.RequiredGPUExtensions.data(),
             .pEnabledFeatures        = InInfo.RequiredGPUFeatures.data(),
         };
 
-        VulkanDevice* NewVulkanDevice  = new VulkanDevice;
-        NewVulkanDevice->m_GraphicCard = GPUs[0];
-        NewVulkanDevice->m_QueueFamily = QueueFamily.value();
+        VulkanDevice* NewVulkanDevice          = new VulkanDevice;
+        NewVulkanDevice->m_GraphicCard         = GPUs[0];
+        NewVulkanDevice->m_GraphicQueueFamily  = GQueueFamily.value();
+        NewVulkanDevice->m_PresentQueueFamily  = PQueueFamily.value();
+        NewVulkanDevice->m_TransferQueueFamily = TQueueFamily.value();
 
         vkCreateDevice(NewVulkanDevice->m_GraphicCard,
                        &LogicDeviceCreateInfo,
@@ -53,9 +58,19 @@ namespace South
                        &NewVulkanDevice->m_LogicalDevice);
 
         vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
-                         NewVulkanDevice->m_QueueFamily,
+                         NewVulkanDevice->m_GraphicQueueFamily,
                          0,
-                         &NewVulkanDevice->m_Queue);
+                         &NewVulkanDevice->m_GraphicQueue);
+
+        vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
+                         NewVulkanDevice->m_PresentQueueFamily,
+                         1,
+                         &NewVulkanDevice->m_PresentQueue);
+
+        vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
+                         NewVulkanDevice->m_TransferQueueFamily,
+                         2,
+                         &NewVulkanDevice->m_TransferQueue);
 
         return NewVulkanDevice;
     }
@@ -72,9 +87,9 @@ namespace South
 
     VkDevice VulkanDevice::GetDevice() const { return m_LogicalDevice; }
 
-    uint32_t VulkanDevice::GetQFamilyIndex() const { return m_QueueFamily; }
+    uint32_t VulkanDevice::GetQFamilyIndex() const { return m_GraphicQueueFamily; }
 
-    VkQueue VulkanDevice::GetQ() const { return m_Queue; }
+    VkQueue VulkanDevice::GetGraphicQueue() const { return m_GraphicQueue; }
 
     std::vector<VkPhysicalDevice>
         VulkanDevice::FindSuitableGraphicCards(VkInstance VulkanInstance,
@@ -142,23 +157,35 @@ namespace South
 
         for (uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
         {
-            VkBool32 bPresentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(GPU, QueueFamilyIndex, Surface, &bPresentSupport);
+            std::cout << "Queue number: " + std::to_string(QueueFamilies[QueueFamilyIndex].queueCount) << std::endl;
+            std::cout << "Queue flags: " + std::to_string(QueueFamilies[QueueFamilyIndex].queueFlags) << std::endl;
 
-            // Present and Graphic queue in one.
-            if (bPresentSupport && (QueueFamilies[QueueFamilyIndex].queueFlags & Flags))
+            if (Surface)
             {
-                return std::optional<uint32_t>(QueueFamilyIndex);
+                VkBool32 bPresentSupport = false;
+                vkGetPhysicalDeviceSurfaceSupportKHR(GPU, QueueFamilyIndex, Surface, &bPresentSupport);
+
+                if (bPresentSupport) { return std::optional<uint32_t>(QueueFamilyIndex); }
+            }
+            else
+            {
+                // Present and Graphic queue in one.
+                if (QueueFamilies[QueueFamilyIndex].queueFlags & Flags)
+                {
+                    return std::optional<uint32_t>(QueueFamilyIndex);
+                }
             }
         }
 
-        return std::optional<uint32_t>();
+        return {};
     }
 
-    VkPhysicalDevice VulkanDevice::PickBestGPU(const std::vector<VkPhysicalDevice>& GPUs)
+    South::GraphicCard* GraphicCard::Create(const CreateInfo& InCreateInfo) { return nullptr; }
+
+    void GraphicCard::CreateLogicalDeviceWithQueues(VkDevice OutLogicalDevice,
+                                                    std::vector<Queue*>& OutQueues,
+                                                    const std::vector<QueueConditionCallback>& InConditions)
     {
-        // #TODO : Rate GPUs.
-        return GPUs[0];
     }
 
 } // namespace South

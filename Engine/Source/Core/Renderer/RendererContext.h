@@ -25,7 +25,6 @@ namespace South
 
     public:
         virtual void Init();
-
         virtual void DeInit();
 
         VkInstance GetVulkanInstance() const { return m_VulkanInstance; }

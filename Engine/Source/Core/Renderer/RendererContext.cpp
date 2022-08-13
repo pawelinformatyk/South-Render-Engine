@@ -25,7 +25,7 @@ namespace South
 
         CreateSurface(*GlfwWindow);
 
-        m_Device = VulkanDevice::Create(VulkanDevice::CreateInfo {
+        VulkanDevice::CreateInfo DeviceCreateInfo{
             .VulkanInstance = m_VulkanInstance,
             .Surface=m_Surface,
             .RequiredGPUExtensions = {
@@ -33,7 +33,27 @@ namespace South
             },
             .GPUType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
             .QueueFlags = VK_QUEUE_GRAPHICS_BIT,
-        });
+        };
+
+        m_Device = VulkanDevice::Create(DeviceCreateInfo);
+
+        // const GraphicCard::CreateInfo GpuCreateInfo{
+        //     .VulkanInstance     = m_VulkanInstance,
+        //     .RequiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
+        //     .RequiredFeatures   = {},
+        //     .Type               = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
+        // };
+        // GraphicCard* m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
+
+        // Queue* m_GraphicQueue  = nullptr;
+        // Queue* m_TransferQueue = nullptr;
+        // Queue* m_PresentQueue  = nullptr;
+
+        // std::vector<Queue*> QueuesToSpawn{ m_GraphicQueue, m_TransferQueue, m_PresentQueue };
+        // std::vector<GraphicCard::QueueConditionCallback> Conditions{ [](const VkQueueFamilyProperties& Properties,
+        //                                                                 int Index) { return true; } };
+
+        // m_GraphicCard->CreateLogicalDeviceWithQueues(, QueuesToSpawn, Conditions);
 
         ShadersLibrary::Init();
         ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);

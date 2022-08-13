@@ -6,9 +6,9 @@
 namespace South
 {
 
-    void Window::Init(const WindowKeyPressedCallback& InOnKeyPressedCallback,
-                      const WindowIconifiedCallback& InOnIconifiedCallback,
-                      const WindowMaximisedCallback& InOnMaximisedCallback)
+    void Window::Init(const KeyPressedCallback& InOnKeyPressedCallback,
+                      const IconifiedCallback& InOnIconifiedCallback,
+                      const MaximisedCallback& InOnMaximisedCallback)
     {
         glfwInit();
 

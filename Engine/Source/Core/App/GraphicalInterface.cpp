@@ -18,9 +18,9 @@ namespace South
 
         ImGuiIO& IO = ImGui::GetIO();
 
-        IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-        IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-        IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
+        IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
         ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().GetglfwWindow(), true);
 
@@ -28,13 +28,13 @@ namespace South
 
         const VulkanDevice& GPU = Context.GetGpuDevice();
 
-        // #TODO : Remove this struct later.
-        ImGui_ImplVulkan_InitInfo initInfo = {
+        // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
+        ImGui_ImplVulkan_InitInfo InitInfo = {
             .Instance        = Context.GetVulkanInstance(),
             .PhysicalDevice  = GPU.GetPhysicalDevice(),
             .Device          = GPU.GetDevice(),
             .QueueFamily     = GPU.GetQFamilyIndex(),
-            .Queue           = GPU.GetQ(),
+            .Queue           = GPU.GetGraphicQueue(),
             .PipelineCache   = VK_NULL_HANDLE,
             .DescriptorPool  = Context.GetDescriptorPool(),
             .Subpass         = 0,
@@ -45,7 +45,7 @@ namespace South
             .CheckVkResultFn = VK_NULL_HANDLE,
         };
 
-        ImGui_ImplVulkan_Init(&initInfo, Context.GetRenderPass());
+        ImGui_ImplVulkan_Init(&InitInfo, Context.GetRenderPass());
 
         SetupStyleAndFonts();
     }
@@ -295,7 +295,7 @@ namespace South
 
             vkEndCommandBuffer(CmdBuffer);
 
-            vkQueueSubmit(GPU.GetQ(), 1, &SubmitInfo, VK_NULL_HANDLE);
+            vkQueueSubmit(GPU.GetGraphicQueue(), 1, &SubmitInfo, VK_NULL_HANDLE);
 
             vkDeviceWaitIdle(GPU.GetDevice());
 

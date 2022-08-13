@@ -7,7 +7,7 @@
 namespace South
 {
 
-    VertexIndexBuffer::VertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData, uint32_t iSize)
+    VertexIndexBuffer* VertexIndexBuffer::Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo)
     {
         const RendererContext& Context = Renderer::GetContext();
         const VulkanDevice& VulkanDev  = Context.GetGpuDevice();
@@ -16,15 +16,16 @@ namespace South
         VkCommandPool CmdPool          = Context.GetCommandPool();
         VkCommandBuffer CmdBuffer      = Context.GetCommandBuffer();
 
+        const uint32_t VerticesSize = InVertexInfo.Count * InVertexInfo.Size;
+        const uint32_t IndicesSize  = InIndexInfo.Count * InIndexInfo.Size;
+
         VkPhysicalDeviceMemoryProperties MemProperties;
         vkGetPhysicalDeviceMemoryProperties(PhysDev, &MemProperties);
-
-        m_IndexOffset = vSize;
 
         const VkBufferCreateInfo StagingBufferInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext       = nullptr,
-            .size        = vSize + iSize,
+            .size        = VerticesSize + IndicesSize,
             .usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
@@ -55,14 +56,14 @@ namespace South
 
         StaginBufferData = nullptr;
 
-        vkMapMemory(LogicalDev, StagingBufferMemory, 0, vSize, 0, &StaginBufferData);
-        memcpy(StaginBufferData, vData, static_cast<size_t>(vSize));
+        vkMapMemory(LogicalDev, StagingBufferMemory, 0, VerticesSize, 0, &StaginBufferData);
+        memcpy(StaginBufferData, InVertexInfo.Data, static_cast<size_t>(VerticesSize));
         vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
         StaginBufferData = nullptr;
 
-        vkMapMemory(LogicalDev, StagingBufferMemory, m_IndexOffset, iSize, 0, &StaginBufferData);
-        memcpy(StaginBufferData, iData, static_cast<size_t>(iSize));
+        vkMapMemory(LogicalDev, StagingBufferMemory, VerticesSize, IndicesSize, 0, &StaginBufferData);
+        memcpy(StaginBufferData, InIndexInfo.Data, static_cast<size_t>(IndicesSize));
         vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
         // Actual buffer.
@@ -76,10 +77,11 @@ namespace South
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         };
 
-        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &m_Buffer);
+        VkBuffer Buffer;
+        vkCreateBuffer(LogicalDev, &BufferInfo, nullptr, &Buffer);
 
         VkMemoryRequirements MemRequirements;
-        vkGetBufferMemoryRequirements(LogicalDev, m_Buffer, &MemRequirements);
+        vkGetBufferMemoryRequirements(LogicalDev, Buffer, &MemRequirements);
 
         VkMemoryAllocateInfo AllocInfo{
             .sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -89,9 +91,10 @@ namespace South
                 FindMemoryType(MemProperties, MemRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &m_Memory);
+        VkDeviceMemory Memory;
+        vkAllocateMemory(LogicalDev, &AllocInfo, nullptr, &Memory);
 
-        vkBindBufferMemory(LogicalDev, m_Buffer, m_Memory, 0);
+        vkBindBufferMemory(LogicalDev, Buffer, Memory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
@@ -109,7 +112,7 @@ namespace South
             .size      = StagingBufferInfo.size,
         };
 
-        vkCmdCopyBuffer(CmdBuffer, StagingBuffer, m_Buffer, 1, &CopyRegion);
+        vkCmdCopyBuffer(CmdBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
 
         vkEndCommandBuffer(CmdBuffer);
 
@@ -120,30 +123,47 @@ namespace South
             .pCommandBuffers    = &CmdBuffer,
         };
 
-        VkQueue GraphicsQueue = VulkanDev.GetQ();
+        VkQueue GraphicsQueue = VulkanDev.GetGraphicQueue();
 
         vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(GraphicsQueue);
 
         vkDestroyBuffer(LogicalDev, StagingBuffer, nullptr);
         vkFreeMemory(LogicalDev, StagingBufferMemory, nullptr);
+
+        VertexIndexBuffer* VIBuffer = new VertexIndexBuffer;
+
+        VIBuffer->m_Buffer        = Buffer;
+        VIBuffer->m_Memory        = Memory;
+        VIBuffer->m_VerticesSize  = VerticesSize;
+        VIBuffer->m_VerticesCount = InVertexInfo.Count;
+        VIBuffer->m_IndicesSize   = IndicesSize;
+        VIBuffer->m_IndicesCount  = InIndexInfo.Count;
+
+        return VIBuffer;
     }
 
-    VertexIndexBuffer::~VertexIndexBuffer()
+    void VertexIndexBuffer::Destroy(VkDevice InlogicalDev, VertexIndexBuffer& InVIBuffer)
     {
-        VkDevice logicalDev = Renderer::GetContext().GetGpuDevice().GetDevice();
+        vkDestroyBuffer(InlogicalDev, InVIBuffer.m_Buffer, nullptr);
+        vkFreeMemory(InlogicalDev, InVIBuffer.m_Memory, nullptr);
 
-        vkDestroyBuffer(logicalDev, m_Buffer, nullptr);
-        vkFreeMemory(logicalDev, m_Memory, nullptr);
+        delete &InVIBuffer;
     }
 
     VkBuffer VertexIndexBuffer::GetVulkanBuffer() const { return m_Buffer; }
 
-    uint32_t VertexIndexBuffer::GetIndexOffset() const { return m_IndexOffset; }
+    uint32_t VertexIndexBuffer::GetVerticesCount() const { return m_VerticesCount; }
+
+    uint32_t VertexIndexBuffer::GetIndicesCount() const { return m_IndicesCount; }
+
+    uint32_t VertexIndexBuffer::GetVerticesSize() const { return m_VerticesSize; }
+
+    uint32_t VertexIndexBuffer::GetIndicesSize() const { return m_IndicesSize; }
 
     uint32_t VertexIndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
                                                uint32_t typeFilter,
-                                               VkMemoryPropertyFlags properties) const
+                                               VkMemoryPropertyFlags properties)
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {

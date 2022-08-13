@@ -6,14 +6,14 @@ struct GLFWwindow;
 
 namespace South
 {
-    using WindowKeyPressedCallback = std::function<void(int Key, int Scancode, int Action, int Mods)>;
-    using WindowIconifiedCallback  = std::function<void(bool bIconified)>;
-    using WindowMaximisedCallback  = std::function<void()>;
-
 
     class Window
     {
     public:
+        using KeyPressedCallback = std::function<void(int Key, int Scancode, int Action, int Mods)>;
+        using IconifiedCallback  = std::function<void(bool bIconified)>;
+        using MaximisedCallback  = std::function<void()>;
+
         struct CreateInfo
         {
             bool bFullscreen = true;
@@ -25,9 +25,9 @@ namespace South
         Window(const CreateInfo& InInfo) : m_Specification(InInfo){};
 
         // Init glfw window and setup events.
-        void Init(const WindowKeyPressedCallback& InOnKeyPressedCallback,
-                  const WindowIconifiedCallback& InOnIconifiedCallback,
-                  const WindowMaximisedCallback& InOnMaximisedCallbackCallback);
+        void Init(const KeyPressedCallback& InOnKeyPressedCallback,
+                  const IconifiedCallback& InOnIconifiedCallback,
+                  const MaximisedCallback& InOnMaximisedCallbackCallback);
         void DeInit();
 
         GLFWwindow* GetglfwWindow() const { return m_glfwWindow; }
@@ -47,9 +47,9 @@ namespace South
     private:
         struct WindowUserData
         {
-            WindowKeyPressedCallback OnWindowKeyPressed;
-            WindowIconifiedCallback OnWindowIconified;
-            WindowMaximisedCallback OnWindowMaximised;
+            KeyPressedCallback OnWindowKeyPressed;
+            IconifiedCallback OnWindowIconified;
+            MaximisedCallback OnWindowMaximised;
         } m_WindowUserData;
 
         //~ Events

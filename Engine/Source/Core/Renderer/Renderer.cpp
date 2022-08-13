@@ -14,66 +14,6 @@
 namespace South
 {
 
-    std::random_device g_Dev;
-    std::mt19937 g_Rng(g_Dev());
-    std::uniform_real_distribution<float> g_Dist(0.f, 1.f);
-
-    // NDC space
-    const std::vector<Vertex> g_Vertices = { {
-                                                 glm::vec3(-0.5f, -0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(1.f, 1.f, 1),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, -0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, 0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(-0.5f, 0.5f, 0.f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-
-                                             // Second square.
-                                             {
-                                                 glm::vec3(-0.5f, -0.5f, -0.5f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(1.f, 1.f, 1),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, -0.5f, -0.5f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(0.5f, 0.5f, -0.5f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             },
-                                             {
-                                                 glm::vec3(-0.5f, 0.5f, -0.5f),
-                                                 glm::vec3(0.f),
-                                                 glm::vec2(0.f),
-                                                 glm::vec3(g_Dist(g_Rng), g_Dist(g_Rng), g_Dist(g_Rng)),
-                                             } };
-
-    const std::vector<uint16_t> g_Indices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
-
-    VertexIndexBuffer* g_ModelBuffer = nullptr;
-
     PushConstant g_PushConstant;
     Camera g_EditorCam;
 
@@ -84,11 +24,40 @@ namespace South
         s_Context = new RendererContext;
         s_Context->Init();
 
-        g_ModelBuffer = new VertexIndexBuffer(static_cast<const void*>(g_Vertices.data()),
-                                              static_cast<uint32_t>(sizeof(g_Vertices[0]) * g_Vertices.size()),
-                                              static_cast<const void*>(g_Indices.data()),
-                                              static_cast<uint32_t>(sizeof(g_Indices[0]) * g_Indices.size()));
+        const std::vector<Vertex> QuadVertices = { {
+                                                       // NDC space
+                                                       glm::vec3(-0.5f, -0.5f, 0.f),
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(1.f, 1.f, 1),
+                                                   },
+                                                   {
+                                                       glm::vec3(0.5f, -0.5f, 0.f),
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.6f, .25f, 1.f),
+                                                   },
+                                                   {
+                                                       glm::vec3(0.5f, 0.5f, 0.f),
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.6f, .25f, 1.f),
+                                                   },
+                                                   {
+                                                       glm::vec3(-0.5f, 0.5f, 0.f),
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(1.f, 1.f, 1),
+                                                   } };
 
+        const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0 };
+
+        s_QuadModelBuffer = VertexIndexBuffer::Create({ static_cast<const void*>(QuadVertices.data()),
+                                                        static_cast<uint32_t>(sizeof(Vertex)),
+                                                        static_cast<uint32_t>(QuadVertices.size()) },
+                                                      { static_cast<const void*>(QuadIndices.data()),
+                                                        static_cast<uint32_t>(sizeof(uint32_t)),
+                                                        static_cast<uint32_t>(QuadIndices.size()) });
 
         g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         g_EditorCam.SetProjection(glm::radians(70.0f),
@@ -108,7 +77,10 @@ namespace South
     {
         if (!s_Context) { return; };
 
-        delete g_ModelBuffer;
+        if (s_QuadModelBuffer)
+        {
+            VertexIndexBuffer::Destroy(s_Context->GetGpuDevice().GetDevice(), *s_QuadModelBuffer);
+        }
 
         s_Context->DeInit();
 
@@ -123,7 +95,7 @@ namespace South
         const auto& Device = s_Context->GetGpuDevice();
 
         VkDevice LogicDevice  = Device.GetDevice();
-        VkQueue GraphicsQueue = Device.GetQ();
+        VkQueue GraphicsQueue = Device.GetGraphicQueue();
 
         // Wait for the previous frame to finish
         vkWaitForFences(LogicDevice, 1, &s_Context->m_FlightFence, VK_TRUE, UINT64_MAX);
@@ -179,24 +151,26 @@ namespace South
                 glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
         }
 
+        DrawQuad();
+    }
+
+    void Renderer::DrawQuad()
+    {
         VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
 
-        // Draw
-        {
-            vkCmdPushConstants(CmdBuffer,
-                               s_Context->m_PipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT,
-                               0,
-                               sizeof(g_PushConstant),
-                               &g_PushConstant);
+        vkCmdPushConstants(CmdBuffer,
+                           s_Context->m_PipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(g_PushConstant),
+                           &g_PushConstant);
 
-            VkBuffer MeshBuffer = g_ModelBuffer->GetVulkanBuffer();
-            VkDeviceSize Offset = 0;
-            vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
-            vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, g_ModelBuffer->GetIndexOffset(), VK_INDEX_TYPE_UINT16);
+        VkBuffer MeshBuffer = s_QuadModelBuffer->GetVulkanBuffer();
+        VkDeviceSize Offset = 0;
+        vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
+        vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, s_QuadModelBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
-        }
+        vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(s_QuadModelBuffer->GetIndicesCount()), 1, 0, 0, 0);
     }
 
     void Renderer::EndFrame()
@@ -226,7 +200,7 @@ namespace South
             .pSignalSemaphores    = SignalSemaphores,
         };
 
-        vkQueueSubmit(s_Context->GetGpuDevice().GetQ(), 1, &SubmitInfo, s_Context->m_FlightFence);
+        vkQueueSubmit(s_Context->GetGpuDevice().GetGraphicQueue(), 1, &SubmitInfo, s_Context->m_FlightFence);
 
         const VkSwapchainKHR SwapChains[] = { s_Context->m_SwapChain };
 
@@ -242,7 +216,7 @@ namespace South
             .pResults           = nullptr,
         };
 
-        vkQueuePresentKHR(s_Context->GetGpuDevice().GetQ(), &SresentInfo);
+        vkQueuePresentKHR(s_Context->GetGpuDevice().GetGraphicQueue(), &SresentInfo);
     }
 
 } // namespace South

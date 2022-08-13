@@ -19,6 +19,9 @@ namespace South
 
         static void DrawExampleScene();
 
+        static void DrawQuad();
+        static void DrawTriangle();
+
         static void EndFrame();
 
         // Q submit etc.
@@ -31,6 +34,8 @@ namespace South
 
         // Image from swapchain.
         inline static uint32_t s_ImageIndex = 0;
+
+        inline static class VertexIndexBuffer* s_QuadModelBuffer = nullptr;
     };
 
 } // namespace South

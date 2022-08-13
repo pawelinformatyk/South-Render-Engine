@@ -38,7 +38,8 @@ namespace South
             .pNext          = nullptr,
             .allocationSize = stagingMemRequirements.size,
             .memoryTypeIndex =
-                FindMemoryType(memProperties, stagingMemRequirements.memoryTypeBits,
+                FindMemoryType(memProperties,
+                               stagingMemRequirements.memoryTypeBits,
                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
 
         };
@@ -132,7 +133,7 @@ namespace South
             .pCommandBuffers    = &commandBuffer,
         };
 
-        VkQueue graphicsQueue = vulkanDev.GetQ();
+        VkQueue graphicsQueue = vulkanDev.GetGraphicQueue();
 
         vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(graphicsQueue);
@@ -153,7 +154,8 @@ namespace South
 
     VkBuffer IndexBuffer::GetBuffer() const { return m_Buffer; }
 
-    uint32_t IndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter,
+    uint32_t IndexBuffer::FindMemoryType(VkPhysicalDeviceMemoryProperties memProperties,
+                                         uint32_t typeFilter,
                                          VkMemoryPropertyFlags properties) const
     {
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)

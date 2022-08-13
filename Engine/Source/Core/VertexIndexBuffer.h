@@ -12,17 +12,35 @@ namespace South
     class VertexIndexBuffer
     {
     public:
-        VertexIndexBuffer(const void* vData, uint32_t vSize, const void* iData, uint32_t iSize);
-        ~VertexIndexBuffer();
+        struct CreateInfo
+        {
+            const void* Data = nullptr;
+            // Size of one element.
+            uint32_t Size  = 0;
+            uint32_t Count = 0;
+        };
+
+        static VertexIndexBuffer* Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo);
+        static void Destroy(VkDevice InlogicalDev, VertexIndexBuffer& InBuffer);
 
         VkBuffer GetVulkanBuffer() const;
-        uint32_t GetIndexOffset() const;
+
+        uint32_t GetVerticesSize() const;
+        uint32_t GetIndicesSize() const;
+
+        uint32_t GetVerticesCount() const;
+        uint32_t GetIndicesCount() const;
 
     private:
-        uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties, uint32_t typeFilter,
-                                VkMemoryPropertyFlags Properties) const;
+        static uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties,
+                                       uint32_t typeFilter,
+                                       VkMemoryPropertyFlags Properties);
 
-        uint32_t m_IndexOffset = 0;
+        uint32_t m_VerticesSize = 0;
+        uint32_t m_IndicesSize  = 0;
+
+        uint32_t m_VerticesCount = 0;
+        uint32_t m_IndicesCount  = 0;
 
         VkBuffer m_Buffer       = VK_NULL_HANDLE;
         VkDeviceMemory m_Memory = VK_NULL_HANDLE;
