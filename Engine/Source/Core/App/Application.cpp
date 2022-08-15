@@ -45,7 +45,6 @@ namespace South
             m_GUI->BeginFrame();
             {
                 Renderer::DrawExampleScene();
-                ;
 
                 m_GUI->Draw(m_FrameTimeSeconds);
             }
