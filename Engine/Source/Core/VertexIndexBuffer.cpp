@@ -9,6 +9,12 @@ namespace South
 
     VertexIndexBuffer* VertexIndexBuffer::Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo)
     {
+        // #TODO :
+        // Move some of this fucntion to RendererContext - it should handle most of that stuff
+        // + less getters
+        // + more condensed/centralised/autonomy renderer.
+        // Abstract buffer, staging buffer.
+
         const RendererContext& Context = Renderer::GetContext();
         const VulkanDevice& VulkanDev  = Context.GetGpuDevice();
         VkDevice LogicalDev            = VulkanDev.GetDevice();
@@ -104,13 +110,14 @@ namespace South
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         };
 
-        vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
-
         const VkBufferCopy CopyRegion{
             .srcOffset = 0,
             .dstOffset = 0,
             .size      = StagingBufferInfo.size,
         };
+
+        // Move to renderer (submit).
+        vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
 
         vkCmdCopyBuffer(CmdBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
 

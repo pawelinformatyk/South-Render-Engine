@@ -8,6 +8,7 @@ struct GLFWwindow;
 namespace South
 {
     class VulkanDevice;
+    class Queue;
 
     // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
     // Projection too.
@@ -27,12 +28,13 @@ namespace South
         virtual void Init();
         virtual void DeInit();
 
-        VkInstance GetVulkanInstance() const { return m_VulkanInstance; }
-        VulkanDevice& GetGpuDevice() const { return *m_Device; };
-        VkRenderPass GetRenderPass() const { return m_RenderPass; };
-        VkCommandBuffer GetCommandBuffer() const { return m_CommandBuffer; }
-        VkCommandPool GetCommandPool() const { return m_CommandPool; }
-        VkDescriptorPool GetDescriptorPool() const { return m_DescriptorPool; }
+        VkInstance GetVulkanInstance() const;
+        VkQueue GetGraphicQueue() const;
+        uint32_t GetGraphicQueueFamilyIndex() const;
+        VkRenderPass GetRenderPass() const;
+        VkCommandBuffer GetCommandBuffer() const;
+        VkCommandPool GetCommandPool() const;
+        VkDescriptorPool GetDescriptorPool() const;
 
     private:
         void CreateInstance();
@@ -79,7 +81,8 @@ namespace South
         VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
         VkFence m_FlightFence                 = VK_NULL_HANDLE;
 
-        VulkanDevice* m_Device = nullptr;
+        VkDevice m_Device     = nullptr;
+        Queue* m_GraphicQueue = nullptr;
 
         //~ Validations layers.
     private:

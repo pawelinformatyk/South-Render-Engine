@@ -12,6 +12,20 @@
 namespace South
 {
 
+    VkInstance RendererContext::GetVulkanInstance() const { return m_VulkanInstance; }
+
+    VkQueue RendererContext::GetGraphicQueue() const { return Queue->m_Queue; }
+
+    uint32_t RendererContext::GetGraphicQueueFamilyIndex() const { return Queue->m_QueueFamily; }
+
+    VkRenderPass RendererContext::GetRenderPass() const { return m_RenderPass; }
+
+    VkCommandBuffer RendererContext::GetCommandBuffer() const { return m_CommandBuffer; }
+
+    VkCommandPool RendererContext::GetCommandPool() const { return m_CommandPool; }
+
+    VkDescriptorPool RendererContext::GetDescriptorPool() const { return m_DescriptorPool; }
+
     void RendererContext::Init()
     {
         auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
@@ -25,35 +39,18 @@ namespace South
 
         CreateSurface(*GlfwWindow);
 
-        VulkanDevice::CreateInfo DeviceCreateInfo{
-            .VulkanInstance = m_VulkanInstance,
-            .Surface=m_Surface,
-            .RequiredGPUExtensions = {
-                VK_KHR_SWAPCHAIN_EXTENSION_NAME,/*To allow drawing on window*/
-            },
-            .GPUType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
-            .QueueFlags = VK_QUEUE_GRAPHICS_BIT,
+        // Create GPU.
+        const GraphicCard::CreateInfo GpuCreateInfo{
+            .VulkanInstance     = m_VulkanInstance,
+            .RequiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
+            .RequiredFeatures   = {},
+            .Type               = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
+            .RequiredQueueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT,
         };
+        GraphicCard* m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
 
-        m_Device = VulkanDevice::Create(DeviceCreateInfo);
-
-        // const GraphicCard::CreateInfo GpuCreateInfo{
-        //     .VulkanInstance     = m_VulkanInstance,
-        //     .RequiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
-        //     .RequiredFeatures   = {},
-        //     .Type               = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
-        // };
-        // GraphicCard* m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
-
-        // Queue* m_GraphicQueue  = nullptr;
-        // Queue* m_TransferQueue = nullptr;
-        // Queue* m_PresentQueue  = nullptr;
-
-        // std::vector<Queue*> QueuesToSpawn{ m_GraphicQueue, m_TransferQueue, m_PresentQueue };
-        // std::vector<GraphicCard::QueueConditionCallback> Conditions{ [](const VkQueueFamilyProperties& Properties,
-        //                                                                 int Index) { return true; } };
-
-        // m_GraphicCard->CreateLogicalDeviceWithQueues(, QueuesToSpawn, Conditions);
+        // Create logic device with graphic queue.
+        m_GraphicCard->CreateLogicalDevice(m_Device, m_GraphicQueue);
 
         ShadersLibrary::Init();
         ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);

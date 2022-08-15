@@ -8,15 +8,12 @@ namespace South
     class Queue
     {
     public:
-        VkQueue GetQueue() const { return m_Queue; };
-        uint32_t GetQueueFamily() const { return m_QueueFamily; };
-
-    private:
         uint32_t m_QueueFamily = 0;
         VkQueue m_Queue        = nullptr;
     };
 
     // Class representing one graphic card specified by requirements.
+    // After creation can create logical devices.
     class GraphicCard
     {
     public:
@@ -26,17 +23,28 @@ namespace South
         {
             VkInstance VulkanInstance = nullptr;
             std::vector<const char*> RequiredExtensions;
-            std::vector<VkPhysicalDeviceFeatures> RequiredFeatures;
+            VkPhysicalDeviceFeatures RequiredFeatures;
             VkPhysicalDeviceType Type;
+            int RequiredQueueFlags;
         };
 
         static GraphicCard* Create(const CreateInfo& InCreateInfo);
 
-        void CreateLogicalDeviceWithQueues(VkDevice OutLogicalDevice,
-                                           std::vector<Queue*>& OutQueues,
-                                           const std::vector<QueueConditionCallback>& InConditions);
+        // Creates new logical device with one graphic queue.
+        bool CreateLogicalDevice(VkDevice OutLogicalDevice, Queue* OutGraphicQueue) const;
+
+        // Creates new logical device with queues that met conditions.
+        // One queue one condition.
+        void CreateLogicalDevice(VkDevice OutLogicalDevice,
+                                 std::vector<Queue*>& OutQueues,
+                                 const std::vector<QueueConditionCallback>& InConditions) const;
 
     private:
+        std::optional<uint32_t> FindQueueFamilyIndex(VkQueueFlagBits InFlags) const;
+
+        std::vector<const char*> m_ExtensionsNames;
+        VkPhysicalDeviceFeatures m_Features;
+
         // Vulkan handle to graphic card.
         VkPhysicalDevice m_PhysicalDevice = nullptr;
     };
