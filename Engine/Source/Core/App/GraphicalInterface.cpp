@@ -25,16 +25,16 @@ namespace South
         ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().GetglfwWindow(), true);
 
         const RendererContext& Context = Renderer::GetContext();
-
-        const VulkanDevice& GPU = Context.GetGpuDevice();
+        const GraphicCard& GPU         = Context.GetGraphicCard();
+        const Queue& GraphicQueue      = Context.GetGraphicQueue();
 
         // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
         ImGui_ImplVulkan_InitInfo InitInfo = {
             .Instance        = Context.GetVulkanInstance(),
             .PhysicalDevice  = GPU.GetPhysicalDevice(),
-            .Device          = GPU.GetDevice(),
-            .QueueFamily     = GPU.GetQFamilyIndex(),
-            .Queue           = GPU.GetGraphicQueue(),
+            .Device          = Context.GetLogicalDevice(),
+            .QueueFamily     = GraphicQueue.m_QueueFamily,
+            .Queue           = GraphicQueue.m_Queue,
             .PipelineCache   = VK_NULL_HANDLE,
             .DescriptorPool  = Context.GetDescriptorPool(),
             .Subpass         = 0,
@@ -52,7 +52,7 @@ namespace South
 
     void GraphicalInterface::DeInit()
     {
-        vkDeviceWaitIdle(Renderer::GetContext().GetGpuDevice().GetDevice());
+        vkDeviceWaitIdle(Renderer::GetContext().GetLogicalDevice());
 
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -156,12 +156,96 @@ namespace South
         }
         ImGui::End();
 
-        ImGui::Begin("Statistics");
+        ImGui::Begin("Specification & Statistics");
         {
-            ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f),
-                               "FrameTime : \n\t%f s\n\t%f ms",
-                               FrameTime_Seconds,
-                               FrameTime_Seconds * 1e3);
+            if (ImGui::BeginTable("Statistics", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                const uint16_t DrawCalls = 1;
+
+                ImGui::TableSetupColumn("Statistics");
+                ImGui::TableHeadersRow();
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Render Time");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%f ms", FrameTime_Seconds * 1e3);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Draw calls");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%u", DrawCalls);
+            }
+            ImGui::EndTable();
+
+            if (ImGui::BeginTable("GraphicCard specification", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                const GraphicCard& GPU                       = Renderer::GetContext().GetGraphicCard();
+                const VkPhysicalDeviceProperties& Properties = GPU.GetProperties();
+
+                ImGui::TableSetupColumn("GraphicCard Specification");
+                ImGui::TableHeadersRow();
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Name");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text(Properties.deviceName);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("ApiVersion");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%u", Properties.apiVersion);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("DriverVersion");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%u", Properties.driverVersion);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("VendorID");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%u", Properties.vendorID);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("DeviceID");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%u", Properties.deviceID);
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("DeviceType");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", GPU.GetTypeName().c_str());
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Limits");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("");
+
+                ImGui::TableNextRow();
+
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("SparseProperties");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("");
+            }
+            ImGui::EndTable();
         }
         ImGui::End();
 
@@ -271,12 +355,14 @@ namespace South
             IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", 17);
 
             const RendererContext& Context = Renderer::GetContext();
-            const VulkanDevice& GPU        = Context.GetGpuDevice();
+            const GraphicCard& GPU         = Context.GetGraphicCard();
+            const Queue& GraphicQueue      = Context.GetGraphicQueue();
+            VkDevice LogicalDevice         = Context.GetLogicalDevice();
 
             VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
             VkCommandPool CmdPool     = Context.GetCommandPool();
 
-            vkResetCommandPool(GPU.GetDevice(), CmdPool, 0);
+            vkResetCommandPool(LogicalDevice, CmdPool, 0);
 
             VkCommandBufferBeginInfo BeginInfo = {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -295,9 +381,9 @@ namespace South
 
             vkEndCommandBuffer(CmdBuffer);
 
-            vkQueueSubmit(GPU.GetGraphicQueue(), 1, &SubmitInfo, VK_NULL_HANDLE);
+            vkQueueSubmit(GraphicQueue.m_Queue, 1, &SubmitInfo, VK_NULL_HANDLE);
 
-            vkDeviceWaitIdle(GPU.GetDevice());
+            vkDeviceWaitIdle(LogicalDevice);
 
             ImGui_ImplVulkan_DestroyFontUploadObjects();
         }

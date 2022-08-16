@@ -28,7 +28,7 @@ namespace South
 
     Shader::~Shader()
     {
-        VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
+        VkDevice LogDev = Renderer::GetContext().GetLogicalDevice();
         vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
     }
 
@@ -62,7 +62,7 @@ namespace South
 
     VkShaderModule Shader::CreateShaderModule(const std::vector<uint32_t>& glslCode)
     {
-        VkDevice LogDev = Renderer::GetContext().GetGpuDevice().GetDevice();
+        VkDevice LogDev = Renderer::GetContext().GetLogicalDevice();
         VkShaderModule Module;
 
         VkShaderModuleCreateInfo CreateInfo{
@@ -81,9 +81,12 @@ namespace South
     {
         switch (InStages)
         {
-            case VK_SHADER_STAGE_VERTEX_BIT: return shaderc_shader_kind::shaderc_vertex_shader;
-            case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_shader_kind::shaderc_fragment_shader;
-            case VK_SHADER_STAGE_COMPUTE_BIT: return shaderc_shader_kind::shaderc_compute_shader;
+            case VK_SHADER_STAGE_VERTEX_BIT:
+                return shaderc_shader_kind::shaderc_vertex_shader;
+            case VK_SHADER_STAGE_FRAGMENT_BIT:
+                return shaderc_shader_kind::shaderc_fragment_shader;
+            case VK_SHADER_STAGE_COMPUTE_BIT:
+                return shaderc_shader_kind::shaderc_compute_shader;
         }
 
         return shaderc_shader_kind::shaderc_glsl_infer_from_source;

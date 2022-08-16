@@ -77,10 +77,7 @@ namespace South
     {
         if (!s_Context) { return; };
 
-        if (s_QuadModelBuffer)
-        {
-            VertexIndexBuffer::Destroy(s_Context->GetGpuDevice().GetDevice(), *s_QuadModelBuffer);
-        }
+        if (s_QuadModelBuffer) { VertexIndexBuffer::Destroy(s_Context->GetLogicalDevice(), *s_QuadModelBuffer); }
 
         s_Context->DeInit();
 
@@ -92,10 +89,8 @@ namespace South
 
     void Renderer::BeginFrame()
     {
-        const auto& Device = s_Context->GetGpuDevice();
-
-        VkDevice LogicDevice  = Device.GetDevice();
-        VkQueue GraphicsQueue = Device.GetGraphicQueue();
+        VkDevice LogicDevice  = s_Context->GetLogicalDevice();
+        VkQueue GraphicsQueue = s_Context->GetGraphicQueue().m_Queue;
 
         // Wait for the previous frame to finish
         vkWaitForFences(LogicDevice, 1, &s_Context->m_FlightFence, VK_TRUE, UINT64_MAX);
@@ -184,6 +179,7 @@ namespace South
 
     void Renderer::Present()
     {
+        VkQueue GraphicQueue                    = s_Context->GetGraphicQueue().m_Queue;
         const VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         const VkSemaphore WaitSemaphores[]      = { s_Context->m_ImageAvailableSemaphore };
         const VkSemaphore SignalSemaphores[]    = { s_Context->m_RenderFinishedSemaphore };
@@ -200,7 +196,7 @@ namespace South
             .pSignalSemaphores    = SignalSemaphores,
         };
 
-        vkQueueSubmit(s_Context->GetGpuDevice().GetGraphicQueue(), 1, &SubmitInfo, s_Context->m_FlightFence);
+        vkQueueSubmit(GraphicQueue, 1, &SubmitInfo, s_Context->m_FlightFence);
 
         const VkSwapchainKHR SwapChains[] = { s_Context->m_SwapChain };
 
@@ -216,7 +212,7 @@ namespace South
             .pResults           = nullptr,
         };
 
-        vkQueuePresentKHR(s_Context->GetGpuDevice().GetGraphicQueue(), &SresentInfo);
+        vkQueuePresentKHR(GraphicQueue, &SresentInfo);
     }
 
 } // namespace South

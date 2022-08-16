@@ -14,9 +14,12 @@ namespace South
 
     VkInstance RendererContext::GetVulkanInstance() const { return m_VulkanInstance; }
 
-    VkQueue RendererContext::GetGraphicQueue() const { return Queue->m_Queue; }
 
-    uint32_t RendererContext::GetGraphicQueueFamilyIndex() const { return Queue->m_QueueFamily; }
+    Queue& RendererContext::GetGraphicQueue() const { return *m_GraphicQueue; }
+
+    VkDevice RendererContext::GetLogicalDevice() const { return m_Device; }
+
+    GraphicCard& RendererContext::GetGraphicCard() const { return *m_GraphicCard; }
 
     VkRenderPass RendererContext::GetRenderPass() const { return m_RenderPass; }
 
@@ -47,10 +50,12 @@ namespace South
             .Type               = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
             .RequiredQueueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT,
         };
-        GraphicCard* m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
+        m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
+
+        m_GraphicQueue = new Queue;
 
         // Create logic device with graphic queue.
-        m_GraphicCard->CreateLogicalDevice(m_Device, m_GraphicQueue);
+        m_GraphicCard->CreateLogicalDevice(m_Device, *m_GraphicQueue);
 
         ShadersLibrary::Init();
         ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
@@ -71,7 +76,7 @@ namespace South
     {
         ShadersLibrary::Deinit();
 
-        VkDevice LogicDevice = m_Device->GetDevice();
+        VkDevice LogicDevice = m_Device;
 
         vkDestroyDescriptorPool(LogicDevice, m_DescriptorPool, nullptr);
 
@@ -96,8 +101,7 @@ namespace South
 
         vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
 
-        VulkanDevice::Destroy(m_Device);
-        m_Device = nullptr;
+        vkDestroyDevice(m_Device, nullptr);
 
         vkDestroyInstance(m_VulkanInstance, nullptr);
     }
@@ -137,9 +141,9 @@ namespace South
 
     void RendererContext::CreateSwapChain(GLFWwindow& window)
     {
-        VkPhysicalDevice physDevice = m_Device->GetPhysicalDevice();
-        VkDevice logicDevice        = m_Device->GetDevice();
-        uint32_t QueueFamilyIndex   = m_Device->GetQFamilyIndex();
+        VkPhysicalDevice physDevice = m_GraphicCard->GetPhysicalDevice();
+        VkDevice logicDevice        = m_Device;
+        uint32_t QueueFamilyIndex   = m_GraphicQueue->m_QueueFamily;
 
         VkSurfaceCapabilitiesKHR capabilities;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, m_Surface, &capabilities);
@@ -187,7 +191,7 @@ namespace South
 
     void RendererContext::CreateImageViews()
     {
-        VkDevice logicDevice = m_Device->GetDevice();
+        VkDevice logicDevice = m_Device;
 
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
@@ -259,12 +263,12 @@ namespace South
             .pDependencies   = &dependency,
         };
 
-        vkCreateRenderPass(m_Device->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass);
+        vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_RenderPass);
     }
 
     void RendererContext::CreateGraphicsPipeline()
     {
-        VkDevice logicDevice = m_Device->GetDevice();
+        VkDevice logicDevice = m_Device;
 
         // #TODO : Check for errors;
         const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
@@ -423,7 +427,7 @@ namespace South
 
     void RendererContext::CreateFramebuffers()
     {
-        VkDevice LogicDevice = m_Device->GetDevice();
+        VkDevice LogicDevice = m_Device;
 
         m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
 
@@ -448,13 +452,13 @@ namespace South
 
     void RendererContext::CreateCommands()
     {
-        VkDevice logicDevice = m_Device->GetDevice();
+        VkDevice logicDevice = m_Device;
 
         const VkCommandPoolCreateInfo PoolInfo{
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
             .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = m_Device->GetQFamilyIndex(),
+            .queueFamilyIndex = m_GraphicQueue->m_QueueFamily,
         };
 
         vkCreateCommandPool(logicDevice, &PoolInfo, nullptr, &m_CommandPool);
@@ -472,7 +476,7 @@ namespace South
 
     void RendererContext::CreateSyncObjects()
     {
-        VkDevice LogicDevice = m_Device->GetDevice();
+        VkDevice LogicDevice = m_Device;
 
         const VkSemaphoreCreateInfo SemaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -512,7 +516,7 @@ namespace South
             .pPoolSizes    = PoolSizes,
         };
 
-        vkCreateDescriptorPool(m_Device->GetDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
+        vkCreateDescriptorPool(m_Device, &CreateInfo, nullptr, &m_DescriptorPool);
     }
 
     VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)

@@ -31,7 +31,7 @@ namespace South
         static GraphicCard* Create(const CreateInfo& InCreateInfo);
 
         // Creates new logical device with one graphic queue.
-        bool CreateLogicalDevice(VkDevice OutLogicalDevice, Queue* OutGraphicQueue) const;
+        bool CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const;
 
         // Creates new logical device with queues that met conditions.
         // One queue one condition.
@@ -39,11 +39,18 @@ namespace South
                                  std::vector<Queue*>& OutQueues,
                                  const std::vector<QueueConditionCallback>& InConditions) const;
 
+        VkPhysicalDevice GetPhysicalDevice() const;
+        const VkPhysicalDeviceFeatures& GetFeatures() const;
+        const VkPhysicalDeviceProperties& GetProperties() const;
+        const std::string& GetTypeName() const;
+
     private:
         std::optional<uint32_t> FindQueueFamilyIndex(VkQueueFlagBits InFlags) const;
 
         std::vector<const char*> m_ExtensionsNames;
         VkPhysicalDeviceFeatures m_Features;
+        VkPhysicalDeviceProperties m_Properties;
+        std::string TypeName;
 
         // Vulkan handle to graphic card.
         VkPhysicalDevice m_PhysicalDevice = nullptr;

@@ -16,11 +16,11 @@ namespace South
         // Abstract buffer, staging buffer.
 
         const RendererContext& Context = Renderer::GetContext();
-        const VulkanDevice& VulkanDev  = Context.GetGpuDevice();
-        VkDevice LogicalDev            = VulkanDev.GetDevice();
-        VkPhysicalDevice PhysDev       = VulkanDev.GetPhysicalDevice();
+        VkDevice LogicalDev            = Context.GetLogicalDevice();
+        VkPhysicalDevice PhysDev       = Context.GetGraphicCard().GetPhysicalDevice();
         VkCommandPool CmdPool          = Context.GetCommandPool();
         VkCommandBuffer CmdBuffer      = Context.GetCommandBuffer();
+        VkQueue GraphicsQueue          = Context.GetGraphicQueue().m_Queue;
 
         const uint32_t VerticesSize = InVertexInfo.Count * InVertexInfo.Size;
         const uint32_t IndicesSize  = InIndexInfo.Count * InIndexInfo.Size;
@@ -129,8 +129,6 @@ namespace South
             .commandBufferCount = 1,
             .pCommandBuffers    = &CmdBuffer,
         };
-
-        VkQueue GraphicsQueue = VulkanDev.GetGraphicQueue();
 
         vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(GraphicsQueue);
