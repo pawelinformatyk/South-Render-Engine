@@ -6,200 +6,28 @@
 
 namespace South
 {
-
-    VulkanDevice* VulkanDevice::Create(const CreateInfo& InInfo)
-    {
-        const std::vector<VkPhysicalDevice> GPUs = FindSuitableGraphicCards(InInfo.VulkanInstance,
-                                                                            InInfo.Surface,
-                                                                            InInfo.RequiredGPUExtensions,
-                                                                            InInfo.GPUType);
-        if (!GPUs.size()) { return nullptr; }
-
-        const float QueuePrio[3] = { 1.f, 1.f, 1.f };
-
-        const std::optional<uint32_t> GQueueFamily = FindQueueFamily(GPUs[0], nullptr, VK_QUEUE_GRAPHICS_BIT);
-
-        const std::optional<uint32_t> PQueueFamily =
-            FindQueueFamily(GPUs[0], InInfo.Surface, VK_QUEUE_FLAG_BITS_MAX_ENUM);
-
-        const std::optional<uint32_t> TQueueFamily = FindQueueFamily(GPUs[0], nullptr, VK_QUEUE_TRANSFER_BIT);
-
-        const VkDeviceQueueCreateInfo GraphicCreateInfo{
-            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .pNext            = nullptr,
-            .flags            = 0x00,
-            .queueFamilyIndex = GQueueFamily.value(),
-            .queueCount       = 3,
-            .pQueuePriorities = QueuePrio,
-        };
-
-        // Q families - count
-
-        const std::vector<VkDeviceQueueCreateInfo> QueuesCreateInfo = { GraphicCreateInfo };
-
-        const VkDeviceCreateInfo LogicDeviceCreateInfo{
-            .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .pNext                   = nullptr,
-            .flags                   = 0x00,
-            .queueCreateInfoCount    = static_cast<uint32_t>(QueuesCreateInfo.size()),
-            .pQueueCreateInfos       = QueuesCreateInfo.data(),
-            .enabledExtensionCount   = static_cast<uint32_t>(InInfo.RequiredGPUExtensions.size()),
-            .ppEnabledExtensionNames = InInfo.RequiredGPUExtensions.data(),
-            .pEnabledFeatures        = InInfo.RequiredGPUFeatures.data(),
-        };
-
-        VulkanDevice* NewVulkanDevice          = new VulkanDevice;
-        NewVulkanDevice->m_GraphicCard         = GPUs[0];
-        NewVulkanDevice->m_GraphicQueueFamily  = GQueueFamily.value();
-        NewVulkanDevice->m_PresentQueueFamily  = PQueueFamily.value();
-        NewVulkanDevice->m_TransferQueueFamily = TQueueFamily.value();
-
-        vkCreateDevice(NewVulkanDevice->m_GraphicCard,
-                       &LogicDeviceCreateInfo,
-                       nullptr,
-                       &NewVulkanDevice->m_LogicalDevice);
-
-        vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
-                         NewVulkanDevice->m_GraphicQueueFamily,
-                         0,
-                         &NewVulkanDevice->m_GraphicQueue);
-
-        vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
-                         NewVulkanDevice->m_PresentQueueFamily,
-                         1,
-                         &NewVulkanDevice->m_PresentQueue);
-
-        vkGetDeviceQueue(NewVulkanDevice->m_LogicalDevice,
-                         NewVulkanDevice->m_TransferQueueFamily,
-                         2,
-                         &NewVulkanDevice->m_TransferQueue);
-
-        return NewVulkanDevice;
-    }
-
-    void VulkanDevice::Destroy(VulkanDevice* InDevice)
-    {
-        if (!InDevice) { return; }
-
-        vkDestroyDevice(InDevice->m_LogicalDevice, nullptr);
-        delete InDevice;
-    }
-
-    VkPhysicalDevice VulkanDevice::GetPhysicalDevice() const { return m_GraphicCard; }
-
-    VkDevice VulkanDevice::GetDevice() const { return m_LogicalDevice; }
-
-    uint32_t VulkanDevice::GetQFamilyIndex() const { return m_GraphicQueueFamily; }
-
-    VkQueue VulkanDevice::GetGraphicQueue() const { return m_GraphicQueue; }
-
-    std::vector<VkPhysicalDevice>
-        VulkanDevice::FindSuitableGraphicCards(VkInstance VulkanInstance,
-                                               VkSurfaceKHR Surface,
-                                               const std::vector<const char*>& RequiredGPUExtensions,
-                                               VkPhysicalDeviceType GPUType)
-    {
-        // Get all gpus.
-        uint32_t GPUCount = 0;
-        vkEnumeratePhysicalDevices(VulkanInstance, &GPUCount, nullptr);
-
-        std::vector<VkPhysicalDevice> AvailableGPUs(GPUCount);
-        vkEnumeratePhysicalDevices(VulkanInstance, &GPUCount, AvailableGPUs.data());
-
-        std::vector<VkPhysicalDevice> SuitableGPUs;
-
-        for (VkPhysicalDevice GPU : AvailableGPUs)
-        {
-            // Check if device has all required extensions.
-            uint32_t ExtensionCount;
-            vkEnumerateDeviceExtensionProperties(GPU, nullptr, &ExtensionCount, nullptr);
-
-            std::vector<VkExtensionProperties> AvailableGPUExtensions(ExtensionCount);
-            vkEnumerateDeviceExtensionProperties(GPU, nullptr, &ExtensionCount, AvailableGPUExtensions.data());
-
-            std::set<std::string> RequiredGPUExtensionsSet(RequiredGPUExtensions.begin(), RequiredGPUExtensions.end());
-
-            for (const VkExtensionProperties& Extension : AvailableGPUExtensions)
-            {
-                RequiredGPUExtensionsSet.erase(Extension.extensionName);
-            }
-
-            if (!RequiredGPUExtensionsSet.empty()) { continue; }
-
-            VkPhysicalDeviceProperties GPUProperties;
-            vkGetPhysicalDeviceProperties(GPU, &GPUProperties);
-            if (GPUProperties.deviceType != GPUType) { continue; }
-
-            // #TODO : Check for optional features - 64bit flaots, multi viewport rendering
-            // VkPhysicalDeviceFeatures deviceFeatures;
-            // vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-            uint32_t FormatCount;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(GPU, Surface, &FormatCount, nullptr);
-            if (!FormatCount) { continue; }
-
-            uint32_t PresentModesCount;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(GPU, Surface, &PresentModesCount, nullptr);
-            if (!PresentModesCount) { continue; }
-
-            SuitableGPUs.emplace_back(GPU);
-        }
-
-        return SuitableGPUs;
-    }
-    std::optional<uint32_t>
-        VulkanDevice::FindQueueFamily(VkPhysicalDevice GPU, VkSurfaceKHR Surface, VkQueueFlagBits Flags)
-    {
-        uint32_t QueueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(GPU, &QueueFamilyCount, nullptr);
-
-        std::vector<VkQueueFamilyProperties> QueueFamilies(QueueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(GPU, &QueueFamilyCount, QueueFamilies.data());
-
-        for (uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
-        {
-            if (Surface)
-            {
-                VkBool32 bPresentSupport = false;
-                vkGetPhysicalDeviceSurfaceSupportKHR(GPU, QueueFamilyIndex, Surface, &bPresentSupport);
-
-                if (bPresentSupport) { return std::optional<uint32_t>(QueueFamilyIndex); }
-            }
-            else
-            {
-                // Present and Graphic queue in one.
-                if (QueueFamilies[QueueFamilyIndex].queueFlags & Flags)
-                {
-                    return std::optional<uint32_t>(QueueFamilyIndex);
-                }
-            }
-        }
-
-        return {};
-    }
-
     GraphicCard* GraphicCard::Create(const CreateInfo& InCreateInfo)
     {
         // Get all gpus.
-        uint32_t GPUCount = 0;
-        vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GPUCount, nullptr);
+        uint32_t GpuCount = 0;
+        vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GpuCount, nullptr);
 
-        std::vector<VkPhysicalDevice> AvailableGPUs(GPUCount);
-        vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GPUCount, AvailableGPUs.data());
+        std::vector<VkPhysicalDevice> AvailableGpus(GpuCount);
+        vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GpuCount, AvailableGpus.data());
 
-        VkPhysicalDevice FoundGPU                          = nullptr;
+        VkPhysicalDevice FoundGpu                          = nullptr;
         std::vector<VkExtensionProperties> FoundExtensions = {};
         VkPhysicalDeviceProperties FoundProperties         = VkPhysicalDeviceProperties();
         VkPhysicalDeviceFeatures FoundFeatures             = VkPhysicalDeviceFeatures();
 
-        for (VkPhysicalDevice GPU : AvailableGPUs)
+        for (VkPhysicalDevice Gpu : AvailableGpus)
         {
             // Check queues flags.
             uint32_t QueueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(GPU, &QueueFamilyCount, nullptr);
+            vkGetPhysicalDeviceQueueFamilyProperties(Gpu, &QueueFamilyCount, nullptr);
 
             std::vector<VkQueueFamilyProperties> QueueFamiliesProperties(QueueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(GPU, &QueueFamilyCount, QueueFamiliesProperties.data());
+            vkGetPhysicalDeviceQueueFamilyProperties(Gpu, &QueueFamilyCount, QueueFamiliesProperties.data());
 
             bool bQueuesFound = true;
             for (const VkQueueFamilyProperties& Properties : QueueFamiliesProperties)
@@ -214,15 +42,15 @@ namespace South
             if (!bQueuesFound) { continue; }
 
             // Check type.
-            vkGetPhysicalDeviceProperties(GPU, &FoundProperties);
+            vkGetPhysicalDeviceProperties(Gpu, &FoundProperties);
             if (FoundProperties.deviceType != InCreateInfo.Type) { continue; }
 
             // Check required extensions.
             uint32_t ExtensionCount;
-            vkEnumerateDeviceExtensionProperties(GPU, nullptr, &ExtensionCount, nullptr);
+            vkEnumerateDeviceExtensionProperties(Gpu, nullptr, &ExtensionCount, nullptr);
 
             FoundExtensions = std::vector<VkExtensionProperties>(ExtensionCount);
-            vkEnumerateDeviceExtensionProperties(GPU, nullptr, &ExtensionCount, FoundExtensions.data());
+            vkEnumerateDeviceExtensionProperties(Gpu, nullptr, &ExtensionCount, FoundExtensions.data());
 
             std::set<std::string> RequiredExtensionsSet(InCreateInfo.RequiredExtensions.begin(),
                                                         InCreateInfo.RequiredExtensions.end());
@@ -240,44 +68,49 @@ namespace South
             // #TODO : Cannot be == cuz struct.
             // if(AvailableFeatures!=)
 
-            FoundGPU = GPU;
+            FoundGpu = Gpu;
 
             break;
         }
 
-        if (!FoundGPU) { return nullptr; }
+        if (!FoundGpu) { return nullptr; }
 
         std::vector<const char*> ExtensionsNames;
+        ExtensionsNames.reserve(FoundExtensions.size());
         for (const VkExtensionProperties& Extension : FoundExtensions)
         {
             ExtensionsNames.emplace_back(Extension.extensionName);
         }
 
-        GraphicCard* GPU       = new GraphicCard;
-        GPU->m_PhysicalDevice  = FoundGPU;
-        GPU->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
-        GPU->m_Features        = FoundFeatures;
-        GPU->m_Properties      = FoundProperties;
+        auto* Gpu              = new GraphicCard;
+        Gpu->m_PhysicalDevice  = FoundGpu;
+        Gpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
+        Gpu->m_Features        = FoundFeatures;
+        Gpu->m_Properties      = FoundProperties;
 
         switch (FoundProperties.deviceType)
         {
+            case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+                Gpu->m_TypeName = "Other";
+                break;
             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                GPU->TypeName = "Integrated";
+                Gpu->m_TypeName = "Integrated";
                 break;
             case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                GPU->TypeName = "Discrete";
+                Gpu->m_TypeName = "Discrete";
                 break;
             case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                GPU->TypeName = "Virtual";
+                Gpu->m_TypeName = "Virtual";
                 break;
             case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                GPU->TypeName = "CPU";
+                Gpu->m_TypeName = "CPU";
                 break;
-            default:
-                GPU->TypeName = "Other";
+            case VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM:
+                Gpu->m_TypeName = "Other";
+                break;
         }
 
-        return GPU;
+        return Gpu;
     }
 
     bool GraphicCard::CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const
@@ -285,7 +118,7 @@ namespace South
         const std::optional<uint32_t> GraphicQueueFamilyIndex = FindQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
         if (!GraphicQueueFamilyIndex.has_value()) { return false; }
 
-        const float QueuePrio = 1.f;
+        constexpr float QueuePrio = 1.f;
         const VkDeviceQueueCreateInfo GraphicQueueCreateInfo{
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
@@ -323,9 +156,9 @@ namespace South
 
     const VkPhysicalDeviceProperties& GraphicCard::GetProperties() const { return m_Properties; }
 
-    const std::string& GraphicCard::GetTypeName() const { return TypeName; }
+    const std::string& GraphicCard::GetTypeName() const { return m_TypeName; }
 
-    std::optional<uint32_t> GraphicCard::FindQueueFamilyIndex(VkQueueFlagBits InFlags) const
+    std::optional<uint32_t> GraphicCard::FindQueueFamilyIndex(const VkQueueFlagBits InFlags) const
     {
         uint32_t QueueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &QueueFamilyCount, nullptr);
@@ -335,10 +168,7 @@ namespace South
 
         for (uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
         {
-            if (QueueFamilies[QueueFamilyIndex].queueFlags & InFlags)
-            {
-                return std::optional<uint32_t>(QueueFamilyIndex);
-            }
+            if (QueueFamilies[QueueFamilyIndex].queueFlags & InFlags) { return std::optional(QueueFamilyIndex); }
         }
 
         return {};

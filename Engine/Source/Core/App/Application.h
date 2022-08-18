@@ -10,9 +10,9 @@ namespace South
     {
         // ~Static
     public:
-        static const char* GetName() { return "SouthRenderEngine"; }
+        static const char* GetName();
 
-        static Application& Get() { return *s_Instance; };
+        static Application& Get();
 
         static void Kaboom();
 
@@ -26,18 +26,18 @@ namespace South
 
         void Run();
 
-        Window& GetWindow() const { return *m_Window; }
+        Window& GetWindow() const;
 
     private:
         void Init();
         void DeInit();
 
-        std::unique_ptr<GraphicalInterface> m_GUI = nullptr;
+        std::unique_ptr<GraphicalInterface> m_Gui = nullptr;
         std::unique_ptr<Window> m_Window          = nullptr;
 
         bool m_bRunning = false;
 
-        float m_FrameTimeSeconds = 0.f;
+        float m_FrameTime_Sec = 0.f;
 
         //~ Events
     public:
@@ -48,8 +48,8 @@ namespace South
     private:
         void ProcessEvents();
 
-        void OnKeyPressed(int Key, int Scancode, int Action, int Mods);
-        void OnIconifiedWindow(int bIconified);
+        void OnKeyPressed(int InKey, int InScancode, int InAction, int InMods);
+        void OnIconifiedWindow(int InbIconified);
         void OnMaximiseWindow();
 
         //~ Events.
@@ -64,7 +64,5 @@ namespace South
     // Multiple viewports -> multiple textures rendered and shown from different VIEW matrix.
     // I thjink I need to implement vulcan code so i can then decide how to do it.
     // What is framebuffer exactly?
-
-    // Editor layer from cherno -> showcase layer
 
 } // namespace South
