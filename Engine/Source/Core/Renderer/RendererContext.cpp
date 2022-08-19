@@ -46,9 +46,7 @@ namespace South
         const GraphicCard::CreateInfo GpuCreateInfo{
             .VulkanInstance     = m_VulkanInstance,
             .RequiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
-            .RequiredFeatures   = {},
-            .Type               = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
-            .RequiredQueueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT,
+            .RequiredFeatures   = {.multiViewport = true,},
         };
         m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
 

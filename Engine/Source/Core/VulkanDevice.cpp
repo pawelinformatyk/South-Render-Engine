@@ -6,7 +6,23 @@
 
 namespace South
 {
+
     GraphicCard* GraphicCard::Create(const CreateInfo& InCreateInfo)
+    {
+        const VkPhysicalDevice FoundDevice = FindPhysicalDevice(InCreateInfo);
+        if (!FoundDevice) return nullptr;
+
+        auto* Gpu              = new GraphicCard;
+        Gpu->m_PhysicalDevice  = FoundDevice;
+        Gpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
+        vkGetPhysicalDeviceFeatures(FoundDevice, &Gpu->m_Features);
+        vkGetPhysicalDeviceProperties(FoundDevice, &Gpu->m_Properties);
+        Gpu->m_TypeName = DeviceTypeToString(Gpu->m_Properties.deviceType);
+
+        return Gpu;
+    }
+
+    VkPhysicalDevice GraphicCard::FindPhysicalDevice(const CreateInfo& InCreateInfo)
     {
         // Get all gpus.
         uint32_t GpuCount = 0;
@@ -15,103 +31,169 @@ namespace South
         std::vector<VkPhysicalDevice> AvailableGpus(GpuCount);
         vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GpuCount, AvailableGpus.data());
 
-        VkPhysicalDevice FoundGpu                          = nullptr;
-        std::vector<VkExtensionProperties> FoundExtensions = {};
-        VkPhysicalDeviceProperties FoundProperties         = VkPhysicalDeviceProperties();
-        VkPhysicalDeviceFeatures FoundFeatures             = VkPhysicalDeviceFeatures();
-
-        for (VkPhysicalDevice Gpu : AvailableGpus)
+        for (const VkPhysicalDevice Gpu : AvailableGpus)
         {
-            // Check queues flags.
-            uint32_t QueueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(Gpu, &QueueFamilyCount, nullptr);
+            if (!CheckFeatures(Gpu, InCreateInfo.RequiredFeatures)) continue;
 
-            std::vector<VkQueueFamilyProperties> QueueFamiliesProperties(QueueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(Gpu, &QueueFamilyCount, QueueFamiliesProperties.data());
+            if (!CheckExtensions(Gpu, InCreateInfo.RequiredExtensions)) continue;
 
-            bool bQueuesFound = true;
-            for (const VkQueueFamilyProperties& Properties : QueueFamiliesProperties)
-            {
-                if (!(Properties.queueFlags & InCreateInfo.RequiredQueueFlags))
-                {
-                    bQueuesFound = false;
-                    break;
-                }
-            }
-
-            if (!bQueuesFound) { continue; }
-
-            // Check type.
-            vkGetPhysicalDeviceProperties(Gpu, &FoundProperties);
-            if (FoundProperties.deviceType != InCreateInfo.Type) { continue; }
-
-            // Check required extensions.
-            uint32_t ExtensionCount;
-            vkEnumerateDeviceExtensionProperties(Gpu, nullptr, &ExtensionCount, nullptr);
-
-            FoundExtensions = std::vector<VkExtensionProperties>(ExtensionCount);
-            vkEnumerateDeviceExtensionProperties(Gpu, nullptr, &ExtensionCount, FoundExtensions.data());
-
-            std::set<std::string> RequiredExtensionsSet(InCreateInfo.RequiredExtensions.begin(),
-                                                        InCreateInfo.RequiredExtensions.end());
-
-            for (const VkExtensionProperties& Extension : FoundExtensions)
-            {
-                RequiredExtensionsSet.erase(Extension.extensionName);
-            }
-
-            if (!RequiredExtensionsSet.empty()) { continue; }
-
-            // Check required features.
-            // vkGetPhysicalDeviceFeatures(GPU, &Features);
-
-            // #TODO : Cannot be == cuz struct.
-            // if(AvailableFeatures!=)
-
-            FoundGpu = Gpu;
-
-            break;
+            return Gpu;
         }
 
-        if (!FoundGpu) { return nullptr; }
+        return nullptr;
+    }
 
-        std::vector<const char*> ExtensionsNames;
-        ExtensionsNames.reserve(FoundExtensions.size());
-        for (const VkExtensionProperties& Extension : FoundExtensions)
+    bool GraphicCard::CheckFeatures(const VkPhysicalDevice InGpu, const VkPhysicalDeviceFeatures& InRequiredFeatures)
+    {
+        VkPhysicalDeviceFeatures FoundFeatures;
+        vkGetPhysicalDeviceFeatures(InGpu, &FoundFeatures);
+
+        auto IsFeatureNotPresent = [](const bool InLhs, const bool InRhs) { return InLhs && InLhs != InRhs; };
+
+        if (IsFeatureNotPresent(InRequiredFeatures.robustBufferAccess, FoundFeatures.robustBufferAccess)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.fullDrawIndexUint32, FoundFeatures.fullDrawIndexUint32))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.fullDrawIndexUint32, FoundFeatures.fullDrawIndexUint32))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.imageCubeArray, FoundFeatures.imageCubeArray)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.independentBlend, FoundFeatures.independentBlend)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.geometryShader, FoundFeatures.geometryShader)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.tessellationShader, FoundFeatures.tessellationShader)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sampleRateShading, FoundFeatures.sampleRateShading)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.dualSrcBlend, FoundFeatures.dualSrcBlend)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.logicOp, FoundFeatures.logicOp)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.multiDrawIndirect, FoundFeatures.multiDrawIndirect)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.drawIndirectFirstInstance, FoundFeatures.drawIndirectFirstInstance))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.depthClamp, FoundFeatures.depthClamp)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.depthBiasClamp, FoundFeatures.depthBiasClamp)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.fillModeNonSolid, FoundFeatures.fillModeNonSolid)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.depthBounds, FoundFeatures.depthBounds)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.wideLines, FoundFeatures.wideLines)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.largePoints, FoundFeatures.largePoints)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.alphaToOne, FoundFeatures.alphaToOne)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.multiViewport, FoundFeatures.multiViewport)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.samplerAnisotropy, FoundFeatures.samplerAnisotropy)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.textureCompressionETC2, FoundFeatures.textureCompressionETC2))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.textureCompressionASTC_LDR,
+                                FoundFeatures.textureCompressionASTC_LDR))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.textureCompressionBC, FoundFeatures.textureCompressionBC))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.occlusionQueryPrecise, FoundFeatures.occlusionQueryPrecise))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.pipelineStatisticsQuery, FoundFeatures.pipelineStatisticsQuery))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.vertexPipelineStoresAndAtomics,
+                                FoundFeatures.vertexPipelineStoresAndAtomics))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.fragmentStoresAndAtomics, FoundFeatures.fragmentStoresAndAtomics))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderTessellationAndGeometryPointSize,
+                                FoundFeatures.shaderTessellationAndGeometryPointSize))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderImageGatherExtended, FoundFeatures.shaderImageGatherExtended))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageImageExtendedFormats,
+                                FoundFeatures.shaderStorageImageExtendedFormats))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageImageMultisample,
+                                FoundFeatures.shaderStorageImageMultisample))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageImageReadWithoutFormat,
+                                FoundFeatures.shaderStorageImageReadWithoutFormat))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageImageWriteWithoutFormat,
+                                FoundFeatures.shaderStorageImageWriteWithoutFormat))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderUniformBufferArrayDynamicIndexing,
+                                FoundFeatures.shaderUniformBufferArrayDynamicIndexing))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderSampledImageArrayDynamicIndexing,
+                                FoundFeatures.shaderSampledImageArrayDynamicIndexing))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageBufferArrayDynamicIndexing,
+                                FoundFeatures.shaderStorageBufferArrayDynamicIndexing))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderStorageImageArrayDynamicIndexing,
+                                FoundFeatures.shaderStorageImageArrayDynamicIndexing))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderClipDistance, FoundFeatures.shaderClipDistance)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderCullDistance, FoundFeatures.shaderCullDistance)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderFloat64, FoundFeatures.shaderFloat64)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderInt64, FoundFeatures.shaderInt64)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderInt16, FoundFeatures.shaderInt16)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderResourceResidency, FoundFeatures.shaderResourceResidency))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.shaderResourceMinLod, FoundFeatures.shaderResourceMinLod))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseBinding, FoundFeatures.sparseBinding)) return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidencyBuffer, FoundFeatures.sparseResidencyBuffer))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidencyImage2D, FoundFeatures.sparseResidencyImage2D))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidencyImage3D, FoundFeatures.sparseResidencyImage3D))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidency2Samples, FoundFeatures.sparseResidency2Samples))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidency4Samples, FoundFeatures.sparseResidency4Samples))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidency8Samples, FoundFeatures.sparseResidency8Samples))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidency16Samples, FoundFeatures.sparseResidency16Samples))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.sparseResidencyAliased, FoundFeatures.sparseResidencyAliased))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.variableMultisampleRate, FoundFeatures.variableMultisampleRate))
+            return false;
+        if (IsFeatureNotPresent(InRequiredFeatures.inheritedQueries, FoundFeatures.inheritedQueries)) return false;
+
+        return true;
+    }
+
+    bool GraphicCard::CheckExtensions(const VkPhysicalDevice InGpu,
+                                      const std::vector<const char*>& InRequiredExtensions)
+    {
+        uint32_t ExtensionCount;
+        vkEnumerateDeviceExtensionProperties(InGpu, nullptr, &ExtensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> Extensions = std::vector<VkExtensionProperties>(ExtensionCount);
+        vkEnumerateDeviceExtensionProperties(InGpu, nullptr, &ExtensionCount, Extensions.data());
+
+        std::set<std::string> RequiredExtensionsSet(InRequiredExtensions.begin(), InRequiredExtensions.end());
+
+        for (const VkExtensionProperties& Extension : Extensions)
         {
-            ExtensionsNames.emplace_back(Extension.extensionName);
+            RequiredExtensionsSet.erase(Extension.extensionName);
         }
 
-        auto* Gpu              = new GraphicCard;
-        Gpu->m_PhysicalDevice  = FoundGpu;
-        Gpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
-        Gpu->m_Features        = FoundFeatures;
-        Gpu->m_Properties      = FoundProperties;
+        if (!RequiredExtensionsSet.empty()) { return false; }
 
-        switch (FoundProperties.deviceType)
+        return true;
+    }
+
+
+    std::string GraphicCard::DeviceTypeToString(const VkPhysicalDeviceType InType)
+    {
+        switch (InType)
         {
             case VK_PHYSICAL_DEVICE_TYPE_OTHER:
-                Gpu->m_TypeName = "Other";
-                break;
+                return "Other";
             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                Gpu->m_TypeName = "Integrated";
-                break;
+                return "Integrated";
             case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                Gpu->m_TypeName = "Discrete";
-                break;
+                return "Discrete";
             case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                Gpu->m_TypeName = "Virtual";
-                break;
+                return "Virtual";
             case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                Gpu->m_TypeName = "CPU";
-                break;
+                return "CPU";
             case VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM:
-                Gpu->m_TypeName = "Other";
-                break;
+                return "Other";
         }
-
-        return Gpu;
+        return {};
     }
+
 
     bool GraphicCard::CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const
     {

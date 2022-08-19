@@ -12,7 +12,6 @@ namespace South
         VkQueue m_Queue        = nullptr;
     };
 
-    // #TODO : Something is wrong with that CreateInfo decides what queues will I get anyway.............
     // Class representing one graphic card specified by requirements.
     // After creation can create logical devices.
     class GraphicCard
@@ -25,11 +24,16 @@ namespace South
             VkInstance VulkanInstance = nullptr;
             std::vector<const char*> RequiredExtensions;
             VkPhysicalDeviceFeatures RequiredFeatures;
-            VkPhysicalDeviceType Type;
-            int RequiredQueueFlags;
         };
 
         static GraphicCard* Create(const CreateInfo& InCreateInfo);
+
+        static VkPhysicalDevice FindPhysicalDevice(const CreateInfo& InCreateInfo);
+        static bool CheckFeatures(const VkPhysicalDevice InGpu, const VkPhysicalDeviceFeatures& InRequiredFeatures);
+        static bool CheckExtensions(const VkPhysicalDevice InGpu, const std::vector<const char*>& InRequiredExtensions);
+
+        // #TODO : Should it be string?
+        static std::string DeviceTypeToString(const VkPhysicalDeviceType InType);
 
         // Creates new logical device with one graphic queue.
         bool CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const;
@@ -48,9 +52,9 @@ namespace South
     private:
         [[nodiscard]] std::optional<uint32_t> FindQueueFamilyIndex(VkQueueFlagBits InFlags) const;
 
-        std::vector<const char*> m_ExtensionsNames;
-        VkPhysicalDeviceFeatures m_Features     = {};
-        VkPhysicalDeviceProperties m_Properties = {};
+        std::vector<const char*> m_ExtensionsNames = {};
+        VkPhysicalDeviceFeatures m_Features        = {};
+        VkPhysicalDeviceProperties m_Properties    = {};
         std::string m_TypeName;
 
         // Vulkan handle to graphic card.
