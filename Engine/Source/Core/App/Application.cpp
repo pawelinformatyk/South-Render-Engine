@@ -59,7 +59,7 @@ namespace South
             Renderer::Present();
 
             std::chrono::time_point FrameEndTime = std::chrono::high_resolution_clock::now();
-            m_FrameTime_Sec                   = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
+            m_FrameTime_Sec                      = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
         }
 
         DeInit();

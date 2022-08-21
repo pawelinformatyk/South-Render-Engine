@@ -1,5 +1,7 @@
 #include "sthpch.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+
 #include "Core/App/Application.h"
 #include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
@@ -9,12 +11,14 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include "tiny_obj_loader.h"
 #include <gtx/string_cast.hpp>
 
 namespace South
 {
 
-    PushConstant g_PushConstant;
+    PushConstant g_QuadPushConstant;
+    PushConstant g_ExampleModelConstant;
     Camera g_EditorCam;
 
     void Renderer::Init()
@@ -25,29 +29,28 @@ namespace South
         s_Context->Init();
 
         const std::vector<Vertex> QuadVertices = { {
-                                                       // NDC space
-                                                       glm::vec3(-0.5f, -0.5f, 0.f),
+                                                       glm::vec3(-1.f, -1.f, .0f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(1.f, 1.f, 1),
+                                                       glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(0.5f, -0.5f, 0.f),
+                                                       glm::vec3(1.f, -1.f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.6f, .25f, 1.f),
+                                                       glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(0.5f, 0.5f, 0.f),
+                                                       glm::vec3(1.f, 1.f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.6f, .25f, 1.f),
+                                                       glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(-0.5f, 0.5f, 0.f),
+                                                       glm::vec3(-1.f, 1.f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(1.f, 1.f, 1),
+                                                       glm::vec3(.1f, .1f, .1f),
                                                    } };
 
         const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0 };
@@ -59,16 +62,25 @@ namespace South
                                                         static_cast<uint32_t>(sizeof(uint32_t)),
                                                         static_cast<uint32_t>(QuadIndices.size()) });
 
-        g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        g_EditorCam.SetProjection(glm::radians(70.0f),
+        g_EditorCam.SetView(glm::vec3(0.f, 7.5f, -5.f), glm::vec3(0.0f, 0.0f, 0.0f));
+        g_EditorCam.SetProjection(glm::radians(90.0f),
                                   static_cast<float>(s_Context->m_SwapChainExtent.width) /
                                       static_cast<float>(s_Context->m_SwapChainExtent.height),
-                                  0.1f,
-                                  200.0f);
+                                  0.00000000001f,
+                                  2000000.0f);
 
-        g_PushConstant.Model      = glm::mat4(1.f);
-        g_PushConstant.View       = g_EditorCam.GetViewMatrix();
-        g_PushConstant.Projection = g_EditorCam.GetProjectionMatrix();
+        g_ExampleModelConstant.Model = glm::mat4(1.f);
+        g_ExampleModelConstant.Model =
+            glm::rotate(g_ExampleModelConstant.Model, glm::radians(120.f), glm::vec3(1.f, 0.f, 0.f));
+        g_ExampleModelConstant.View       = g_EditorCam.GetViewMatrix();
+        g_ExampleModelConstant.Projection = g_EditorCam.GetProjectionMatrix();
+
+        g_QuadPushConstant       = g_ExampleModelConstant;
+        g_QuadPushConstant.Model = glm::mat4(1.f);
+        g_QuadPushConstant.Model = glm::rotate(g_QuadPushConstant.Model, glm::radians(120.f), glm::vec3(1.f, 0.f, 0.f));
+        g_QuadPushConstant.Model = glm::scale(g_QuadPushConstant.Model, glm::vec3(10.f, 10.f, 10.f));
+
+        LoadExampleScene();
 
         STH_INFO("Renderer Initialized");
     }
@@ -136,19 +148,34 @@ namespace South
 
     void Renderer::DrawExampleScene()
     {
+        DrawQuad(glm::mat4(1.f));
+
         // Animation
         {
             static int16_t i = 0;
             ++i;
-            g_PushConstant.Model = glm::rotate(g_PushConstant.Model, glm::radians(.01f), glm::vec3(0.0f, 0.0f, 1.0f));
-            g_PushConstant.Model =
-                glm::scale(g_PushConstant.Model, (i > 0) ? glm::vec3(1.00005f) : glm::vec3(0.99995f));
+            g_ExampleModelConstant.Model =
+                glm::rotate(g_ExampleModelConstant.Model, glm::radians(.01f), glm::vec3(1.0f, .0f, 1.0f));
         }
 
-        DrawQuad();
+        const VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
+
+        vkCmdPushConstants(CmdBuffer,
+                           s_Context->m_PipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(g_ExampleModelConstant),
+                           &g_ExampleModelConstant);
+
+        const VkBuffer MeshBuffer     = s_ExampleSceneBuffer->GetVulkanBuffer();
+        constexpr VkDeviceSize Offset = 0;
+        vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
+        vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, s_ExampleSceneBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(s_ExampleSceneBuffer->GetIndicesCount()), 1, 0, 0, 0);
     }
 
-    void Renderer::DrawQuad()
+    void Renderer::DrawQuad(const glm::mat4& InTransform)
     {
         VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
 
@@ -156,8 +183,8 @@ namespace South
                            s_Context->m_PipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT,
                            0,
-                           sizeof(g_PushConstant),
-                           &g_PushConstant);
+                           sizeof(g_QuadPushConstant),
+                           &g_QuadPushConstant);
 
         VkBuffer MeshBuffer = s_QuadModelBuffer->GetVulkanBuffer();
         VkDeviceSize Offset = 0;
@@ -214,4 +241,45 @@ namespace South
         vkQueuePresentKHR(GraphicQueue, &SresentInfo);
     }
 
+    void Renderer::LoadExampleScene()
+    {
+        std::random_device Dev;
+        std::mt19937 Rng(Dev());
+        std::uniform_real_distribution<float> Dist(0.f, 1.f);
+
+        tinyobj::attrib_t Attrib;
+        std::vector<tinyobj::shape_t> Shapes;
+
+        const std::string FileName = "Resources/Models/jetengine8.obj";
+
+        if (!tinyobj::LoadObj(&Attrib, &Shapes, nullptr, nullptr, nullptr, FileName.c_str())) { return; }
+
+        std::vector<Vertex> Vertices;
+        std::vector<uint32_t> Indices;
+
+        for (const auto& Shape : Shapes)
+        {
+            const glm::vec3 Color = glm::vec3(.6f, Dist(Rng), 1.f);
+
+            for (const auto& Index : Shape.mesh.indices)
+            {
+                const Vertex ShapeVertex = {
+                    .m_Pos   = { Attrib.vertices[3 * Index.vertex_index + 0],
+                               Attrib.vertices[3 * Index.vertex_index + 1],
+                               Attrib.vertices[3 * Index.vertex_index + 2] },
+                    .m_Color = Color,
+                };
+
+                Vertices.emplace_back(ShapeVertex);
+                Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
+            }
+        }
+
+        s_ExampleSceneBuffer = VertexIndexBuffer::Create({ static_cast<const void*>(Vertices.data()),
+                                                           static_cast<uint32_t>(sizeof(Vertex)),
+                                                           static_cast<uint32_t>(Vertices.size()) },
+                                                         { static_cast<const void*>(Indices.data()),
+                                                           static_cast<uint32_t>(sizeof(uint32_t)),
+                                                           static_cast<uint32_t>(Indices.size()) });
+    }
 } // namespace South

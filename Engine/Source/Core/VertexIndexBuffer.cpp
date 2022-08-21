@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/VertexIndexBuffer.h"
-#include "Core/GraphicCard.h"
 
 namespace South
 {
@@ -58,18 +58,18 @@ namespace South
 
         vkBindBufferMemory(LogicalDev, StagingBuffer, StagingBufferMemory, 0);
 
-        void* StaginBufferData;
+        void* StagingBufferData;
 
-        StaginBufferData = nullptr;
+        StagingBufferData = nullptr;
 
-        vkMapMemory(LogicalDev, StagingBufferMemory, 0, VerticesSize, 0, &StaginBufferData);
-        memcpy(StaginBufferData, InVertexInfo.Data, static_cast<size_t>(VerticesSize));
+        vkMapMemory(LogicalDev, StagingBufferMemory, 0, VerticesSize, 0, &StagingBufferData);
+        memcpy(StagingBufferData, InVertexInfo.Data, static_cast<size_t>(VerticesSize));
         vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
-        StaginBufferData = nullptr;
+        StagingBufferData = nullptr;
 
-        vkMapMemory(LogicalDev, StagingBufferMemory, VerticesSize, IndicesSize, 0, &StaginBufferData);
-        memcpy(StaginBufferData, InIndexInfo.Data, static_cast<size_t>(IndicesSize));
+        vkMapMemory(LogicalDev, StagingBufferMemory, VerticesSize, IndicesSize, 0, &StagingBufferData);
+        memcpy(StagingBufferData, InIndexInfo.Data, static_cast<size_t>(IndicesSize));
         vkUnmapMemory(LogicalDev, StagingBufferMemory);
 
         // Actual buffer.

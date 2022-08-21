@@ -52,7 +52,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;$(SolutionDir)ExternalLibraries\TinyObjectLoader;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
@@ -79,7 +79,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);GLM_FORCE_DEPTH_ZERO_TO_ONE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;$(SolutionDir)ExternalLibraries\TinyObjectLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>

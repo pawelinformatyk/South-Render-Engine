@@ -19,7 +19,7 @@ namespace South
 
         static void DrawExampleScene();
 
-        static void DrawQuad();
+        static void DrawQuad(const glm::mat4& InTransform);
         static void DrawTriangle();
 
         static void EndFrame();
@@ -30,12 +30,15 @@ namespace South
         static RendererContext& GetContext() { return *s_Context; };
 
     private:
+        static void LoadExampleScene();
+
         inline static RendererContext* s_Context = nullptr;
 
         // Image from swapchain.
         inline static uint32_t s_ImageIndex = 0;
 
-        inline static class VertexIndexBuffer* s_QuadModelBuffer = nullptr;
+        inline static class VertexIndexBuffer* s_QuadModelBuffer    = nullptr;
+        inline static class VertexIndexBuffer* s_ExampleSceneBuffer = nullptr;
     };
 
 } // namespace South
