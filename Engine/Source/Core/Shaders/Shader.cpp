@@ -4,7 +4,7 @@
 
 #include "Core/Renderer/Renderer.h"
 #include "Core/Shaders/ShadersLibrary.h"
-#include "Core/VulkanDevice.h"
+#include "Core/GraphicCard.h"
 
 #include <fstream>
 #include <iostream>

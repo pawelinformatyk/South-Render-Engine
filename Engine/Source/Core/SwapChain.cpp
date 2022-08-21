@@ -2,8 +2,8 @@
 
 #include "Core/SwapChain.h"
 
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VulkanDevice.h"
 
 #include <GLFW/glfw3.h>
 

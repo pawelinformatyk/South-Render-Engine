@@ -1,7 +1,8 @@
 #include "sthpch.h"
 
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VulkanDevice.h"
+#include "Core/Utils/VulkanUtils.h"
 #include <optional>
 
 namespace South
@@ -17,14 +18,13 @@ namespace South
         Gpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
         vkGetPhysicalDeviceFeatures(FoundDevice, &Gpu->m_Features);
         vkGetPhysicalDeviceProperties(FoundDevice, &Gpu->m_Properties);
-        Gpu->m_TypeName = DeviceTypeToString(Gpu->m_Properties.deviceType);
+        Gpu->m_TypeName = VulkanUtils::DeviceTypeToString(Gpu->m_Properties.deviceType);
 
         return Gpu;
     }
 
     VkPhysicalDevice GraphicCard::FindPhysicalDevice(const CreateInfo& InCreateInfo)
     {
-        // Get all gpus.
         uint32_t GpuCount = 0;
         vkEnumeratePhysicalDevices(InCreateInfo.VulkanInstance, &GpuCount, nullptr);
 
@@ -173,31 +173,10 @@ namespace South
         return true;
     }
 
-
-    std::string GraphicCard::DeviceTypeToString(const VkPhysicalDeviceType InType)
-    {
-        switch (InType)
-        {
-            case VK_PHYSICAL_DEVICE_TYPE_OTHER:
-                return "Other";
-            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                return "Integrated";
-            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                return "Discrete";
-            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                return "Virtual";
-            case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                return "CPU";
-            case VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM:
-                return "Other";
-        }
-        return {};
-    }
-
-
     bool GraphicCard::CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const
     {
-        const std::optional<uint32_t> GraphicQueueFamilyIndex = FindQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
+        const std::optional<uint32_t> GraphicQueueFamilyIndex =
+            FindQueueFamilyIndex(m_PhysicalDevice, VK_QUEUE_GRAPHICS_BIT);
         if (!GraphicQueueFamilyIndex.has_value()) { return false; }
 
         constexpr float QueuePrio = 1.f;
@@ -240,13 +219,14 @@ namespace South
 
     const std::string& GraphicCard::GetTypeName() const { return m_TypeName; }
 
-    std::optional<uint32_t> GraphicCard::FindQueueFamilyIndex(const VkQueueFlagBits InFlags) const
+    std::optional<uint32_t> GraphicCard::FindQueueFamilyIndex(const VkPhysicalDevice InGpu,
+                                                              const VkQueueFlagBits InFlags)
     {
         uint32_t QueueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &QueueFamilyCount, nullptr);
+        vkGetPhysicalDeviceQueueFamilyProperties(InGpu, &QueueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> QueueFamilies(QueueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &QueueFamilyCount, QueueFamilies.data());
+        vkGetPhysicalDeviceQueueFamilyProperties(InGpu, &QueueFamilyCount, QueueFamilies.data());
 
         for (uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
         {

@@ -1,3 +1,4 @@
+// ReSharper disable CppInconsistentNaming
 #pragma once
 
 #include "glm.hpp"
@@ -10,7 +11,7 @@ namespace South
     class GraphicCard;
     class Queue;
 
-    // Model/projection are not changing every frame - should be in uniform (desriptor buffer)
+    // Model/projection are not changing every frame - should be in uniform (descriptor buffer)
     // Projection too.
     struct PushConstant
     {
@@ -25,14 +26,14 @@ namespace South
         friend class Renderer;
 
     public:
-        virtual void Init();
-        virtual void DeInit();
+        void Init();
+        void DeInit();
 
         VkInstance GetVulkanInstance() const;
 
-        Queue& GetGraphicQueue() const;
+        const Queue& GetGraphicQueue() const;
         VkDevice GetLogicalDevice() const;
-        GraphicCard& GetGraphicCard() const;
+        const GraphicCard& GetGraphicCard() const;
 
         VkRenderPass GetRenderPass() const;
         VkCommandBuffer GetCommandBuffer() const;
@@ -42,8 +43,8 @@ namespace South
     private:
         void CreateInstance();
 
-        void CreateSurface(GLFWwindow& Window);
-        void CreateSwapChain(GLFWwindow& Window);
+        void CreateSurface(GLFWwindow& InWindow);
+        void CreateSwapChain(GLFWwindow& InWindow);
         void CreateImageViews();
 
         void CreateRenderPass();
@@ -56,9 +57,9 @@ namespace South
 
         void CreateDescriptorPool();
 
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
-        VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface);
-        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow& window);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
+        VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& InCapabilities, GLFWwindow& InWindow);
 
         std::vector<const char*> GetRequiredInstanceExtensions();
 
@@ -94,12 +95,12 @@ namespace South
         void DestroyMessenger();
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL
-            ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                      void* pUserData);
+            ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
+                                      VkDebugUtilsMessageTypeFlagsEXT InMessageType,
+                                      const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
+                                      void* InUserData);
 
-        bool CheckValidationLayers();
+        bool CheckValidationLayers() const;
 
         const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 

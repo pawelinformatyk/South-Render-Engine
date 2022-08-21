@@ -1,9 +1,9 @@
 #include "sthpch.h"
 
 #include "Core/App/Application.h"
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/VertexIndexBuffer.h"
-#include "Core/VulkanDevice.h"
 #include "Editor/Camera.h"
 #include "Editor/Mesh.h"
 #include "imgui.h"
@@ -19,7 +19,7 @@ namespace South
 
     void Renderer::Init()
     {
-        if (s_Context) { return; };
+        if (s_Context) { return; }
 
         s_Context = new RendererContext;
         s_Context->Init();
@@ -61,10 +61,10 @@ namespace South
 
         g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         g_EditorCam.SetProjection(glm::radians(70.0f),
-                                  s_Context->m_SwapChainExtent.width / (float)s_Context->m_SwapChainExtent.height,
+                                  static_cast<float>(s_Context->m_SwapChainExtent.width) /
+                                      static_cast<float>(s_Context->m_SwapChainExtent.height),
                                   0.1f,
                                   200.0f);
-
 
         g_PushConstant.Model      = glm::mat4(1.f);
         g_PushConstant.View       = g_EditorCam.GetViewMatrix();
@@ -75,7 +75,7 @@ namespace South
 
     void Renderer::Deinit()
     {
-        if (!s_Context) { return; };
+        if (!s_Context) { return; }
 
         if (s_QuadModelBuffer) { VertexIndexBuffer::Destroy(s_Context->GetLogicalDevice(), *s_QuadModelBuffer); }
 
@@ -89,8 +89,7 @@ namespace South
 
     void Renderer::BeginFrame()
     {
-        VkDevice LogicDevice  = s_Context->GetLogicalDevice();
-        VkQueue GraphicsQueue = s_Context->GetGraphicQueue().m_Queue;
+        VkDevice LogicDevice = s_Context->GetLogicalDevice();
 
         // Wait for the previous frame to finish
         vkWaitForFences(LogicDevice, 1, &s_Context->m_FlightFence, VK_TRUE, UINT64_MAX);

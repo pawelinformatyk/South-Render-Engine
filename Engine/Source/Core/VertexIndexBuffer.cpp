@@ -2,7 +2,7 @@
 
 #include "Core/Renderer/Renderer.h"
 #include "Core/VertexIndexBuffer.h"
-#include "Core/VulkanDevice.h"
+#include "Core/GraphicCard.h"
 
 namespace South
 {

@@ -1,11 +1,11 @@
 #include "sthpch.h"
 
 #include "Core/App/Application.h"
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Renderer/RendererContext.h"
 #include "Core/Shaders/Shader.h"
 #include "Core/Shaders/ShadersLibrary.h"
-#include "Core/VulkanDevice.h"
 #include "Editor/Mesh.h"
 #include <GLFW/glfw3.h>
 
@@ -14,12 +14,11 @@ namespace South
 
     VkInstance RendererContext::GetVulkanInstance() const { return m_VulkanInstance; }
 
-
-    Queue& RendererContext::GetGraphicQueue() const { return *m_GraphicQueue; }
+    const Queue& RendererContext::GetGraphicQueue() const { return *m_GraphicQueue; }
 
     VkDevice RendererContext::GetLogicalDevice() const { return m_Device; }
 
-    GraphicCard& RendererContext::GetGraphicCard() const { return *m_GraphicCard; }
+    const GraphicCard& RendererContext::GetGraphicCard() const { return *m_GraphicCard; }
 
     VkRenderPass RendererContext::GetRenderPass() const { return m_RenderPass; }
 
@@ -74,7 +73,7 @@ namespace South
     {
         ShadersLibrary::Deinit();
 
-        VkDevice LogicDevice = m_Device;
+        const VkDevice& LogicDevice = m_Device;
 
         vkDestroyDescriptorPool(LogicDevice, m_DescriptorPool, nullptr);
 
@@ -84,13 +83,16 @@ namespace South
 
         vkDestroyCommandPool(LogicDevice, m_CommandPool, nullptr);
 
-        for (auto framebuffer : m_SwapChainFramebuffers) { vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr); }
+        for (const auto& framebuffer : m_SwapChainFramebuffers)
+        {
+            vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr);
+        }
 
         vkDestroyPipeline(LogicDevice, m_GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(LogicDevice, m_PipelineLayout, nullptr);
         vkDestroyRenderPass(LogicDevice, m_RenderPass, nullptr);
 
-        for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
+        for (const auto& ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
 
         vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
 
@@ -132,9 +134,9 @@ namespace South
         vkCreateInstance(&sCreateInfo, nullptr, &m_VulkanInstance);
     }
 
-    void RendererContext::CreateSurface(GLFWwindow& Window)
+    void RendererContext::CreateSurface(GLFWwindow& InWindow)
     {
-        if (!glfwCreateWindowSurface(m_VulkanInstance, &Window, nullptr, &m_Surface)) { return /*error*/; }
+        if (!glfwCreateWindowSurface(m_VulkanInstance, &InWindow, nullptr, &m_Surface)) { return /*error*/; }
     }
 
     void RendererContext::CreateSwapChain(GLFWwindow& window)
@@ -266,28 +268,28 @@ namespace South
 
     void RendererContext::CreateGraphicsPipeline()
     {
-        VkDevice logicDevice = m_Device;
+        VkDevice LogicDevice = m_Device;
 
         // #TODO : Check for errors;
-        const auto& vertShader = *ShadersLibrary::GetShader("Base_V");
-        const auto& fragShader = *ShadersLibrary::GetShader("Base_F");
+        const auto& VertShader = *ShadersLibrary::GetShader("Base_V");
+        const auto& FragShader = *ShadersLibrary::GetShader("Base_F");
 
-        const VkPipelineShaderStageCreateInfo shaderStages[] = { vertShader.GetInfo(), fragShader.GetInfo() };
+        const VkPipelineShaderStageCreateInfo ShaderStages[] = { VertShader.GetInfo(), FragShader.GetInfo() };
 
-        const auto& bindingDesc     = Vertex::GetBindingDescription();
-        const auto& attributesDescs = Vertex::GetAttributesDescriptions();
+        const auto& BindingDesc     = Vertex::GetBindingDescription();
+        const auto& AttributesDescs = Vertex::GetAttributesDescriptions();
 
-        // Inputs to vertext shader.
-        const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+        // Inputs to vertex shader.
+        const VkPipelineVertexInputStateCreateInfo VertexInputInfo{
             .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .pNext                           = nullptr,
             .vertexBindingDescriptionCount   = 1,
-            .pVertexBindingDescriptions      = &bindingDesc,
-            .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributesDescs.size()),
-            .pVertexAttributeDescriptions    = attributesDescs.data(),
+            .pVertexBindingDescriptions      = &BindingDesc,
+            .vertexAttributeDescriptionCount = static_cast<uint32_t>(AttributesDescs.size()),
+            .pVertexAttributeDescriptions    = AttributesDescs.data(),
         };
 
-        const VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+        const VkPipelineInputAssemblyStateCreateInfo InputAssembly{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             .pNext                  = nullptr,
             .topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -295,7 +297,7 @@ namespace South
         };
 
         // Viewport and scissors.
-        const VkViewport viewport{
+        const VkViewport Viewport{
             .x        = 0.0f,
             .y        = 0.0f,
             .width    = (float)m_SwapChainExtent.width,
@@ -304,7 +306,7 @@ namespace South
             .maxDepth = 1.0f,
         };
 
-        const VkRect2D scissor{
+        const VkRect2D Scissor{
             .offset = { 0, 0 },
             .extent = m_SwapChainExtent,
         };
@@ -313,9 +315,9 @@ namespace South
             .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .pNext         = nullptr,
             .viewportCount = 1,
-            .pViewports    = &viewport,
+            .pViewports    = &Viewport,
             .scissorCount  = 1,
-            .pScissors     = &scissor,
+            .pScissors     = &Scissor,
         };
 
         // Rasterizer.
@@ -397,15 +399,15 @@ namespace South
             .pPushConstantRanges    = &pushConstantRange,
         };
 
-        vkCreatePipelineLayout(logicDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
+        vkCreatePipelineLayout(LogicDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
 
         const VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext               = nullptr,
             .stageCount          = 2,
-            .pStages             = shaderStages,
-            .pVertexInputState   = &vertexInputInfo,
-            .pInputAssemblyState = &inputAssembly,
+            .pStages             = ShaderStages,
+            .pVertexInputState   = &VertexInputInfo,
+            .pInputAssemblyState = &InputAssembly,
             .pTessellationState  = nullptr,
             .pViewportState      = &viewportState,
             .pRasterizationState = &rasterizer,
@@ -420,7 +422,7 @@ namespace South
             .basePipelineIndex  = -1,
         };
 
-        vkCreateGraphicsPipelines(logicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
+        vkCreateGraphicsPipelines(LogicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
     }
 
     void RendererContext::CreateFramebuffers()
@@ -517,13 +519,13 @@ namespace South
         vkCreateDescriptorPool(m_Device, &CreateInfo, nullptr, &m_DescriptorPool);
     }
 
-    VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface)
     {
         uint32_t FormatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &FormatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(InDevice, InSurface, &FormatCount, nullptr);
 
         std::vector<VkSurfaceFormatKHR> AvailableFormats(FormatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(inDevice, inSurface, &FormatCount, AvailableFormats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(InDevice, InSurface, &FormatCount, AvailableFormats.data());
 
         for (const auto& Format : AvailableFormats)
         {
@@ -536,15 +538,15 @@ namespace South
         return AvailableFormats[0];
     }
 
-    VkPresentModeKHR RendererContext::ChooseSwapPresentMode(VkPhysicalDevice inDevice, VkSurfaceKHR inSurface)
+    VkPresentModeKHR RendererContext::ChooseSwapPresentMode(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface)
     {
         // Presentation mode.
         uint32_t PresentModesCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &PresentModesCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(InDevice, InSurface, &PresentModesCount, nullptr);
 
         std::vector<VkPresentModeKHR> AvailablePresentModes(PresentModesCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice,
-                                                  inSurface,
+        vkGetPhysicalDeviceSurfacePresentModesKHR(InDevice,
+                                                  InSurface,
                                                   &PresentModesCount,
                                                   AvailablePresentModes.data());
 
@@ -605,10 +607,11 @@ namespace South
             .pUserData       = nullptr,
         };
 
-        const auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
-                                                                                    "vkCreateDebugUtilsMessengerEXT");
-
-        if (func) { func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger); }
+        if (const auto Func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+                vkGetInstanceProcAddr(m_VulkanInstance, "vkCreateDebugUtilsMessengerEXT")))
+        {
+            Func(m_VulkanInstance, &CreateInfo, nullptr, &m_Messenger);
+        }
         else
         {
             STH_VK_WARN("vkCreateDebugUtilsMessengerEXT not found");
@@ -617,9 +620,12 @@ namespace South
 
     void RendererContext::DestroyMessenger()
     {
-        const auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance,
-                                                                                     "vkDestroyDebugUtilsMessengerEXT");
-        if (func) { func(m_VulkanInstance, m_Messenger, nullptr); }
+        if (const auto Func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+                vkGetInstanceProcAddr(m_VulkanInstance, "vkDestroyDebugUtilsMessengerEXT")))
+        {
+            Func(m_VulkanInstance, m_Messenger, nullptr);
+            m_Messenger = nullptr;
+        }
         else
         {
             STH_VK_WARN("vkDestroyDebugUtilsMessengerEXT not found");
@@ -627,26 +633,28 @@ namespace South
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL
-        RendererContext::ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                   VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                   void* pUserData)
+        RendererContext::ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
+                                                   VkDebugUtilsMessageTypeFlagsEXT InMessageType,
+                                                   const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
+                                                   void* InUserData)
     {
-        if (pCallbackData)
+        if (InCallbackData)
         {
-            switch (messageSeverity)
+            switch (InMessageSeverity)
             {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    STH_VK_ERR(pCallbackData->pMessage);
+                    STH_VK_ERR(InCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    STH_VK_WARN(pCallbackData->pMessage);
+                    STH_VK_WARN(InCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                    STH_VK_INFO(pCallbackData->pMessage);
+                    STH_VK_INFO(InCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                    STH_VK_TRACE(pCallbackData->pMessage);
+                    STH_VK_TRACE(InCallbackData->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
                     break;
             }
         }
@@ -655,7 +663,7 @@ namespace South
         return VK_FALSE;
     }
 
-    bool RendererContext::CheckValidationLayers()
+    bool RendererContext::CheckValidationLayers() const
     {
         uint32_t Count;
         vkEnumerateInstanceLayerProperties(&Count, nullptr);

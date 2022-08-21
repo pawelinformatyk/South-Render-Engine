@@ -3,7 +3,7 @@
 #include "Core/App/Application.h"
 #include "Core/App/GraphicalInterface.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VulkanDevice.h"
+#include "Core/GraphicCard.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
