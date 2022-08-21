@@ -21,6 +21,7 @@ namespace South
         };
 
         static VertexIndexBuffer* Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo);
+        // #TODO : Should here be input Device.
         static void Destroy(VkDevice InlogicalDev, VertexIndexBuffer& InBuffer);
 
         VkBuffer GetVulkanBuffer() const;

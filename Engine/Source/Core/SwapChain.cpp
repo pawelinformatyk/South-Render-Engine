@@ -2,8 +2,8 @@
 
 #include "Core/SwapChain.h"
 
+#include "Core/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VulkanDevice.h"
 
 #include <GLFW/glfw3.h>
 
@@ -12,20 +12,18 @@ namespace South
 
     void SwapChain::Init(GLFWwindow& Window, VkSurfaceKHR InSurface)
     {
-        VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
+        const RendererContext& Context = Renderer::GetContext();
+        VkDevice LogicDevice           = Context.GetLogicalDevice();
+        VkPhysicalDevice PhysDev       = Context.GetGraphicCard().GetPhysicalDevice();
+        uint32_t QueueFamilyIndex      = Context.GetGraphicQueue().m_QueueFamily;
 
-        VkPhysicalDevice PhysDevice = Device.GetPhysicalDevice();
-        VkDevice LogicDevice        = Device.GetDevice();
-        uint32_t QueueFamilyIndex   = Device.GetQFamilyIndex();
-
-        CreateSwapChain(PhysDevice, LogicDevice, QueueFamilyIndex);
+        CreateSwapChain(PhysDev, LogicDevice, QueueFamilyIndex);
         CreateImages(LogicDevice);
     }
 
     void SwapChain::DeInit()
     {
-        VulkanDevice& Device = Renderer::GetContext().GetGpuDevice();
-        VkDevice LogicDevice = Device.GetDevice();
+        VkDevice LogicDevice = Renderer::GetContext().GetLogicalDevice();
 
         for (auto ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
 
@@ -93,7 +91,9 @@ namespace South
         vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &PresentModesCount, nullptr);
 
         std::vector<VkPresentModeKHR> AvailablePresentModes(PresentModesCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice, inSurface, &PresentModesCount,
+        vkGetPhysicalDeviceSurfacePresentModesKHR(inDevice,
+                                                  inSurface,
+                                                  &PresentModesCount,
                                                   AvailablePresentModes.data());
 
         for (const auto& PresentMode : AvailablePresentModes)

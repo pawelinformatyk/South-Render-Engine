@@ -7,6 +7,11 @@
 
 namespace South
 {
+    const char* Application::GetName() { return "SouthRenderEngine"; }
+
+    Application& Application::Get() { return *s_Instance; }
+
+    Window& Application::GetWindow() const { return *m_Window; }
 
     void Application::Kaboom()
     {
@@ -26,7 +31,7 @@ namespace South
             .Name        = GetName(),
         });
 
-        m_GUI = std::make_unique<GraphicalInterface>();
+        m_Gui = std::make_unique<GraphicalInterface>();
     }
 
     Application::~Application() { s_Instance = nullptr; }
@@ -42,19 +47,19 @@ namespace South
             std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
             Renderer::BeginFrame();
-            m_GUI->BeginFrame();
+            m_Gui->BeginFrame();
             {
                 Renderer::DrawExampleScene();
 
-                m_GUI->Draw(m_FrameTimeSeconds);
+                m_Gui->Draw(m_FrameTime_Sec);
             }
-            m_GUI->EndFrame();
+            m_Gui->EndFrame();
             Renderer::EndFrame();
 
             Renderer::Present();
 
             std::chrono::time_point FrameEndTime = std::chrono::high_resolution_clock::now();
-            m_FrameTimeSeconds                   = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
+            m_FrameTime_Sec                   = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
         }
 
         DeInit();
@@ -69,7 +74,7 @@ namespace South
 
         Renderer::Init();
 
-        m_GUI->Init();
+        m_Gui->Init();
 
         m_bRunning = true;
     }
@@ -78,7 +83,7 @@ namespace South
     {
         m_bRunning = false;
 
-        m_GUI->DeInit();
+        m_Gui->DeInit();
 
         Renderer::Deinit();
 
@@ -90,7 +95,7 @@ namespace South
         if (m_Window) { m_Window->ProcessEvents(); }
     }
 
-    void Application::OnKeyPressed(int Key, int Scancode, int Action, int Mods) {}
+    void Application::OnKeyPressed(int InKey, int InScancode, int InAction, int InMods) {}
 
     void Application::Minimise()
     {

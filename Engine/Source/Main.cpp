@@ -7,7 +7,6 @@ int main(int argc, char** argv)
     South::Logger::Init();
 
     STH_INFO("Application Start");
-    STH_INFO("");
 
     auto* App = new South::Application;
 
@@ -15,7 +14,6 @@ int main(int argc, char** argv)
 
     delete App;
 
-    STH_INFO("");
     STH_INFO("Application End");
 
     South::Logger::DeInit();
