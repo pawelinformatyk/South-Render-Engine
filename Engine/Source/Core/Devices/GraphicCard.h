@@ -13,7 +13,8 @@ namespace South
     };
 
     // Class representing one graphic card specified by requirements.
-    // After creation can create logical devices.
+    // Logical devices and queues are created from this object.
+    //
     class GraphicCard
     {
     public:
