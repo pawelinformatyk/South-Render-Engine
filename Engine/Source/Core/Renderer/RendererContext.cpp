@@ -1,8 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/App/Application.h"
-#include "Core/GraphicCard.h"
-#include "Core/Renderer/Renderer.h"
+#include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/RendererContext.h"
 #include "Core/Shaders/Shader.h"
 #include "Core/Shaders/ShadersLibrary.h"

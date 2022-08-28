@@ -1,6 +1,6 @@
 #include "sthpch.h"
 
-#include "Core/GraphicCard.h"
+#include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Utils/VulkanUtils.h"
 #include <optional>

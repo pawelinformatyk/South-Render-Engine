@@ -1,8 +1,8 @@
 #include "sthpch.h"
 
-#include "Core/GraphicCard.h"
+#include "Core/Buffers/VertexIndexBuffer.h"
+#include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VertexIndexBuffer.h"
 
 namespace South
 {

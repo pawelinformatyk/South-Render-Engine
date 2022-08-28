@@ -51,7 +51,6 @@ namespace South
         void CreateGraphicsPipeline();
 
         void CreateFramebuffers();
-        void CreateModelBuffers();
         void CreateCommands();
         void CreateSyncObjects();
 

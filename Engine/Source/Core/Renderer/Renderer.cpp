@@ -3,13 +3,12 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include "Core/App/Application.h"
-#include "Core/GraphicCard.h"
+#include "Core/Buffers/VertexIndexBuffer.h"
+#include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
-#include "Core/VertexIndexBuffer.h"
 #include "Editor/Camera.h"
 #include "Editor/Mesh.h"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 #include "tiny_obj_loader.h"
 #include <gtx/string_cast.hpp>
