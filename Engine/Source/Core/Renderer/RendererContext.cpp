@@ -61,10 +61,10 @@ namespace South
         CreateImageViews();
         CreateRenderPass();
         CreateGraphicsPipeline();
+        CreateCommandPool();
         CreateFramebuffers();
-        CreateCommands();
+        CreateCommandBuffers();
         CreateSyncObjects();
-
         CreateDescriptorPool();
     }
 
@@ -395,7 +395,6 @@ namespace South
 
         vkCreatePipelineLayout(m_Device, &PipelineLayoutCi, nullptr, &m_PipelineLayout);
 
-        VkPipelineDepthStencilStateCreateInfo DepthStencilCi{
 
         const VkGraphicsPipelineCreateInfo GraphicsPipelineCi{
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -405,10 +404,10 @@ namespace South
             .pVertexInputState   = &VertexInputStateCi,
             .pInputAssemblyState = &InputAssemblyStateCi,
             .pTessellationState  = nullptr,
-            .pDepthStencilState  = nullptr,
             .pViewportState      = &ViewportStateCi,
             .pRasterizationState = &RasterizerStateCi,
             .pMultisampleState   = &MultisampleStateCi,
+            .pDepthStencilState  = nullptr,
             .pColorBlendState    = &ColorBlendingCi,
             //.pDynamicState       = &dynamicState,
             .layout             = m_PipelineLayout,
@@ -431,10 +430,6 @@ namespace South
 
         vkCreateCommandPool(m_Device, &PoolInfo, nullptr, &m_CommandPool);
     }
-
-    {
-        VkDevice LogicDevice = m_Device;
-
 
     void RendererContext::CreateFramebuffers()
     {

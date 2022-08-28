@@ -47,13 +47,13 @@ namespace South
             std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
             Renderer::BeginFrame();
-            // m_Gui->BeginFrame();
+            m_Gui->BeginFrame();
             {
                 Renderer::RenderExampleScene();
 
-                // m_Gui->Draw(m_FrameTime_Sec);
+                m_Gui->Draw(m_FrameTime_Sec);
             }
-            // m_Gui->EndFrame();
+            m_Gui->EndFrame();
             Renderer::EndFrame();
 
             Renderer::Present();

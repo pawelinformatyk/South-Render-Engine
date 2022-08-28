@@ -176,11 +176,6 @@ namespace South
 
         RenderQuad(s_Context->GetCommandBuffer(), s_Context->GetPipelineLayout(), glm::mat4(1.f));
 
-        // Animation
-        static glm::mat4 ModelTransform = g_ExampleModelConstant.Model;
-        ModelTransform                  = glm::rotate(ModelTransform, glm::radians(.01f), glm::vec3(1.0f, .0f, 1.0f));
-        g_ExampleModelConstant.Model    = ModelTransform;
-
         // RenderMesh(CmdBuffer, PipelineLayout, *s_ExampleSceneBuffer, ModelTransform);
     }
 
