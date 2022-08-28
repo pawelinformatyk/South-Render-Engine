@@ -5,6 +5,8 @@
 namespace South
 {
 
+    class VertexIndexBuffer;
+    
     // Should be able to be initialised, deinitialised and render objects (using commands).
     // It decides for itself whether renderer should be vulkan, opengl, directx...
     class Renderer
@@ -17,10 +19,11 @@ namespace South
 
         // static void Submit(std::function<void()>&);
 
-        static void DrawExampleScene();
+        static void RenderExampleScene();
 
-        static void DrawQuad(const glm::mat4& InTransform);
-        static void DrawTriangle();
+        static void RenderQuad(const VkCommandBuffer InCommandBuffer,const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform);
+        static void RenderTriangle(const VkCommandBuffer InCommandBuffer,const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform);
+        static void RenderMesh(const VkCommandBuffer InCommandBuffer,const VkPipelineLayout InPipelineLayout, const VertexIndexBuffer& InMeshBuffer, const glm::mat4& InTransform);
 
         static void EndFrame();
 

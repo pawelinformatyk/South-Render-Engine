@@ -29,16 +29,15 @@ namespace South
         void Init();
         void DeInit();
 
-        VkInstance GetVulkanInstance() const;
-
-        const Queue& GetGraphicQueue() const;
-        VkDevice GetLogicalDevice() const;
-        const GraphicCard& GetGraphicCard() const;
-
-        VkRenderPass GetRenderPass() const;
-        VkCommandBuffer GetCommandBuffer() const;
-        VkCommandPool GetCommandPool() const;
-        VkDescriptorPool GetDescriptorPool() const;
+        [[nodiscard]] VkInstance GetVulkanInstance() const;
+        [[nodiscard]] const Queue& GetGraphicQueue() const;
+        [[nodiscard]] VkDevice GetLogicalDevice() const;
+        [[nodiscard]] const GraphicCard& GetGraphicCard() const;
+        [[nodiscard]] VkRenderPass GetRenderPass() const;
+        [[nodiscard]] VkCommandBuffer GetCommandBuffer() const;
+        [[nodiscard]] VkCommandPool GetCommandPool() const;
+        [[nodiscard]] VkDescriptorPool GetDescriptorPool() const;
+        [[nodiscard]] VkPipelineLayout GetPipelineLayout() const;
 
     private:
         void CreateInstance();
@@ -46,14 +45,12 @@ namespace South
         void CreateSurface(GLFWwindow& InWindow);
         void CreateSwapChain(GLFWwindow& InWindow);
         void CreateImageViews();
-
         void CreateRenderPass();
         void CreateGraphicsPipeline();
-
+        void CreateCommandPool();
         void CreateFramebuffers();
-        void CreateCommands();
+        void CreateCommandBuffers();
         void CreateSyncObjects();
-
         void CreateDescriptorPool();
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
@@ -78,7 +75,9 @@ namespace South
 
         VkRenderPass m_RenderPass         = VK_NULL_HANDLE;
         VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
-        VkPipeline m_GraphicsPipeline     = VK_NULL_HANDLE;
+
+    private:
+        VkPipeline m_GraphicsPipeline = VK_NULL_HANDLE;
 
         VkDescriptorPool m_DescriptorPool;
 
@@ -103,7 +102,7 @@ namespace South
                                       const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
                                       void* InUserData);
 
-        bool CheckValidationLayers() const;
+        [[nodiscard]] bool CheckValidationLayers() const;
 
         const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 

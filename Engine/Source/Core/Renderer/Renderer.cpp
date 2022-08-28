@@ -28,31 +28,55 @@ namespace South
         s_Context->Init();
 
         const std::vector<Vertex> QuadVertices = { {
-                                                       glm::vec3(-1.f, -1.f, .0f),
+                                                       { -0.5f, -0.5f, 0.0f },
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
                                                        glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(1.f, -1.f, 0.f),
+                                                       { 0.5f, -0.5f, 0.0f },
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
                                                        glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(1.f, 1.f, 0.f),
+                                                       { 0.5f, 0.5f, 0.0f },
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
                                                        glm::vec3(.1f, .1f, .1f),
                                                    },
                                                    {
-                                                       glm::vec3(-1.f, 1.f, 0.f),
+                                                       { -0.5f, 0.5f, 0.0f },
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
                                                        glm::vec3(.1f, .1f, .1f),
+                                                   },
+                                                   {
+                                                       { -0.5f, -0.5f, -0.5f },
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.5f, .1f, .1f),
+                                                   },
+                                                   {
+                                                       { 0.5f, -0.5f, -0.5f },
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.5f, .1f, .1f),
+                                                   },
+                                                   {
+                                                       { 0.5f, 0.5f, -0.5f },
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.5f, .1f, .1f),
+                                                   },
+                                                   {
+                                                       { -0.5f, 0.5f, -0.5f },
+                                                       glm::vec3(0.f),
+                                                       glm::vec2(0.f),
+                                                       glm::vec3(.5f, .1f, .1f),
                                                    } };
 
-        const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0 };
+        const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
 
         s_QuadModelBuffer = VertexIndexBuffer::Create({ static_cast<const void*>(QuadVertices.data()),
                                                         static_cast<uint32_t>(sizeof(Vertex)),
@@ -100,7 +124,7 @@ namespace South
 
     void Renderer::BeginFrame()
     {
-        VkDevice LogicDevice = s_Context->GetLogicalDevice();
+        const VkDevice LogicDevice = s_Context->GetLogicalDevice();
 
         // Wait for the previous frame to finish
         vkWaitForFences(LogicDevice, 1, &s_Context->m_FlightFence, VK_TRUE, UINT64_MAX);
@@ -124,7 +148,7 @@ namespace South
             .pInheritanceInfo = nullptr,
         };
 
-        VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
+        const VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
         vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
 
         // #TODO : Pipeline static value?
@@ -145,57 +169,70 @@ namespace South
         vkCmdBindPipeline(CmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, s_Context->m_GraphicsPipeline);
     }
 
-    void Renderer::DrawExampleScene()
+    void Renderer::RenderExampleScene()
     {
-        DrawQuad(glm::mat4(1.f));
+        const VkCommandBuffer CmdBuffer       = s_Context->m_CommandBuffer;
+        const VkPipelineLayout PipelineLayout = s_Context->m_PipelineLayout;
+
+        RenderQuad(s_Context->GetCommandBuffer(), s_Context->GetPipelineLayout(), glm::mat4(1.f));
 
         // Animation
-        {
-            static int16_t i = 0;
-            ++i;
-            g_ExampleModelConstant.Model =
-                glm::rotate(g_ExampleModelConstant.Model, glm::radians(.01f), glm::vec3(1.0f, .0f, 1.0f));
-        }
+        static glm::mat4 ModelTransform = g_ExampleModelConstant.Model;
+        ModelTransform                  = glm::rotate(ModelTransform, glm::radians(.01f), glm::vec3(1.0f, .0f, 1.0f));
+        g_ExampleModelConstant.Model    = ModelTransform;
 
-        const VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
-
-        vkCmdPushConstants(CmdBuffer,
-                           s_Context->m_PipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT,
-                           0,
-                           sizeof(g_ExampleModelConstant),
-                           &g_ExampleModelConstant);
-
-        const VkBuffer MeshBuffer     = s_ExampleSceneBuffer->GetVulkanBuffer();
-        constexpr VkDeviceSize Offset = 0;
-        vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
-        vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, s_ExampleSceneBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
-
-        vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(s_ExampleSceneBuffer->GetIndicesCount()), 1, 0, 0, 0);
+        // RenderMesh(CmdBuffer, PipelineLayout, *s_ExampleSceneBuffer, ModelTransform);
     }
 
-    void Renderer::DrawQuad(const glm::mat4& InTransform)
+    void Renderer::RenderQuad(const VkCommandBuffer InCommandBuffer,
+                              const VkPipelineLayout InPipelineLayout,
+                              const glm::mat4& InTransform)
     {
-        VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
-
-        vkCmdPushConstants(CmdBuffer,
-                           s_Context->m_PipelineLayout,
+        vkCmdPushConstants(InCommandBuffer,
+                           InPipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT,
                            0,
                            sizeof(g_QuadPushConstant),
                            &g_QuadPushConstant);
 
-        VkBuffer MeshBuffer = s_QuadModelBuffer->GetVulkanBuffer();
-        VkDeviceSize Offset = 0;
-        vkCmdBindVertexBuffers(CmdBuffer, 0, 1, &MeshBuffer, &Offset);
-        vkCmdBindIndexBuffer(CmdBuffer, MeshBuffer, s_QuadModelBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
+        const VkBuffer MeshBuffer     = s_QuadModelBuffer->GetVulkanBuffer();
+        constexpr VkDeviceSize Offset = 0;
+        vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, &MeshBuffer, &Offset);
+        vkCmdBindIndexBuffer(InCommandBuffer, MeshBuffer, s_QuadModelBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
 
-        vkCmdDrawIndexed(CmdBuffer, static_cast<uint32_t>(s_QuadModelBuffer->GetIndicesCount()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(InCommandBuffer, static_cast<uint32_t>(s_QuadModelBuffer->GetIndicesCount()), 1, 0, 0, 0);
+    }
+
+    void Renderer::RenderTriangle(const VkCommandBuffer InCommandBuffer,
+                                  const VkPipelineLayout InPipelineLayout,
+                                  const glm::mat4& InTransform)
+    {
+    }
+
+    void Renderer::RenderMesh(const VkCommandBuffer InCommandBuffer,
+                              const VkPipelineLayout InPipelineLayout,
+                              const VertexIndexBuffer& InMeshBuffer,
+                              const glm::mat4& InTransform)
+    {
+        vkCmdPushConstants(InCommandBuffer,
+                           InPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(g_ExampleModelConstant),
+                           &g_ExampleModelConstant);
+
+        const VkBuffer Buffer         = InMeshBuffer.GetVulkanBuffer();
+        constexpr VkDeviceSize Offset = 0;
+
+        vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, &Buffer, &Offset);
+        vkCmdBindIndexBuffer(InCommandBuffer, Buffer, InMeshBuffer.GetVerticesSize(), VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(InCommandBuffer, static_cast<uint32_t>(InMeshBuffer.GetIndicesCount()), 1, 0, 0, 0);
     }
 
     void Renderer::EndFrame()
     {
-        VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
+        const VkCommandBuffer CmdBuffer = s_Context->m_CommandBuffer;
 
         vkCmdEndRenderPass(CmdBuffer);
 
@@ -204,10 +241,10 @@ namespace South
 
     void Renderer::Present()
     {
-        VkQueue GraphicQueue                    = s_Context->GetGraphicQueue().m_Queue;
-        const VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        const VkSemaphore WaitSemaphores[]      = { s_Context->m_ImageAvailableSemaphore };
-        const VkSemaphore SignalSemaphores[]    = { s_Context->m_RenderFinishedSemaphore };
+        const VkQueue GraphicQueue                  = s_Context->GetGraphicQueue().m_Queue;
+        constexpr VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        const VkSemaphore WaitSemaphores[]          = { s_Context->m_ImageAvailableSemaphore };
+        const VkSemaphore SignalSemaphores[]        = { s_Context->m_RenderFinishedSemaphore };
 
         const VkSubmitInfo SubmitInfo{
             .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -226,7 +263,7 @@ namespace South
         const VkSwapchainKHR SwapChains[] = { s_Context->m_SwapChain };
 
         // Present the swap chain image
-        const VkPresentInfoKHR SresentInfo{
+        const VkPresentInfoKHR PresentInfo{
             .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .pNext              = nullptr,
             .waitSemaphoreCount = 1,
@@ -237,7 +274,7 @@ namespace South
             .pResults           = nullptr,
         };
 
-        vkQueuePresentKHR(GraphicQueue, &SresentInfo);
+        vkQueuePresentKHR(GraphicQueue, &PresentInfo);
     }
 
     void Renderer::LoadExampleScene()
@@ -258,7 +295,7 @@ namespace South
 
         for (const auto& Shape : Shapes)
         {
-            const glm::vec3 Color = glm::vec3(.6f, Dist(Rng), 1.f);
+            const glm::vec3 Color = glm::vec3(Dist(Rng), Dist(Rng), Dist(Rng));
 
             for (const auto& Index : Shape.mesh.indices)
             {

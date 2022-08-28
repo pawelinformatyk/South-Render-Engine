@@ -22,7 +22,7 @@ namespace South
 
     void Camera::SetView(glm::vec3 inPos, glm::vec3 inTarget)
     {
-        m_View = glm::lookAt(inPos, inTarget, glm::vec3(0.f, 1.f, 0.f));
+        m_View = glm::lookAt(inPos, inTarget, glm::vec3(0.f, 0.f, 1.f));
     }
 
     void Camera::SetProjection(float inFov, float inAspect, float inNear, float inFar)

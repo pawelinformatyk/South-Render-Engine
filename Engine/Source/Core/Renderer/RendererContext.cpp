@@ -72,28 +72,30 @@ namespace South
     {
         ShadersLibrary::Deinit();
 
-        const VkDevice& LogicDevice = m_Device;
+        vkDestroyImageView(m_Device, m_DepthImageView, nullptr);
+        vkDestroyImage(m_Device, m_DepthImage, nullptr);
+        vkFreeMemory(m_Device, m_DepthImageMemory, nullptr);
 
-        vkDestroyDescriptorPool(LogicDevice, m_DescriptorPool, nullptr);
+        vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 
-        vkDestroySemaphore(LogicDevice, m_RenderFinishedSemaphore, nullptr);
-        vkDestroySemaphore(LogicDevice, m_ImageAvailableSemaphore, nullptr);
-        vkDestroyFence(LogicDevice, m_FlightFence, nullptr);
+        vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
+        vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
+        vkDestroyFence(m_Device, m_FlightFence, nullptr);
 
-        vkDestroyCommandPool(LogicDevice, m_CommandPool, nullptr);
+        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
 
         for (const auto& framebuffer : m_SwapChainFramebuffers)
         {
-            vkDestroyFramebuffer(LogicDevice, framebuffer, nullptr);
+            vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
         }
 
-        vkDestroyPipeline(LogicDevice, m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(LogicDevice, m_PipelineLayout, nullptr);
-        vkDestroyRenderPass(LogicDevice, m_RenderPass, nullptr);
+        vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
+        vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
-        for (const auto& ImageView : m_SwapChainImageViews) { vkDestroyImageView(LogicDevice, ImageView, nullptr); }
+        for (const auto& ImageView : m_SwapChainImageViews) { vkDestroyImageView(m_Device, ImageView, nullptr); }
 
-        vkDestroySwapchainKHR(LogicDevice, m_SwapChain, nullptr);
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 
 
         if (m_bEnableValidationLayers) { DestroyMessenger(); }
@@ -140,9 +142,8 @@ namespace South
 
     void RendererContext::CreateSwapChain(GLFWwindow& window)
     {
-        VkPhysicalDevice physDevice = m_GraphicCard->GetPhysicalDevice();
-        VkDevice logicDevice        = m_Device;
-        uint32_t QueueFamilyIndex   = m_GraphicQueue->m_QueueFamily;
+        const VkPhysicalDevice physDevice = m_GraphicCard->GetPhysicalDevice();
+        uint32_t QueueFamilyIndex         = m_GraphicQueue->m_QueueFamily;
 
         VkSurfaceCapabilitiesKHR capabilities;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, m_Surface, &capabilities);
@@ -177,12 +178,12 @@ namespace South
             .oldSwapchain          = VK_NULL_HANDLE,
         };
 
-        vkCreateSwapchainKHR(logicDevice, &createInfo, nullptr, &m_SwapChain);
+        vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain);
 
-        vkGetSwapchainImagesKHR(logicDevice, m_SwapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
 
         m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(logicDevice, m_SwapChain, &imageCount, m_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
 
         m_SwapChainImageFormat = createInfo.imageFormat;
         m_SwapChainExtent      = createInfo.imageExtent;
@@ -190,8 +191,6 @@ namespace South
 
     void RendererContext::CreateImageViews()
     {
-        VkDevice logicDevice = m_Device;
-
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
         const VkImageSubresourceRange subresourceRange{
@@ -214,7 +213,7 @@ namespace South
                 .subresourceRange = subresourceRange,
             };
 
-            vkCreateImageView(logicDevice, &sCreateInfo, nullptr, &m_SwapChainImageViews[i]);
+            vkCreateImageView(m_Device, &sCreateInfo, nullptr, &m_SwapChainImageViews[i]);
         }
     }
 
@@ -267,8 +266,6 @@ namespace South
 
     void RendererContext::CreateGraphicsPipeline()
     {
-        VkDevice LogicDevice = m_Device;
-
         // #TODO : Check for errors;
         const auto& VertShader = *ShadersLibrary::GetShader("Base_V");
         const auto& FragShader = *ShadersLibrary::GetShader("Base_F");
@@ -279,7 +276,7 @@ namespace South
         const auto& AttributesDescs = Vertex::GetAttributesDescriptions();
 
         // Inputs to vertex shader.
-        const VkPipelineVertexInputStateCreateInfo VertexInputInfo{
+        const VkPipelineVertexInputStateCreateInfo VertexInputStateCi{
             .sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .pNext                           = nullptr,
             .vertexBindingDescriptionCount   = 1,
@@ -288,7 +285,7 @@ namespace South
             .pVertexAttributeDescriptions    = AttributesDescs.data(),
         };
 
-        const VkPipelineInputAssemblyStateCreateInfo InputAssembly{
+        const VkPipelineInputAssemblyStateCreateInfo InputAssemblyStateCi{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             .pNext                  = nullptr,
             .topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -299,8 +296,8 @@ namespace South
         const VkViewport Viewport{
             .x        = 0.0f,
             .y        = 0.0f,
-            .width    = (float)m_SwapChainExtent.width,
-            .height   = (float)m_SwapChainExtent.height,
+            .width    = static_cast<float>(m_SwapChainExtent.width),
+            .height   = static_cast<float>(m_SwapChainExtent.height),
             .minDepth = 0.0f,
             .maxDepth = 1.0f,
         };
@@ -310,7 +307,7 @@ namespace South
             .extent = m_SwapChainExtent,
         };
 
-        const VkPipelineViewportStateCreateInfo viewportState{
+        const VkPipelineViewportStateCreateInfo ViewportStateCi{
             .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .pNext         = nullptr,
             .viewportCount = 1,
@@ -320,14 +317,14 @@ namespace South
         };
 
         // Rasterizer.
-        const VkPipelineRasterizationStateCreateInfo rasterizer{
+        const VkPipelineRasterizationStateCreateInfo RasterizerStateCi{
             .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             .pNext                   = nullptr,
             .depthClampEnable        = VK_FALSE,
             .rasterizerDiscardEnable = VK_FALSE,
             .polygonMode             = VK_POLYGON_MODE_FILL,
             .cullMode                = VK_CULL_MODE_BACK_BIT,
-            .frontFace               = VK_FRONT_FACE_CLOCKWISE,
+            .frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             .depthBiasEnable         = VK_FALSE,
             .depthBiasConstantFactor = 0.0f,
             .depthBiasClamp          = 0.0f,
@@ -336,7 +333,7 @@ namespace South
         };
 
         // Multisampling - antialiasing
-        const VkPipelineMultisampleStateCreateInfo multisampling{
+        const VkPipelineMultisampleStateCreateInfo MultisampleStateCi{
             .sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             .pNext                 = nullptr,
             .rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT,
@@ -347,10 +344,8 @@ namespace South
             .alphaToOneEnable      = VK_FALSE,
         };
 
-        // #TODO : Depth and stecncil testing.
-
         // Color blending
-        const VkPipelineColorBlendAttachmentState colorBlendAttachment{
+        const VkPipelineColorBlendAttachmentState ColorBlendAttachment{
             .blendEnable         = VK_TRUE,
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -362,75 +357,90 @@ namespace South
                               VK_COLOR_COMPONENT_A_BIT,
         };
 
-        const VkPipelineColorBlendStateCreateInfo colorBlending{
+        const VkPipelineColorBlendStateCreateInfo ColorBlendingCi{
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .pNext           = nullptr,
             .logicOpEnable   = VK_FALSE,
             .logicOp         = VK_LOGIC_OP_COPY,
             .attachmentCount = 1,
-            .pAttachments    = &colorBlendAttachment,
+            .pAttachments    = &ColorBlendAttachment,
             .blendConstants  = { 0.0f, 0.0f, 0.0f, 0.0f },
         };
 
-        // Dynamic state - dynamically change pipeline paremeters.
-        const std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
+        // Dynamic state - dynamically change pipeline parameters.
+        const std::vector<VkDynamicState> DynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
 
-        const VkPipelineDynamicStateCreateInfo dynamicState{
+        const VkPipelineDynamicStateCreateInfo DynamicStateCi{
             .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
             .pNext             = nullptr,
-            .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-            .pDynamicStates    = dynamicStates.data(),
+            .dynamicStateCount = static_cast<uint32_t>(DynamicStates.size()),
+            .pDynamicStates    = DynamicStates.data(),
         };
 
         // Pipeline layout - uniforms in shaders.
-        const VkPushConstantRange pushConstantRange{
+        const VkPushConstantRange PushConstantRange{
             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset     = 0,
             .size       = sizeof(PushConstant),
         };
 
-        const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+        const VkPipelineLayoutCreateInfo PipelineLayoutCi{
             .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext                  = nullptr,
             .setLayoutCount         = 0,
             .pSetLayouts            = nullptr,
             .pushConstantRangeCount = 1,
-            .pPushConstantRanges    = &pushConstantRange,
+            .pPushConstantRanges    = &PushConstantRange,
         };
 
-        vkCreatePipelineLayout(LogicDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
+        vkCreatePipelineLayout(m_Device, &PipelineLayoutCi, nullptr, &m_PipelineLayout);
 
-        const VkGraphicsPipelineCreateInfo pipelineInfo{
+        VkPipelineDepthStencilStateCreateInfo DepthStencilCi{
+
+        const VkGraphicsPipelineCreateInfo GraphicsPipelineCi{
             .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext               = nullptr,
             .stageCount          = 2,
             .pStages             = ShaderStages,
-            .pVertexInputState   = &VertexInputInfo,
-            .pInputAssemblyState = &InputAssembly,
+            .pVertexInputState   = &VertexInputStateCi,
+            .pInputAssemblyState = &InputAssemblyStateCi,
             .pTessellationState  = nullptr,
-            .pViewportState      = &viewportState,
-            .pRasterizationState = &rasterizer,
-            .pMultisampleState   = &multisampling,
             .pDepthStencilState  = nullptr,
-            .pColorBlendState    = &colorBlending,
+            .pViewportState      = &ViewportStateCi,
+            .pRasterizationState = &RasterizerStateCi,
+            .pMultisampleState   = &MultisampleStateCi,
+            .pColorBlendState    = &ColorBlendingCi,
             //.pDynamicState       = &dynamicState,
             .layout             = m_PipelineLayout,
             .renderPass         = m_RenderPass,
             .subpass            = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
-            .basePipelineIndex  = -1,
         };
 
-        vkCreateGraphicsPipelines(LogicDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
+        vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &GraphicsPipelineCi, nullptr, &m_GraphicsPipeline);
     }
 
-    void RendererContext::CreateFramebuffers()
+    void RendererContext::CreateCommandPool()
+    {
+        const VkCommandPoolCreateInfo PoolInfo{
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .pNext            = nullptr,
+            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            .queueFamilyIndex = m_GraphicQueue->m_QueueFamily,
+        };
+
+        vkCreateCommandPool(m_Device, &PoolInfo, nullptr, &m_CommandPool);
+    }
+
     {
         VkDevice LogicDevice = m_Device;
 
+
+    void RendererContext::CreateFramebuffers()
+    {
         m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
 
-        for (auto i = 0; i < m_SwapChainImageViews.size(); i++)
+        for (int i = 0; i < m_SwapChainImageViews.size(); i++)
         {
             const VkImageView Attachments[] = { m_SwapChainImageViews[i] };
 
@@ -445,23 +455,12 @@ namespace South
                 .layers          = 1,
             };
 
-            vkCreateFramebuffer(LogicDevice, &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
+            vkCreateFramebuffer(m_Device, &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
         }
     }
 
-    void RendererContext::CreateCommands()
+    void RendererContext::CreateCommandBuffers()
     {
-        VkDevice logicDevice = m_Device;
-
-        const VkCommandPoolCreateInfo PoolInfo{
-            .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .pNext            = nullptr,
-            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = m_GraphicQueue->m_QueueFamily,
-        };
-
-        vkCreateCommandPool(logicDevice, &PoolInfo, nullptr, &m_CommandPool);
-
         const VkCommandBufferAllocateInfo AllocInfo{
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
@@ -470,13 +469,11 @@ namespace South
             .commandBufferCount = 1,
         };
 
-        vkAllocateCommandBuffers(logicDevice, &AllocInfo, &m_CommandBuffer);
+        vkAllocateCommandBuffers(m_Device, &AllocInfo, &m_CommandBuffer);
     }
 
     void RendererContext::CreateSyncObjects()
     {
-        VkDevice LogicDevice = m_Device;
-
         const VkSemaphoreCreateInfo SemaphoreInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,
@@ -488,24 +485,24 @@ namespace South
             .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
-        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
-        vkCreateSemaphore(LogicDevice, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
-        vkCreateFence(LogicDevice, &FenceInfo, nullptr, &m_FlightFence);
+        vkCreateSemaphore(m_Device, &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
+        vkCreateSemaphore(m_Device, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
+        vkCreateFence(m_Device, &FenceInfo, nullptr, &m_FlightFence);
     }
 
     void RendererContext::CreateDescriptorPool()
     {
-        const VkDescriptorPoolSize PoolSizes[] = { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-                                                   { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
+        constexpr VkDescriptorPoolSize PoolSizes[] = { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+                                                       { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
 
         const VkDescriptorPoolCreateInfo CreateInfo = {
             .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -590,6 +587,8 @@ namespace South
 
         return Extensions;
     }
+
+    VkPipelineLayout RendererContext::GetPipelineLayout() const { return m_PipelineLayout; }
 
     void RendererContext::CreateMessenger()
     {
