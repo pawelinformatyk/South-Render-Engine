@@ -102,6 +102,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\App\GraphicalInterface.cpp" />
+    <ClCompile Include="Source\Core\Buffers\Buffer.cpp" />
     <ClCompile Include="Source\Core\Buffers\VertexIndexBuffer.cpp" />
     <ClCompile Include="Source\Core\Devices\GraphicCard.cpp" />
     <ClCompile Include="Source\Core\Renderer\RendererContext.cpp" />
@@ -129,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\App\GraphicalInterface.h" />
+    <ClInclude Include="Source\Core\Buffers\Buffer.h" />
     <ClInclude Include="Source\Core\Buffers\VertexIndexBuffer.h" />
     <ClInclude Include="Source\Core\Devices\GraphicCard.h" />
     <ClInclude Include="Source\Core\Events\EventsInterface.h" />
