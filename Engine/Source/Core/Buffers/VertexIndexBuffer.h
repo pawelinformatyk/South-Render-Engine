@@ -1,15 +1,14 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
+#include "Buffer.h"
 
 namespace South
 {
-
     // One buffer for vertex and indices data.
     // (vertices...indices)
     // #TODO : Check if actually is more performant than two separated buffers. Check
     // VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-    class VertexIndexBuffer
+    class VertexIndexBuffer : Buffer
     {
     public:
         struct CreateInfo
@@ -33,18 +32,10 @@ namespace South
         uint32_t GetIndicesCount() const;
 
     private:
-        static uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties MemProperties,
-                                       uint32_t typeFilter,
-                                       VkMemoryPropertyFlags Properties);
-
         uint32_t m_VerticesSize = 0;
         uint32_t m_IndicesSize  = 0;
 
         uint32_t m_VerticesCount = 0;
         uint32_t m_IndicesCount  = 0;
-
-        VkBuffer m_Buffer       = VK_NULL_HANDLE;
-        VkDeviceMemory m_Memory = VK_NULL_HANDLE;
     };
-
 } // namespace South
