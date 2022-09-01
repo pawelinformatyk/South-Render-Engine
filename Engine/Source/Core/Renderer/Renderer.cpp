@@ -3,6 +3,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include "Core/App/Application.h"
+#include "Core/Buffers/UniformBuffer.h"
 #include "Core/Buffers/VertexIndexBuffer.h"
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
@@ -11,13 +12,12 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include "tiny_obj_loader.h"
+
 #include <gtx/string_cast.hpp>
 
 namespace South
 {
 
-    PushConstant g_QuadPushConstant;
-    PushConstant g_ExampleModelConstant;
     Camera g_EditorCam;
 
     void Renderer::Init()
@@ -28,82 +28,56 @@ namespace South
         s_Context->Init();
 
         const std::vector<Vertex> QuadVertices = { {
-                                                       { -0.5f, -0.5f, 0.0f },
+                                                       glm::vec3(-0.5f, -0.5f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.1f, .1f, .1f),
+                                                       glm::vec3(1.f, 1.f, 1),
                                                    },
                                                    {
-                                                       { 0.5f, -0.5f, 0.0f },
+                                                       glm::vec3(0.5f, -0.5f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.1f, .1f, .1f),
+                                                       glm::vec3(.6f, .25f, 1.f),
                                                    },
                                                    {
-                                                       { 0.5f, 0.5f, 0.0f },
+                                                       glm::vec3(0.5f, 0.5f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.1f, .1f, .1f),
+                                                       glm::vec3(.6f, .25f, 1.f),
                                                    },
                                                    {
-                                                       { -0.5f, 0.5f, 0.0f },
+                                                       glm::vec3(-0.5f, 0.5f, 0.f),
                                                        glm::vec3(0.f),
                                                        glm::vec2(0.f),
-                                                       glm::vec3(.1f, .1f, .1f),
-                                                   },
-                                                   {
-                                                       { -0.5f, -0.5f, -0.5f },
-                                                       glm::vec3(0.f),
-                                                       glm::vec2(0.f),
-                                                       glm::vec3(.5f, .1f, .1f),
-                                                   },
-                                                   {
-                                                       { 0.5f, -0.5f, -0.5f },
-                                                       glm::vec3(0.f),
-                                                       glm::vec2(0.f),
-                                                       glm::vec3(.5f, .1f, .1f),
-                                                   },
-                                                   {
-                                                       { 0.5f, 0.5f, -0.5f },
-                                                       glm::vec3(0.f),
-                                                       glm::vec2(0.f),
-                                                       glm::vec3(.5f, .1f, .1f),
-                                                   },
-                                                   {
-                                                       { -0.5f, 0.5f, -0.5f },
-                                                       glm::vec3(0.f),
-                                                       glm::vec2(0.f),
-                                                       glm::vec3(.5f, .1f, .1f),
+                                                       glm::vec3(1.f, 1.f, 1),
                                                    } };
 
-        const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
+        const std::vector<uint32_t> QuadIndices = { 0, 1, 2, 2, 3, 0 };
 
-        s_QuadModelBuffer = VertexIndexBuffer::Create({ static_cast<const void*>(QuadVertices.data()),
+        s_QuadModelBuffer = VertexIndexBuffer::Create(s_Context->GetLogicalDevice(),
+                                                      { static_cast<const void*>(QuadVertices.data()),
                                                         static_cast<uint32_t>(sizeof(Vertex)),
                                                         static_cast<uint32_t>(QuadVertices.size()) },
                                                       { static_cast<const void*>(QuadIndices.data()),
                                                         static_cast<uint32_t>(sizeof(uint32_t)),
                                                         static_cast<uint32_t>(QuadIndices.size()) });
 
-        g_EditorCam.SetView(glm::vec3(0.f, 7.5f, -5.f), glm::vec3(0.0f, 0.0f, 0.0f));
+        g_EditorCam.SetView(glm::vec3(2.f, 0.f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         g_EditorCam.SetProjection(glm::radians(90.0f),
                                   static_cast<float>(s_Context->m_SwapChainExtent.width) /
                                       static_cast<float>(s_Context->m_SwapChainExtent.height),
                                   0.00000000001f,
                                   2000000.0f);
 
-        g_ExampleModelConstant.Model = glm::mat4(1.f);
-        g_ExampleModelConstant.Model =
-            glm::rotate(g_ExampleModelConstant.Model, glm::radians(120.f), glm::vec3(1.f, 0.f, 0.f));
-        g_ExampleModelConstant.View       = g_EditorCam.GetViewMatrix();
-        g_ExampleModelConstant.Projection = g_EditorCam.GetProjectionMatrix();
 
-        g_QuadPushConstant       = g_ExampleModelConstant;
-        g_QuadPushConstant.Model = glm::mat4(1.f);
-        g_QuadPushConstant.Model = glm::rotate(g_QuadPushConstant.Model, glm::radians(120.f), glm::vec3(1.f, 0.f, 0.f));
-        g_QuadPushConstant.Model = glm::scale(g_QuadPushConstant.Model, glm::vec3(10.f, 10.f, 10.f));
+        const glm::mat4 Ubo[2] = { g_EditorCam.GetViewMatrix(), g_EditorCam.GetProjectionMatrix() };
+        const UniformBuffer::CreateInfo UniformBufferCi{
+            .Data = Ubo,
+            .Size = 2 * sizeof(glm::mat4),
+        };
+        s_CameraUniformBuffer = UniformBuffer::Create(s_Context->GetLogicalDevice(), UniformBufferCi);
 
-        LoadExampleScene();
+        // LoadExampleScene();
 
         STH_INFO("Renderer Initialized");
     }
@@ -112,7 +86,8 @@ namespace South
     {
         if (!s_Context) { return; }
 
-        if (s_QuadModelBuffer) { VertexIndexBuffer::Destroy(s_Context->GetLogicalDevice(), *s_QuadModelBuffer); }
+        VertexIndexBuffer::Destroy(s_Context->GetLogicalDevice(), s_QuadModelBuffer);
+        UniformBuffer::Destroy(s_Context->GetLogicalDevice(), s_CameraUniformBuffer);
 
         s_Context->DeInit();
 
@@ -183,14 +158,15 @@ namespace South
                               const VkPipelineLayout InPipelineLayout,
                               const glm::mat4& InTransform)
     {
-        vkCmdPushConstants(InCommandBuffer,
-                           InPipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT,
-                           0,
-                           sizeof(g_QuadPushConstant),
-                           &g_QuadPushConstant);
+        const PushConstant Ps{
+            .Model      = InTransform,
+            .View       = g_EditorCam.GetViewMatrix(),
+            .Projection = g_EditorCam.GetProjectionMatrix(),
+        };
 
-        const VkBuffer MeshBuffer     = s_QuadModelBuffer->GetVulkanBuffer();
+        vkCmdPushConstants(InCommandBuffer, InPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ps), &Ps);
+
+        const VkBuffer MeshBuffer     = s_QuadModelBuffer->GetBuffer();
         constexpr VkDeviceSize Offset = 0;
         vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, &MeshBuffer, &Offset);
         vkCmdBindIndexBuffer(InCommandBuffer, MeshBuffer, s_QuadModelBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
@@ -209,14 +185,15 @@ namespace South
                               const VertexIndexBuffer& InMeshBuffer,
                               const glm::mat4& InTransform)
     {
-        vkCmdPushConstants(InCommandBuffer,
-                           InPipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT,
-                           0,
-                           sizeof(g_ExampleModelConstant),
-                           &g_ExampleModelConstant);
+        const PushConstant Ps{
+            .Model      = InTransform,
+            .View       = g_EditorCam.GetViewMatrix(),
+            .Projection = g_EditorCam.GetProjectionMatrix(),
+        };
 
-        const VkBuffer Buffer         = InMeshBuffer.GetVulkanBuffer();
+        vkCmdPushConstants(InCommandBuffer, InPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ps), &Ps);
+
+        const VkBuffer Buffer         = InMeshBuffer.GetBuffer();
         constexpr VkDeviceSize Offset = 0;
 
         vkCmdBindVertexBuffers(InCommandBuffer, 0, 1, &Buffer, &Offset);
@@ -306,7 +283,8 @@ namespace South
             }
         }
 
-        s_ExampleSceneBuffer = VertexIndexBuffer::Create({ static_cast<const void*>(Vertices.data()),
+        s_ExampleSceneBuffer = VertexIndexBuffer::Create(s_Context->GetLogicalDevice(),
+                                                         { static_cast<const void*>(Vertices.data()),
                                                            static_cast<uint32_t>(sizeof(Vertex)),
                                                            static_cast<uint32_t>(Vertices.size()) },
                                                          { static_cast<const void*>(Indices.data()),

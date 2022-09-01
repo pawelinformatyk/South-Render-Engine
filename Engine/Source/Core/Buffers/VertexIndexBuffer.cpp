@@ -6,56 +6,70 @@
 
 namespace South
 {
-    VertexIndexBuffer* VertexIndexBuffer::Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo)
+    VertexIndexBuffer* VertexIndexBuffer::Create(const VkDevice InLogicalDev,
+                                                 const CreateInfo& InVertexInfo,
+                                                 const CreateInfo& InIndexInfo)
     {
-        // #TODO :
-        // Move some of this fucntion to RendererContext - it should handle most of that stuff
-        // + less getters
-        // + more condensed/centralised/autonomy renderer.
-        // Abstract buffer, staging buffer.
-
-        const RendererContext& Context = Renderer::GetContext();
-        VkDevice LogicalDev            = Context.GetLogicalDevice();
-        VkPhysicalDevice PhysDev       = Context.GetGraphicCard().GetPhysicalDevice();
-        VkCommandBuffer CmdBuffer      = Context.GetCommandBuffer();
-        VkQueue GraphicsQueue          = Context.GetGraphicQueue().m_Queue;
+        // #TODO : Check if actually is more performant than two separated buffers. Check
+        // VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 
         const uint32_t VerticesSize = InVertexInfo.Count * InVertexInfo.Size;
         const uint32_t IndicesSize  = InIndexInfo.Count * InIndexInfo.Size;
 
-        VkPhysicalDeviceMemoryProperties MemProperties;
-        vkGetPhysicalDeviceMemoryProperties(PhysDev, &MemProperties);
-
         VkBuffer StagingBuffer;
+        VkBufferCreateInfo BufferCi{
+            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext       = nullptr,
+            .size        = VerticesSize + IndicesSize,
+            .usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        };
+        vkCreateBuffer(InLogicalDev, &BufferCi, nullptr, &StagingBuffer);
+
+        VkMemoryRequirements MemRequirements;
+        vkGetBufferMemoryRequirements(InLogicalDev, StagingBuffer, &MemRequirements);
+
         VkDeviceMemory StagingBufferMemory;
-        CreateBufferAndMemory(LogicalDev,
-                              StagingBuffer,
-                              StagingBufferMemory,
-                              VerticesSize + IndicesSize,
-                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                              VK_SHARING_MODE_EXCLUSIVE,
-                              MemProperties,
-                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        VkMemoryAllocateInfo MemoryAllocateInfo{
+            .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+            .pNext           = nullptr,
+            .allocationSize  = MemRequirements.size,
+            .memoryTypeIndex = 2, // #TODO : Should not be hardcoded.
+        };
+        vkAllocateMemory(InLogicalDev, &MemoryAllocateInfo, nullptr, &StagingBufferMemory);
 
-        MapMemory(LogicalDev, StagingBufferMemory, 0, VerticesSize, InVertexInfo.Data);
-        MapMemory(LogicalDev, StagingBufferMemory, VerticesSize, IndicesSize, InVertexInfo.Data);
+        vkBindBufferMemory(InLogicalDev, StagingBuffer, StagingBufferMemory, 0);
 
-        // Actual buffer.
+        void* BufferData = nullptr;
 
-        VkBuffer Buffer;
-        VkDeviceMemory Memory;
-        CreateBufferAndMemory(LogicalDev,
-                              Buffer,
-                              Memory,
-                              VerticesSize + IndicesSize,
-                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                                  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                              VK_SHARING_MODE_EXCLUSIVE,
-                              MemProperties,
-                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        vkMapMemory(InLogicalDev, StagingBufferMemory, 0, VerticesSize, 0, &BufferData);
+        memcpy(BufferData, InVertexInfo.Data, static_cast<size_t>(VerticesSize));
+        vkUnmapMemory(InLogicalDev, StagingBufferMemory);
+
+        BufferData = nullptr;
+
+        vkMapMemory(InLogicalDev, StagingBufferMemory, VerticesSize, IndicesSize, 0, &BufferData);
+        memcpy(BufferData, InIndexInfo.Data, static_cast<size_t>(IndicesSize));
+        vkUnmapMemory(InLogicalDev, StagingBufferMemory);
+
+        VkBuffer TargetBuffer;
+        BufferCi.usage =
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        BufferCi.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        vkCreateBuffer(InLogicalDev, &BufferCi, nullptr, &TargetBuffer);
+
+        vkGetBufferMemoryRequirements(InLogicalDev, TargetBuffer, &MemRequirements);
+
+        VkDeviceMemory TargetBufferMemory;
+        MemoryAllocateInfo.allocationSize  = MemRequirements.size;
+        MemoryAllocateInfo.memoryTypeIndex = 1; // #TODO : Should not be hardcoded.
+        vkAllocateMemory(InLogicalDev, &MemoryAllocateInfo, nullptr, &TargetBufferMemory);
+
+        vkBindBufferMemory(InLogicalDev, TargetBuffer, TargetBufferMemory, 0);
 
         // Copy data from staging buffer to actual buffer.
 
+        // #TODO : Move to renderer or context as function idk.
         const VkCommandBufferBeginInfo BeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext = nullptr,
@@ -68,11 +82,12 @@ namespace South
             .size      = VerticesSize + IndicesSize,
         };
 
-        // Move to renderer (submit).
+        const RendererContext& Context = Renderer::GetContext();
+        VkCommandBuffer CmdBuffer      = Context.GetCommandBuffer();
+        const VkQueue GraphicsQueue    = Context.GetGraphicQueue().m_Queue;
+
         vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
-
-        vkCmdCopyBuffer(CmdBuffer, StagingBuffer, Buffer, 1, &CopyRegion);
-
+        vkCmdCopyBuffer(CmdBuffer, StagingBuffer, TargetBuffer, 1, &CopyRegion);
         vkEndCommandBuffer(CmdBuffer);
 
         const VkSubmitInfo SubmitInfo{
@@ -85,13 +100,13 @@ namespace South
         vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(GraphicsQueue);
 
-        vkDestroyBuffer(LogicalDev, StagingBuffer, nullptr);
-        vkFreeMemory(LogicalDev, StagingBufferMemory, nullptr);
+        vkDestroyBuffer(InLogicalDev, StagingBuffer, nullptr);
+        vkFreeMemory(InLogicalDev, StagingBufferMemory, nullptr);
 
         auto* ViBuffer = new VertexIndexBuffer;
 
-        ViBuffer->m_Buffer        = Buffer;
-        ViBuffer->m_Memory        = Memory;
+        ViBuffer->m_Buffer        = TargetBuffer;
+        ViBuffer->m_Memory        = TargetBufferMemory;
         ViBuffer->m_VerticesSize  = VerticesSize;
         ViBuffer->m_VerticesCount = InVertexInfo.Count;
         ViBuffer->m_IndicesSize   = IndicesSize;
@@ -100,15 +115,6 @@ namespace South
         return ViBuffer;
     }
 
-    void VertexIndexBuffer::Destroy(VkDevice InlogicalDev, VertexIndexBuffer& InVIBuffer)
-    {
-        vkDestroyBuffer(InlogicalDev, InVIBuffer.m_Buffer, nullptr);
-        vkFreeMemory(InlogicalDev, InVIBuffer.m_Memory, nullptr);
-
-        delete &InVIBuffer;
-    }
-
-    VkBuffer VertexIndexBuffer::GetVulkanBuffer() const { return m_Buffer; }
 
     uint32_t VertexIndexBuffer::GetVerticesCount() const { return m_VerticesCount; }
 

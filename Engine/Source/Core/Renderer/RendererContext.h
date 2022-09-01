@@ -11,8 +11,6 @@ namespace South
     class GraphicCard;
     class Queue;
 
-    // Model/projection are not changing every frame - should be in uniform (descriptor buffer)
-    // Projection too.
     struct PushConstant
     {
         glm::mat4 Model;
@@ -59,10 +57,10 @@ namespace South
 
         std::vector<const char*> GetRequiredInstanceExtensions();
 
-        VkInstance m_VulkanInstance = VK_NULL_HANDLE;
+        VkInstance m_VulkanInstance = nullptr;
 
-        VkSurfaceKHR m_Surface     = VK_NULL_HANDLE;
-        VkSwapchainKHR m_SwapChain = VK_NULL_HANDLE;
+        VkSurfaceKHR m_Surface     = nullptr;
+        VkSwapchainKHR m_SwapChain = nullptr;
         std::vector<VkImage> m_SwapChainImages;
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
@@ -73,19 +71,19 @@ namespace South
         VkDeviceMemory m_DepthImageMemory;
         VkImageView m_DepthImageView;
 
-        VkRenderPass m_RenderPass         = VK_NULL_HANDLE;
-        VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+        VkRenderPass m_RenderPass         = nullptr;
+        VkPipelineLayout m_PipelineLayout = nullptr;
 
     private:
-        VkPipeline m_GraphicsPipeline = VK_NULL_HANDLE;
+        VkPipeline m_GraphicsPipeline = nullptr;
 
         VkDescriptorPool m_DescriptorPool;
 
-        VkCommandPool m_CommandPool           = VK_NULL_HANDLE;
-        VkCommandBuffer m_CommandBuffer       = VK_NULL_HANDLE;
-        VkSemaphore m_ImageAvailableSemaphore = VK_NULL_HANDLE;
-        VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
-        VkFence m_FlightFence                 = VK_NULL_HANDLE;
+        VkCommandPool m_CommandPool           = nullptr;
+        VkCommandBuffer m_CommandBuffer       = nullptr;
+        VkSemaphore m_ImageAvailableSemaphore = nullptr;
+        VkSemaphore m_RenderFinishedSemaphore = nullptr;
+        VkFence m_FlightFence                 = nullptr;
 
         GraphicCard* m_GraphicCard = nullptr;
         VkDevice m_Device          = nullptr;
@@ -113,7 +111,6 @@ namespace South
 #endif
 
         VkDebugUtilsMessengerEXT m_Messenger;
-
         //~ Validations layers.
     };
 }; // namespace South

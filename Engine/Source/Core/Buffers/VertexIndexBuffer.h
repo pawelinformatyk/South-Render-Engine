@@ -6,9 +6,7 @@ namespace South
 {
     // One buffer for vertex and indices data.
     // (vertices...indices)
-    // #TODO : Check if actually is more performant than two separated buffers. Check
-    // VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-    class VertexIndexBuffer : Buffer
+    class VertexIndexBuffer : public Buffer
     {
     public:
         struct CreateInfo
@@ -19,11 +17,8 @@ namespace South
             uint32_t Count = 0;
         };
 
-        static VertexIndexBuffer* Create(const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo);
-        // #TODO : Should here be input Device.
-        static void Destroy(VkDevice InlogicalDev, VertexIndexBuffer& InBuffer);
-
-        VkBuffer GetVulkanBuffer() const;
+        static VertexIndexBuffer*
+            Create(const VkDevice InLogicalDev, const CreateInfo& InVertexInfo, const CreateInfo& InIndexInfo);
 
         uint32_t GetVerticesSize() const;
         uint32_t GetIndicesSize() const;

@@ -142,30 +142,30 @@ namespace South
 
     void RendererContext::CreateSwapChain(GLFWwindow& window)
     {
-        const VkPhysicalDevice physDevice = m_GraphicCard->GetPhysicalDevice();
+        const VkPhysicalDevice PhysDevice = m_GraphicCard->GetPhysicalDevice();
         uint32_t QueueFamilyIndex         = m_GraphicQueue->m_QueueFamily;
 
-        VkSurfaceCapabilitiesKHR capabilities;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, m_Surface, &capabilities);
+        VkSurfaceCapabilitiesKHR Capabilities;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysDevice, m_Surface, &Capabilities);
 
-        uint32_t imageCount = capabilities.minImageCount + 1;
-        if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
+        uint32_t ImageCount = Capabilities.minImageCount + 1;
+        if (Capabilities.maxImageCount > 0 && ImageCount > Capabilities.maxImageCount)
         {
-            imageCount = capabilities.maxImageCount;
+            ImageCount = Capabilities.maxImageCount;
         }
 
-        const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(physDevice, m_Surface);
-        const VkPresentModeKHR presentMode     = ChooseSwapPresentMode(physDevice, m_Surface);
-        const VkExtent2D extent                = ChooseSwapExtent(capabilities, window);
+        const VkSurfaceFormatKHR SurfaceFormat = ChooseSwapSurfaceFormat(PhysDevice, m_Surface);
+        const VkPresentModeKHR PresentMode     = ChooseSwapPresentMode(PhysDevice, m_Surface);
+        const VkExtent2D Extent                = ChooseSwapExtent(Capabilities, window);
 
-        const VkSwapchainCreateInfoKHR createInfo{
+        const VkSwapchainCreateInfoKHR SwapchainCi{
             .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext                 = nullptr,
             .surface               = m_Surface,
-            .minImageCount         = imageCount,
-            .imageFormat           = surfaceFormat.format,
-            .imageColorSpace       = surfaceFormat.colorSpace,
-            .imageExtent           = extent,
+            .minImageCount         = ImageCount,
+            .imageFormat           = SurfaceFormat.format,
+            .imageColorSpace       = SurfaceFormat.colorSpace,
+            .imageExtent           = Extent,
             .imageArrayLayers      = 1,
             .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
@@ -173,20 +173,18 @@ namespace South
             .pQueueFamilyIndices   = &QueueFamilyIndex,
             .preTransform          = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
             .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-            .presentMode           = presentMode,
+            .presentMode           = PresentMode,
             .clipped               = VK_TRUE,
             .oldSwapchain          = VK_NULL_HANDLE,
         };
+        vkCreateSwapchainKHR(m_Device, &SwapchainCi, nullptr, &m_SwapChain);
 
-        vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &ImageCount, nullptr);
+        m_SwapChainImages.resize(ImageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &ImageCount, m_SwapChainImages.data());
 
-        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
-
-        m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
-
-        m_SwapChainImageFormat = createInfo.imageFormat;
-        m_SwapChainExtent      = createInfo.imageExtent;
+        m_SwapChainImageFormat = SwapchainCi.imageFormat;
+        m_SwapChainExtent      = SwapchainCi.imageExtent;
     }
 
     void RendererContext::CreateImageViews()
@@ -324,7 +322,7 @@ namespace South
             .rasterizerDiscardEnable = VK_FALSE,
             .polygonMode             = VK_POLYGON_MODE_FILL,
             .cullMode                = VK_CULL_MODE_BACK_BIT,
-            .frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+            .frontFace               = VK_FRONT_FACE_CLOCKWISE,
             .depthBiasEnable         = VK_FALSE,
             .depthBiasConstantFactor = 0.0f,
             .depthBiasClamp          = 0.0f,
@@ -499,15 +497,14 @@ namespace South
                                                        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
                                                        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
 
-        const VkDescriptorPoolCreateInfo CreateInfo = {
+        const VkDescriptorPoolCreateInfo DescriptorPoolCi = {
             .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
             .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
             .maxSets       = 1000 * (sizeof(PoolSizes) / sizeof(PoolSizes[0])),
             .poolSizeCount = static_cast<uint32_t>(sizeof(PoolSizes) / sizeof(PoolSizes[0])),
             .pPoolSizes    = PoolSizes,
         };
-
-        vkCreateDescriptorPool(m_Device, &CreateInfo, nullptr, &m_DescriptorPool);
+        vkCreateDescriptorPool(m_Device, &DescriptorPoolCi, nullptr, &m_DescriptorPool);
     }
 
     VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface)

@@ -4,7 +4,7 @@
 
 namespace South
 {
-    class UniformBuffer : Buffer
+    class UniformBuffer : public Buffer
     {
     public:
         struct CreateInfo
@@ -13,7 +13,6 @@ namespace South
             uint32_t Size    = 0;
         };
 
-        static UniformBuffer* Create(const CreateInfo& InCreateInfo);
-        static void Destroy(VkDevice InlogicalDev, UniformBuffer& InBuffer);
+        static UniformBuffer* Create(const VkDevice InLogicalDev, const CreateInfo& InCreateInfo);
     };
 } // namespace South
