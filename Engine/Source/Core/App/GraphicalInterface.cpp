@@ -2,11 +2,13 @@
 
 #include "Core/App/Application.h"
 #include "Core/App/GraphicalInterface.h"
-#include "Core/Renderer/Renderer.h"
 #include "Core/Devices/GraphicCard.h"
+#include "Core/Renderer/Renderer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+
+#include <filesystem>
 
 namespace South
 {
@@ -47,7 +49,8 @@ namespace South
 
         ImGui_ImplVulkan_Init(&InitInfo, Context.GetRenderPass());
 
-        SetupStyleAndFonts();
+        FindAndAddFonts();
+        StyleColorsSouth();
     }
 
     void GraphicalInterface::DeInit()
@@ -66,95 +69,9 @@ namespace South
         ImGui::NewFrame();
     }
 
-    void GraphicalInterface::Draw(float FrameTime_Seconds)
+    void GraphicalInterface::Show(float FrameTime_Seconds)
     {
-        const ImGuiStyle& Style = ImGui::GetStyle();
-
-        const ImGuiViewport* Viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(Viewport->Pos);
-        ImGui::SetNextWindowSize(Viewport->Size);
-
-        const ImGuiWindowFlags TitleBarFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
-                                               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                                               ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking;
-
-        // TitleBar : Options, control buttons etc.
-        ImGui::Begin(Application::GetName(), nullptr, TitleBarFlags);
-        {
-            ImGui::BeginGroup();
-            {
-                ImGui::BeginMenuBar();
-                {
-                    if (ImGui::BeginMenu("File"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Project Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("Editor Settings"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::BeginMenu("View"))
-                    {
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-                        ImGui::MenuItem("Option");
-
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::Separator();
-                }
-                ImGui::EndMenuBar();
-
-                ImGui::BeginMenuBar();
-                {
-                    float ControlButtonsWidth = ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x +
-                                                ImGui::CalcTextSize("X").x + Style.ItemSpacing.x * 2.f +
-                                                Style.FramePadding.x * 6.f;
-
-                    // Title bar is always size of the window so I can get that instead of using GetCursor...
-                    ImGui::SetCursorPosX(Viewport->Size.x - ControlButtonsWidth - 6.f);
-
-                    if (ImGui::Button("_")) { Application::Get().Minimise(); }
-
-                    if (ImGui::Button("[ ]")) { Application::Get().Maximise(); }
-
-                    if (ImGui::Button("X")) { Application::Get().Close(); }
-                }
-                ImGui::EndMenuBar();
-            }
-            ImGui::EndGroup();
-        }
-        ImGui::End();
+        ShowTitlebar();
 
         ImGui::Begin("Specification & Statistics");
         {
@@ -252,23 +169,142 @@ namespace South
         ImGui::ShowDemoWindow();
     }
 
-    void GraphicalInterface::EndFrame()
+    void GraphicalInterface::ShowTitlebar() const
     {
-        ImGui::Render();
+        const ImGuiStyle& Style = ImGui::GetStyle();
 
-        ImDrawData* DrawData = ImGui::GetDrawData();
+        const ImGuiViewport* Viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(Viewport->Pos);
+        ImGui::SetNextWindowSize(Viewport->Size);
 
-        ImGui_ImplVulkan_RenderDrawData(DrawData, Renderer::GetContext().GetCommandBuffer());
+        constexpr ImGuiWindowFlags TitleBarFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
+                                                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                                                   ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking;
 
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
+        ImGui::Begin(Application::GetName(), nullptr, TitleBarFlags);
+
+        ImGui::BeginGroup();
+        {
+            ImGui::BeginMenuBar();
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::BeginMenu("Project Settings"))
+                {
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+                    ImGui::MenuItem("Option");
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::BeginMenu("Editor Settings"))
+                {
+                    ImGui::Button("Font");
+                    ImGui::Button("Font");
+                    ImGui::Button("Font");
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::BeginMenu("Window"))
+                {
+                    ImGui::MenuItem("Open new window");
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+            }
+            ImGui::EndMenuBar();
+
+            ImGui::BeginMenuBar();
+            {
+                const float ControlButtonsWidth = ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x +
+                                                  ImGui::CalcTextSize("X").x + Style.ItemSpacing.x * 2.f +
+                                                  Style.FramePadding.x * 6.f;
+
+                // Title bar is always size of the window so I can get that instead of using GetCursor...
+                ImGui::SetCursorPosX(Viewport->Size.x - ControlButtonsWidth - 6.f);
+
+                if (ImGui::Button("_")) { Application::Get().Minimise(); }
+
+                if (ImGui::Button("[ ]")) { Application::Get().Maximise(); }
+
+                if (ImGui::Button("X")) { Application::Get().Close(); }
+            }
+            ImGui::EndMenuBar();
+        }
+        ImGui::EndGroup();
+
+        ImGui::End();
     }
 
-    void GraphicalInterface::SetupStyleAndFonts()
+    void GraphicalInterface::FindAndAddFonts()
     {
         ImGuiIO& IO = ImGui::GetIO();
 
-        ImVec4* Colors                         = ImGui::GetStyle().Colors;
+        constexpr float FontSize = 17.f;
+        IO.FontDefault           = IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", FontSize);
+        IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Cousine-Regular.ttf", FontSize);
+        IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Karla-Regular.ttf", FontSize);
+        IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyClean.ttf", FontSize);
+        IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
+        IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
+
+        const RendererContext& Context = Renderer::GetContext();
+        const Queue& GraphicQueue      = Context.GetGraphicQueue();
+        VkDevice LogicalDevice         = Context.GetLogicalDevice();
+
+        VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
+        VkCommandPool CmdPool     = Context.GetCommandPool();
+
+        vkResetCommandPool(LogicalDevice, CmdPool, 0);
+
+        VkCommandBufferBeginInfo BeginInfo = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        };
+        BeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
+
+        ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
+
+        const VkSubmitInfo SubmitInfo = {
+            .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .commandBufferCount = 1,
+            .pCommandBuffers    = &CmdBuffer,
+        };
+
+        vkEndCommandBuffer(CmdBuffer);
+
+        vkQueueSubmit(GraphicQueue.m_Queue, 1, &SubmitInfo, VK_NULL_HANDLE);
+
+        vkDeviceWaitIdle(LogicalDevice);
+
+        ImGui_ImplVulkan_DestroyFontUploadObjects();
+    }
+
+    void GraphicalInterface::StyleColorsSouth()
+    {
+        ImGuiStyle& Style = ImGui::GetStyle();
+
+        ImVec4* Colors                         = Style.Colors;
         Colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
         Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
         Colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
@@ -325,7 +361,6 @@ namespace South
         Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(1.00f, 0.00f, 0.00f, 0.20f);
         Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
 
-        ImGuiStyle& Style       = ImGui::GetStyle();
         Style.WindowPadding     = ImVec2(8.00f, 8.00f);
         Style.FramePadding      = ImVec2(5.00f, 2.00f);
         Style.CellPadding       = ImVec2(6.00f, 6.00f);
@@ -348,45 +383,18 @@ namespace South
         Style.GrabRounding      = 3;
         Style.LogSliderDeadzone = 4;
         Style.TabRounding       = 4;
+    }
 
-        // Fonts
-        {
+    void GraphicalInterface::EndFrame()
+    {
+        ImGui::Render();
 
-            IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", 17);
+        ImDrawData* DrawData = ImGui::GetDrawData();
 
-            const RendererContext& Context = Renderer::GetContext();
-            const GraphicCard& GPU         = Context.GetGraphicCard();
-            const Queue& GraphicQueue      = Context.GetGraphicQueue();
-            VkDevice LogicalDevice         = Context.GetLogicalDevice();
+        ImGui_ImplVulkan_RenderDrawData(DrawData, Renderer::GetContext().GetCommandBuffer());
 
-            VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
-            VkCommandPool CmdPool     = Context.GetCommandPool();
-
-            vkResetCommandPool(LogicalDevice, CmdPool, 0);
-
-            VkCommandBufferBeginInfo BeginInfo = {
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            };
-            BeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-            vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
-
-            ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
-
-            const VkSubmitInfo SubmitInfo = {
-                .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                .commandBufferCount = 1,
-                .pCommandBuffers    = &CmdBuffer,
-            };
-
-            vkEndCommandBuffer(CmdBuffer);
-
-            vkQueueSubmit(GraphicQueue.m_Queue, 1, &SubmitInfo, VK_NULL_HANDLE);
-
-            vkDeviceWaitIdle(LogicalDevice);
-
-            ImGui_ImplVulkan_DestroyFontUploadObjects();
-        }
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
     }
 
 } // namespace South

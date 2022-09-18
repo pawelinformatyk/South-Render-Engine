@@ -51,7 +51,7 @@ namespace South
             {
                 Renderer::RenderExampleScene();
 
-                m_Gui->Draw(m_FrameTime_Sec);
+                m_Gui->Show(m_FrameTime_Sec);
             }
             m_Gui->EndFrame();
             Renderer::EndFrame();

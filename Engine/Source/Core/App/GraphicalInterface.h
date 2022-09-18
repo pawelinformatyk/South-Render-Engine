@@ -1,4 +1,5 @@
 #pragma once
+#include "imgui.h"
 
 namespace South
 {
@@ -11,12 +12,20 @@ namespace South
 
         void BeginFrame();
 
-        void Draw(float FrameTimeSeconds);
+        void Show(float FrameTimeSeconds);
 
         void EndFrame();
 
     private:
-        void SetupStyleAndFonts();
+        // TitleBar : Various options, control buttons etc.
+        void ShowTitlebar() const;
+
+        // void ShowStyleEditor() const;
+
+        static void FindAndAddFonts();
+
+        // Sets gui style to application default.
+        static void StyleColorsSouth();
     };
 
 } // namespace South
