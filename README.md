@@ -3,37 +3,22 @@ Vulkan Render Engine version 01101100.01101101.01100001.01101111.
 ![image](https://user-images.githubusercontent.com/57636589/181995289-3c7cfffb-fa7c-49b3-b596-d5559cdc9cff.png)
 
 
-TODOs 
+# TODOs 
+## Shaders/filters idk 
+- The Kuwahara Filter 
+- Few Noices 
+- Oil/van gogh - expanded to more painting methods
+- LSD  KWAS MUST HAVE
+- PIXELATED pixelart 
 
-BLENDER-NODES-OPENGL-DIRECTX
-
-3D MODELS TO 2D SHADER/PIXELATED
-raytracer to postprocess (or some shit) pixelart 
-
-Noise as Noice 
-The Kuwahara Filter
-
-multiple viewports
-
-Deferred Rendering
-
-material output
-
-https://en.wikipedia.org/wiki/Metaballs
-
-blender integration - object import first ? 
-
-maybe focus on rendering side and create bigger application with nodes like blender using this engine? 
-
+## Nice things to have 
+- Importing/Exporting - file context menu to open object by my app. 
+- multiple viewports, cameras, windows
+- Blender integration 
+- metaballs https://en.wikipedia.org/wiki/Metaballs
+- Shader realtime editing 
+- Drawing with pencil in 3D and on camera screen. 
 
 https://en.wikipedia.org/wiki/Oren–Nayar_reflectance_model
-
-PIORUNY 
-
-LSD  KWAS MUST HAVE
-
-Shader realtime editing - cached also
-
-Drawing with pencil
 
 Visualization of number generators
