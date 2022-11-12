@@ -6,7 +6,6 @@
 
 namespace South
 {
-
     std::shared_ptr<spdlog::logger> Logger::s_CoreLogger;
     std::shared_ptr<spdlog::logger> Logger::s_VulkanLogger;
 
@@ -27,5 +26,4 @@ namespace South
         s_CoreLogger.reset();
         spdlog::drop_all();
     }
-
 } // namespace South

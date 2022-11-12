@@ -260,6 +260,7 @@ namespace South
         ImGuiIO& IO = ImGui::GetIO();
 
         constexpr float FontSize = 17.f;
+        // #TODO : Path should be somewhere coded? 
         IO.FontDefault           = IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", FontSize);
         IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Cousine-Regular.ttf", FontSize);
         IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Karla-Regular.ttf", FontSize);

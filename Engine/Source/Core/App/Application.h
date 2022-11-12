@@ -8,18 +8,6 @@ namespace South
 
     class Application
     {
-        // ~Static
-    public:
-        static const char* GetName();
-
-        static Application& Get();
-
-        static void Kaboom();
-
-    private:
-        static inline Application* s_Instance = nullptr;
-
-        // ~Static
     public:
         Application();
         ~Application();
@@ -28,7 +16,13 @@ namespace South
 
         Window& GetWindow() const;
 
+        static const char* GetName();
+        static Application& Get();
+        static void Kaboom();
+
     private:
+        static inline Application* s_Instance = nullptr;
+
         void Init();
         void DeInit();
 
@@ -51,7 +45,6 @@ namespace South
         void OnKeyPressed(int InKey, int InScancode, int InAction, int InMods);
         void OnIconifiedWindow(int InbIconified);
         void OnMaximiseWindow();
-
         //~ Events.
     };
 
@@ -63,6 +56,6 @@ namespace South
 
     // Multiple viewports -> multiple textures rendered and shown from different VIEW matrix.
     // I thjink I need to implement vulcan code so i can then decide how to do it.
-    // What is framebuffer exactly? 
+    // What is framebuffer exactly?
 
 } // namespace South

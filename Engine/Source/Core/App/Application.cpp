@@ -38,6 +38,8 @@ namespace South
 
     void Application::Run()
     {
+        m_bRunning = true;
+
         Init();
 
         while (m_bRunning)
@@ -58,11 +60,13 @@ namespace South
 
             Renderer::Present();
 
-            std::chrono::time_point FrameEndTime = std::chrono::high_resolution_clock::now();
-            m_FrameTime_Sec                      = std::chrono::duration<float>(FrameEndTime - FrameStartTime).count();
+            m_FrameTime_Sec =
+                std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
         }
 
         DeInit();
+
+        m_bRunning = false;
     }
 
     void Application::Init()
@@ -75,14 +79,10 @@ namespace South
         Renderer::Init();
 
         m_Gui->Init();
-
-        m_bRunning = true;
     }
 
     void Application::DeInit()
     {
-        m_bRunning = false;
-
         m_Gui->DeInit();
 
         Renderer::Deinit();

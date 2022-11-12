@@ -1,7 +1,6 @@
 #pragma once
 
 #include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
 
 namespace South
 {
@@ -12,10 +11,9 @@ namespace South
         static void Init();
         static void DeInit();
 
-        inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-        inline static std::shared_ptr<spdlog::logger>& GetVulkanLogger() { return s_VulkanLogger; }
+        static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
+        static std::shared_ptr<spdlog::logger>& GetVulkanLogger() { return s_VulkanLogger; }
 
-    public:
     private:
         static std::shared_ptr<spdlog::logger> s_CoreLogger;
         static std::shared_ptr<spdlog::logger> s_VulkanLogger;
@@ -23,7 +21,6 @@ namespace South
 
 } // namespace South
 
-// Logging macros
 #define STH_TRACE(...) South::Logger::GetCoreLogger()->trace(__VA_ARGS__)
 #define STH_INFO(...) South::Logger::GetCoreLogger()->info(__VA_ARGS__)
 #define STH_WARN(...) South::Logger::GetCoreLogger()->warn(__VA_ARGS__)

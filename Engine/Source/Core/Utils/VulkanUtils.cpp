@@ -4,7 +4,6 @@
 
 namespace South
 {
-
     std::string VulkanUtils::DeviceTypeToString(const VkPhysicalDeviceType InType)
     {
         switch (InType)
@@ -24,5 +23,4 @@ namespace South
         }
         return {};
     }
-
 } // namespace South
