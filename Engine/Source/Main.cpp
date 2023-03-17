@@ -9,14 +9,11 @@ int main(int argc, char** argv)
 
     STH_INFO("Application Start");
 
-    South::VulkanTutorial::Application App;
-    App.Run();
+    auto* App = new South::VulkanTutorial::Application;
 
-    // auto* App = new South::Application;
-    //
-    // App->Run();
-    //
-    // delete App;
+    App->Run();
+
+    delete App;
 
     STH_INFO("Application End");
 

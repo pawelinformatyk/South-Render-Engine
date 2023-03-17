@@ -7,6 +7,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "Core/Shaders/ShadersLibrary.h"
+#include "Core/Window/Window.h"
 #include "stb_image.h"
 
 #include <algorithm>
@@ -30,9 +31,6 @@
 namespace South::VulkanTutorial
 {
 
-const uint32_t WIDTH  = 800;
-const uint32_t HEIGHT = 600;
-
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -49,43 +47,39 @@ const std::vector<Vertex> vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0.0
 
 const std::vector<uint16_t> indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
-void Application::Run()
+Application::Application()
 {
-    initWindow();
-    initVulkan();
-    mainLoop();
-    cleanup();
-}
+    m_Window = std::make_unique<Window>(Window::CreateInfo {
+        .bFullscreen = false,
+        .Width       = 540,
+        .Height      = 540,
+        .Name        = "South",
+    });
 
-void Application::initWindow()
-{
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-}
-
-void Application::framebufferResizeCallback(GLFWwindow* window, int width, int height)
-{
-    auto app                = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->framebufferResized = true;
-}
-
-void Application::initVulkan()
-{
-    if(m_bEnableValidationLayers && CheckValidationLayers())
-    {
-        STH_VK_WARN("ValidationsLayers not found.");
-    }
+    Window::Init(
+        *m_Window,
+        [this](int Key, int Scancode, int Action, int Mods)
+        {
+        },
+        [this](int bIconified)
+        {
+        },
+        [this]()
+        {
+        });
 
     createInstance();
 
     if(m_bEnableValidationLayers)
     {
-        CreateMessenger();
+        if(!CheckValidationLayers())
+        {
+            STH_VK_WARN("ValidationsLayers not found.");
+        }
+        else
+        {
+            CreateMessenger();
+        }
     }
 
     createSurface();
@@ -111,37 +105,7 @@ void Application::initVulkan()
     createSyncObjects();
 }
 
-void Application::mainLoop()
-{
-    while(!glfwWindowShouldClose(window))
-    {
-        glfwPollEvents();
-        drawFrame();
-    }
-
-    vkDeviceWaitIdle(device);
-}
-
-void Application::cleanupSwapChain()
-{
-    vkDestroyImageView(device, depthImageView, nullptr);
-    vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
-
-    for(auto framebuffer : swapChainFramebuffers)
-    {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-
-    for(auto imageView : swapChainImageViews)
-    {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
-}
-
-void Application::cleanup()
+Application::~Application()
 {
     cleanupSwapChain();
 
@@ -190,18 +154,53 @@ void Application::cleanup()
     vkDestroySurfaceKHR(m_VulkanInstance, surface, nullptr);
     vkDestroyInstance(m_VulkanInstance, nullptr);
 
-    glfwDestroyWindow(window);
+    Window::DeInit(*m_Window);
+}
 
-    glfwTerminate();
+void Application::Run()
+{
+    while(!glfwWindowShouldClose(m_Window->ToGlfw()))
+    {
+        m_Window->ProcessEvents();
+
+        DrawFrame();
+    }
+
+    vkDeviceWaitIdle(device);
+}
+
+void Application::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto app                = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
+}
+
+void Application::cleanupSwapChain()
+{
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vkDestroyImage(device, depthImage, nullptr);
+    vkFreeMemory(device, depthImageMemory, nullptr);
+
+    for(auto framebuffer : swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+
+    for(auto imageView : swapChainImageViews)
+    {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
 void Application::recreateSwapChain()
 {
     int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
+    glfwGetFramebufferSize(m_Window->ToGlfw(), &width, &height);
     while(width == 0 || height == 0)
     {
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(m_Window->ToGlfw(), &width, &height);
         glfwWaitEvents();
     }
 
@@ -241,7 +240,7 @@ void Application::createInstance()
 
 void Application::createSurface()
 {
-    if(glfwCreateWindowSurface(m_VulkanInstance, window, nullptr, &surface) != VK_SUCCESS)
+    if(glfwCreateWindowSurface(m_VulkanInstance, m_Window->ToGlfw(), nullptr, &surface) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create window surface!");
     }
@@ -1248,13 +1247,13 @@ void Application::updateUniformBuffer(uint32_t currentImage)
     UniformBufferObject ubo {};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj  = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+    ubo.proj  = glm::perspective(glm::radians(45.0f), swapChainExtent.width / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
 
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
-void Application::drawFrame()
+void Application::DrawFrame()
 {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -1378,7 +1377,7 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabil
     else
     {
         int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(m_Window->ToGlfw(), &width, &height);
 
         VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
@@ -1588,7 +1587,7 @@ bool Application::CheckValidationLayers() const
 
         for(const VkLayerProperties& AvLayer : AvailableLayers)
         {
-            if(AvLayer.layerName == ReqLayer)
+            if(strcmp(ReqLayer, AvLayer.layerName) == 0)
             {
                 bFound = true;
                 break;

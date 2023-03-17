@@ -53,7 +53,7 @@ VkDescriptorPool RendererContext::GetDescriptorPool() const
 
 void RendererContext::Init()
 {
-    auto* GlfwWindow = Application::Get().GetWindow().GetglfwWindow();
+    auto* GlfwWindow = Application::Get().GetWindow().ToGlfw();
     if(!GlfwWindow)
     {
         return;

@@ -23,6 +23,7 @@ public:
 private:
     static inline Application* s_Instance = nullptr;
 
+    // #TODO : Maybe static, idk
     void Init();
     void DeInit();
 

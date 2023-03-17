@@ -5,7 +5,12 @@
 
 struct GLFWwindow;
 
-namespace South::VulkanTutorial
+namespace South
+{
+
+class Window;
+
+namespace VulkanTutorial
 {
 
 struct QueueFamilyIndices
@@ -45,14 +50,16 @@ struct UniformBufferObject
 class Application
 {
 public:
+    Application();
+    ~Application();
+
     void Run();
 
 private:
-    GLFWwindow* window = nullptr;
+    std::unique_ptr<Window> m_Window = nullptr;
 
-    VkInstance               m_VulkanInstance = nullptr;
-    VkDebugUtilsMessengerEXT debugMessenger   = nullptr;
-    VkSurfaceKHR             surface          = nullptr;
+    VkInstance   m_VulkanInstance = nullptr;
+    VkSurfaceKHR surface          = nullptr;
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice         device         = nullptr;
@@ -104,17 +111,9 @@ private:
 
     bool framebufferResized = false;
 
-    void initWindow();
-
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
-    void initVulkan();
-
-    void mainLoop();
-
     void cleanupSwapChain();
-
-    void cleanup();
 
     void recreateSwapChain();
 
@@ -201,7 +200,7 @@ private:
 
     void updateUniformBuffer(uint32_t currentImage);
 
-    void drawFrame();
+    void DrawFrame();
 
     VkShaderModule createShaderModule(const std::vector<char>& code);
 
@@ -231,7 +230,7 @@ private:
                                                                     const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
                                                                     void*                                       InUserData);
 
-    [[nodiscard]] bool CheckValidationLayers() const;
+    bool CheckValidationLayers() const;
 
     const std::vector<const char*> m_RequiredValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 
@@ -245,4 +244,6 @@ private:
     //~ Validations layers.
 };
 
-} // namespace South::VulkanTutorial
+} // namespace VulkanTutorial
+
+} // namespace South

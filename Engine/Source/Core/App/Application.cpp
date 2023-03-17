@@ -82,7 +82,8 @@ void Application::Run()
 
 void Application::Init()
 {
-    m_Window->Init(
+    Window::Init(
+        *m_Window,
         [this](int Key, int Scancode, int Action, int Mods)
         {
             OnKeyPressed(Key, Scancode, Action, Mods);
@@ -107,7 +108,7 @@ void Application::DeInit()
 
     Renderer::Deinit();
 
-    m_Window->DeInit();
+    Window::DeInit(*m_Window);
 }
 
 void Application::ProcessEvents()
