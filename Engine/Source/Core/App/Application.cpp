@@ -95,6 +95,9 @@ void Application::Init()
         [this]()
         {
             OnMaximiseWindow();
+        },
+        [this](double, double)
+        {
         });
 
     Renderer::Init();

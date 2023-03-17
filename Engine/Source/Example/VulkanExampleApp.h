@@ -70,7 +70,7 @@ private:
     VkSwapchainKHR             swapChain = nullptr;
     std::vector<VkImage>       swapChainImages;
     VkFormat                   swapChainImageFormat = {};
-    VkExtent2D                 swapChainExtent      = {};
+    VkExtent2D                 m_SwapChainExtent    = {};
     std::vector<VkImageView>   swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
 

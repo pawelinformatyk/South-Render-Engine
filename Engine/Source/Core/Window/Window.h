@@ -13,6 +13,7 @@ public:
     using KeyPressedCallback = std::function<void(int Key, int Scancode, int Action, int Mods)>;
     using IconifiedCallback  = std::function<void(bool bIconified)>;
     using MaximisedCallback  = std::function<void()>;
+    using MousePosCallback   = std::function<void(double, double)>;
 
     struct CreateInfo
     {
@@ -27,7 +28,8 @@ public:
     static void Init(Window&                   Window,
                      const KeyPressedCallback& InOnKeyPressedCallback,
                      const IconifiedCallback&  InOnIconifiedCallback,
-                     const MaximisedCallback&  InOnMaximisedCallbackCallback);
+                     const MaximisedCallback&  InOnMaximisedCallbackCallback,
+                     const MousePosCallback&   InOnMousePosChange);
     static void DeInit(Window& Window);
 
     GLFWwindow* ToGlfw() const
@@ -54,6 +56,7 @@ private:
         KeyPressedCallback OnWindowKeyPressed;
         IconifiedCallback  OnWindowIconified;
         MaximisedCallback  OnWindowMaximised;
+        MousePosCallback   OnMousePosChange;
     } m_WindowUserData;
 
     //~ Events

@@ -8,6 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "Core/Shaders/ShadersLibrary.h"
 #include "Core/Window/Window.h"
+#include "Editor/Camera.h"
 #include "stb_image.h"
 
 #include <algorithm>
@@ -31,21 +32,23 @@
 namespace South::VulkanTutorial
 {
 
+Camera g_EditorCam;
+
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+const std::vector<const char*> g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-const std::vector<Vertex> vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                      {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                      {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                      {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                                        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                                        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                                        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
 
-                                      {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                      {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                      {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                      {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+                                        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                                        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                                        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                                        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
-const std::vector<uint16_t> indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+const std::vector<uint16_t> g_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
 Application::Application()
 {
@@ -60,12 +63,42 @@ Application::Application()
         *m_Window,
         [this](int Key, int Scancode, int Action, int Mods)
         {
+            constexpr float Delta = .1f;
+
+            if(Key == GLFW_KEY_W)
+            {
+                g_EditorCam.MoveForward(Delta);
+            }
+            else if(Key == GLFW_KEY_S)
+            {
+                g_EditorCam.MoveForward(-Delta);
+            }
+            else if(Key == GLFW_KEY_D)
+            {
+                g_EditorCam.MoveRight(Delta);
+            }
+            else if(Key == GLFW_KEY_A)
+            {
+                g_EditorCam.MoveRight(-Delta);
+            }
+            else if(Key == GLFW_KEY_E)
+            {
+                g_EditorCam.MoveUp(Delta);
+            }
+            else if(Key == GLFW_KEY_Q)
+            {
+                g_EditorCam.MoveUp(-Delta);
+            }
         },
         [this](int bIconified)
         {
         },
         [this]()
         {
+        },
+        [this](double X, double Y)
+        {
+            // g_EditorCam.
         });
 
     createInstance();
@@ -86,6 +119,10 @@ Application::Application()
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
+
+    g_EditorCam.SetView(glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.0f, 0.0f, 0.0f));
+    g_EditorCam.SetProjection(glm::radians(45.0f), m_SwapChainExtent.width / static_cast<float>(m_SwapChainExtent.height), 0.01f, 10.0f);
+
     createImageViews();
     createRenderPass();
     createDescriptorSetLayout();
@@ -303,8 +340,8 @@ void Application::createLogicalDevice()
 
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    createInfo.enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    createInfo.enabledExtensionCount   = static_cast<uint32_t>(g_DeviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = g_DeviceExtensions.data();
 
     if(m_bEnableValidationLayers)
     {
@@ -379,7 +416,7 @@ void Application::createSwapChain()
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
-    swapChainExtent      = extent;
+    m_SwapChainExtent    = extent;
 }
 
 void Application::createImageViews()
@@ -605,8 +642,8 @@ void Application::createFramebuffers()
         framebufferInfo.renderPass      = renderPass;
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments    = attachments.data();
-        framebufferInfo.width           = swapChainExtent.width;
-        framebufferInfo.height          = swapChainExtent.height;
+        framebufferInfo.width           = m_SwapChainExtent.width;
+        framebufferInfo.height          = m_SwapChainExtent.height;
         framebufferInfo.layers          = 1;
 
         if(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
@@ -635,8 +672,8 @@ void Application::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat();
 
-    createImage(swapChainExtent.width,
-                swapChainExtent.height,
+    createImage(m_SwapChainExtent.width,
+                m_SwapChainExtent.height,
                 depthFormat,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -890,7 +927,7 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
 
 void Application::createVertexBuffer()
 {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkDeviceSize bufferSize = sizeof(g_Vertices[0]) * g_Vertices.size();
 
     VkBuffer       stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -902,7 +939,7 @@ void Application::createVertexBuffer()
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
+    memcpy(data, g_Vertices.data(), (size_t)bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize,
@@ -919,7 +956,7 @@ void Application::createVertexBuffer()
 
 void Application::createIndexBuffer()
 {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = sizeof(g_Indices[0]) * g_Indices.size();
 
     VkBuffer       stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -931,7 +968,7 @@ void Application::createIndexBuffer()
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t)bufferSize);
+    memcpy(data, g_Indices.data(), (size_t)bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize,
@@ -1161,7 +1198,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
     renderPassInfo.renderPass        = renderPass;
     renderPassInfo.framebuffer       = swapChainFramebuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = swapChainExtent;
+    renderPassInfo.renderArea.extent = m_SwapChainExtent;
 
     std::array<VkClearValue, 2> clearValues {};
     clearValues[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -1177,15 +1214,15 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
     VkViewport viewport {};
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
-    viewport.width    = (float)swapChainExtent.width;
-    viewport.height   = (float)swapChainExtent.height;
+    viewport.width    = (float)m_SwapChainExtent.width;
+    viewport.height   = (float)m_SwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor {};
     scissor.offset = {0, 0};
-    scissor.extent = swapChainExtent;
+    scissor.extent = m_SwapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     VkBuffer     vertexBuffers[] = {vertexBuffer};
@@ -1203,7 +1240,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
                             0,
                             nullptr);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1241,16 +1278,16 @@ void Application::updateUniformBuffer(uint32_t currentImage)
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto  currentTime = std::chrono::high_resolution_clock::now();
-    float time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    const auto currentTime = std::chrono::high_resolution_clock::now();
+    float      time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    UniformBufferObject ubo {};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj  = glm::perspective(glm::radians(45.0f), swapChainExtent.width / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
+    const UniformBufferObject Ubo {
+        .model = glm::mat4(1.0f),
+        .view  = g_EditorCam.GetView(),
+        .proj  = g_EditorCam.GetProjection(),
+    };
 
-    memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+    memcpy(uniformBuffersMapped[currentImage], &Ubo, sizeof(Ubo));
 }
 
 void Application::DrawFrame()
@@ -1442,7 +1479,7 @@ bool Application::checkDeviceExtensionSupport(VkPhysicalDevice device)
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    std::set<std::string> requiredExtensions(g_DeviceExtensions.begin(), g_DeviceExtensions.end());
 
     for(const auto& extension : availableExtensions)
     {

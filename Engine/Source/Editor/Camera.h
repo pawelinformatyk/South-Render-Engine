@@ -5,47 +5,43 @@
 namespace South
 {
 
-    class Camera
-    {
-    public:
-        Camera();
-        Camera(glm::vec3 pos, glm::vec3 target, float fov, float aspect, float near, float inFar);
+class Camera
+{
+public:
+    Camera() = default;
+    Camera(glm::vec3 pos, glm::vec3 target, float fov, float aspect, float near, float inFar);
 
-        void ProcessEvent();
+    void SetView(glm::vec3 pos, glm::vec3 target);
+    void SetProjection(float fov, float aspect, float near, float inFar);
 
-        void SetView(glm::vec3 pos, glm::vec3 target);
-        void SetProjection(float fov, float aspect, float near, float inFar);
+    const glm::mat4& GetView() const;
+    const glm::mat4& GetProjection() const;
+    glm::mat4        GetViewProjection() const;
 
-        const glm::mat4& GetViewMatrix() const;
-        const glm::mat4& GetProjectionMatrix() const;
-        glm::mat4 GetViewProjectionMatrix() const;
+    glm::quat GetOrientation() const;
 
-        void SetPosition(glm::vec3 newPos);
-        void AddPosition(glm::vec3 deltaPos);
+    glm::vec3 GetForwardVector() const;
+    glm::vec3 GetRightVector() const;
+    glm::vec3 GetUpVector() const;
 
-        void SetRotation(glm::quat newRotation);
-        void AddRotation(glm::quat deltaRotation);
+    void MoveForward(float Delta);
+    void MoveRight(float Delta);
+    void MoveUp(float Delta);
 
-        void SetRotation(glm::vec3 newRotation);
-        void AddRotation(glm::vec3 deltaRotation);
+private:
+    void UpdateView();
 
-    private:
-        glm::mat4 m_View;
-        glm::mat4 m_Projection;
+    glm::mat4 m_View = glm::mat4(1.f);
 
-        // xyz -  pitch, yaw, roll
-        // Roll  - around forward.
-        // yaw   - around up.
-        // pitch - around right.
+    glm::vec3 m_Position  = glm::vec3(0.f, 0.f, 0.f);
+    glm::vec3 m_Direction = glm::vec3(1.f, 0.f, 0.f);
 
-        glm::vec3 m_Forward = glm::vec3(0.f, 0.f, 1.f);
-        glm::vec3 m_Rright  = glm::vec3(1.f, 0.f, 0.f);
-        glm::vec3 m_Up      = glm::vec3(0.f, 1.f, 0.f);
+    glm::mat4 m_Projection = glm::mat4(1.f);
 
-        float m_Fov    = 0.f;
-        float m_Aspect = 0.f;
-        float m_Near   = 0.f;
-        float m_Far    = 0.f;
-    };
+    float m_Fov    = 0.f;
+    float m_Aspect = 0.f;
+    float m_Near   = 0.f;
+    float m_Far    = 0.f;
+};
 
 } // namespace South

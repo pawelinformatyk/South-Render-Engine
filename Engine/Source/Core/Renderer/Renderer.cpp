@@ -67,7 +67,7 @@ void Renderer::Init()
                               2000000.0f);
 
 
-    const glm::mat4 Ubo[2] = {g_EditorCam.GetViewMatrix(), g_EditorCam.GetProjectionMatrix()};
+    const glm::mat4 Ubo[2] = {g_EditorCam.GetView(), g_EditorCam.GetProjection()};
 
     const UniformBuffer::CreateInfo UniformBufferCi {
         .Data = Ubo,
@@ -159,8 +159,8 @@ void Renderer::RenderQuad(const VkCommandBuffer InCommandBuffer, const VkPipelin
 {
     const PushConstant Ps {
         .Model      = InTransform,
-        .View       = g_EditorCam.GetViewMatrix(),
-        .Projection = g_EditorCam.GetProjectionMatrix(),
+        .View       = g_EditorCam.GetView(),
+        .Projection = g_EditorCam.GetProjection(),
     };
 
     vkCmdPushConstants(InCommandBuffer, InPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ps), &Ps);
@@ -184,8 +184,8 @@ void Renderer::RenderMesh(const VkCommandBuffer    InCommandBuffer,
 {
     const PushConstant Ps {
         .Model      = InTransform,
-        .View       = g_EditorCam.GetViewMatrix(),
-        .Projection = g_EditorCam.GetProjectionMatrix(),
+        .View       = g_EditorCam.GetView(),
+        .Projection = g_EditorCam.GetProjection(),
     };
 
     vkCmdPushConstants(InCommandBuffer, InPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ps), &Ps);
