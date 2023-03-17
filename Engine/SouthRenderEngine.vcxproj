@@ -119,6 +119,7 @@
     <ClCompile Include="Source\Core\App\Application.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
     <ClCompile Include="Source\Core\Window\Window.cpp" />
+    <ClCompile Include="Source\Example\VulkanExampleApp.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\sthpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -149,6 +150,8 @@
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\Editor\Scene.h" />
     <ClInclude Include="Source\Core\Window\Window.h" />
+    <ClInclude Include="Source\Example\stb_image.h" />
+    <ClInclude Include="Source\Example\VulkanExampleApp.h" />
     <ClInclude Include="Source\sthpch.h" />
     <ClInclude Include="Source\Core\Shaders\Shader.h" />
     <ClInclude Include="Source\Core\SwapChain.h" />
@@ -163,11 +166,5 @@
     <ProjectReference Include="..\ExternalLibraries\ImGui\ImGui.vcxproj">
       <Project>{790e703f-e2d8-4549-9de9-58b64c48d8f7}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\Shaders\base.frag" />
-    <None Include="Source\Shaders\base.vert" />
-    <None Include="Source\Shaders\Triangle.frag" />
-    <None Include="Source\Shaders\Triangle.vert" />
   </ItemGroup>
 </Project>

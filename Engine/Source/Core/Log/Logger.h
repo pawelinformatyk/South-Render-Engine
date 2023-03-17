@@ -5,19 +5,25 @@
 namespace South
 {
 
-    class Logger
+class Logger
+{
+public:
+    static void Init();
+    static void DeInit();
+
+    static std::shared_ptr<spdlog::logger>& GetCoreLogger()
     {
-    public:
-        static void Init();
-        static void DeInit();
+        return s_CoreLogger;
+    }
+    static std::shared_ptr<spdlog::logger>& GetVulkanLogger()
+    {
+        return s_VulkanLogger;
+    }
 
-        static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-        static std::shared_ptr<spdlog::logger>& GetVulkanLogger() { return s_VulkanLogger; }
-
-    private:
-        static std::shared_ptr<spdlog::logger> s_CoreLogger;
-        static std::shared_ptr<spdlog::logger> s_VulkanLogger;
-    };
+private:
+    static std::shared_ptr<spdlog::logger> s_CoreLogger;
+    static std::shared_ptr<spdlog::logger> s_VulkanLogger;
+};
 
 } // namespace South
 

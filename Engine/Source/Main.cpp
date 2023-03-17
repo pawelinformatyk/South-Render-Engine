@@ -1,6 +1,7 @@
 #include "sthpch.h"
 
 #include "Core/App/Application.h"
+#include "Example/VulkanExampleApp.h"
 
 int main(int argc, char** argv)
 {
@@ -8,15 +9,19 @@ int main(int argc, char** argv)
 
     STH_INFO("Application Start");
 
-    auto* App = new South::Application;
+    South::VulkanTutorial::Application App;
+    App.Run();
 
-    App->Run();
-
-    delete App;
+    // auto* App = new South::Application;
+    //
+    // App->Run();
+    //
+    // delete App;
 
     STH_INFO("Application End");
 
     South::Logger::DeInit();
+
 
     return 0;
 }
