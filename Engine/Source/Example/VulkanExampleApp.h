@@ -3,10 +3,14 @@
 #include <glm.hpp>
 #include <vulkan/vulkan_core.h>
 
+#define MAX_FRAMES_IN_FLIGHT 2
+
 struct GLFWwindow;
 
 namespace South
 {
+class UniformBuffer;
+class VertexIndexBuffer;
 
 class Window;
 
@@ -38,14 +42,6 @@ struct Vertex
 
     static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 };
-
-struct UniformBufferObject
-{
-    alignas(16) glm::mat4 model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
-};
-
 
 class Application
 {
@@ -90,14 +86,9 @@ private:
     VkImageView    textureImageView   = nullptr;
     VkSampler      textureSampler     = nullptr;
 
-    VkBuffer       vertexBuffer       = nullptr;
-    VkDeviceMemory vertexBufferMemory = nullptr;
-    VkBuffer       indexBuffer        = nullptr;
-    VkDeviceMemory indexBufferMemory  = nullptr;
+    VertexIndexBuffer* m_QuadBuffer = nullptr;
 
-    std::vector<VkBuffer>       uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*>          uniformBuffersMapped;
+    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             descriptorPool = nullptr;
     std::vector<VkDescriptorSet> descriptorSets;
@@ -168,11 +159,7 @@ private:
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
-    void createVertexBuffer();
-
-    void createIndexBuffer();
-
-    void createUniformBuffers();
+    void CreateCameraUbos();
 
     void createDescriptorPool();
 
@@ -198,7 +185,7 @@ private:
 
     void createSyncObjects();
 
-    void updateUniformBuffer(uint32_t currentImage);
+    void UpdateCameraBuffer(uint32_t currentImage);
 
     void DrawFrame();
 

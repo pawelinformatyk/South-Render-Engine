@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "Core/Buffers/UniformBuffer.h"
+#include "Core/Buffers/VertexIndexBuffer.h"
 #include "Core/Shaders/ShadersLibrary.h"
 #include "Core/Window/Window.h"
 #include "Editor/Camera.h"
@@ -34,8 +36,6 @@ namespace South::VulkanTutorial
 
 Camera g_EditorCam;
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
 const std::vector<const char*> g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -48,7 +48,7 @@ const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0
                                         {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
                                         {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
-const std::vector<uint16_t> g_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+const std::vector<uint32_t> g_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
 Application::Application()
 {
@@ -133,13 +133,20 @@ Application::Application()
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
-    createVertexBuffer();
-    createIndexBuffer();
-    createUniformBuffers();
+
+    CreateCameraUbos();
+
     createDescriptorPool();
     createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
+
+    m_QuadBuffer = VertexIndexBuffer::Create(
+        device,
+        commandBuffers[0],
+        graphicsQueue,
+        {static_cast<const void*>(g_Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(g_Vertices.size())},
+        {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
 }
 
 Application::~Application()
@@ -152,8 +159,7 @@ Application::~Application()
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-        vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+        UniformBuffer::Destroy(device, m_CameraUbos[i]);
     }
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -166,11 +172,7 @@ Application::~Application()
 
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
-
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-    vkFreeMemory(device, vertexBufferMemory, nullptr);
+    VertexIndexBuffer::Destroy(device, m_QuadBuffer);
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -925,81 +927,12 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
     endSingleTimeCommands(commandBuffer);
 }
 
-void Application::createVertexBuffer()
+
+void Application::CreateCameraUbos()
 {
-    VkDeviceSize bufferSize = sizeof(g_Vertices[0]) * g_Vertices.size();
-
-    VkBuffer       stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize,
-                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                 stagingBuffer,
-                 stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, g_Vertices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize,
-                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                 vertexBuffer,
-                 vertexBufferMemory);
-
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
-}
-
-void Application::createIndexBuffer()
-{
-    VkDeviceSize bufferSize = sizeof(g_Indices[0]) * g_Indices.size();
-
-    VkBuffer       stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize,
-                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                 stagingBuffer,
-                 stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, g_Indices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize,
-                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                 indexBuffer,
-                 indexBufferMemory);
-
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
-}
-
-void Application::createUniformBuffers()
-{
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-    uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
-
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        createBuffer(bufferSize,
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     uniformBuffers[i],
-                     uniformBuffersMemory[i]);
-
-        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+        m_CameraUbos[i] = UniformBuffer::Create(device);
     }
 }
 
@@ -1041,7 +974,7 @@ void Application::createDescriptorSets()
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo bufferInfo {};
-        bufferInfo.buffer = uniformBuffers[i];
+        bufferInfo.buffer = m_CameraUbos[i]->GetBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range  = sizeof(UniformBufferObject);
 
@@ -1225,11 +1158,12 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
     scissor.extent = m_SwapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer     vertexBuffers[] = {vertexBuffer};
-    VkDeviceSize offsets[]       = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    const VkBuffer         QuadBuffer = m_QuadBuffer->GetBuffer();
+    constexpr VkDeviceSize Offset     = 0;
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &QuadBuffer, &Offset);
+
+    vkCmdBindIndexBuffer(commandBuffer, QuadBuffer, m_QuadBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1240,7 +1174,7 @@ void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t im
                             0,
                             nullptr);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(g_Indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, m_QuadBuffer->GetIndicesCount(), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1274,20 +1208,15 @@ void Application::createSyncObjects()
     }
 }
 
-void Application::updateUniformBuffer(uint32_t currentImage)
+void Application::UpdateCameraBuffer(uint32_t currentImage)
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    const auto currentTime = std::chrono::high_resolution_clock::now();
-    float      time        = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     const UniformBufferObject Ubo {
-        .model = glm::mat4(1.0f),
-        .view  = g_EditorCam.GetView(),
-        .proj  = g_EditorCam.GetProjection(),
+        .m_Model = glm::mat4(1.0f),
+        .m_View  = g_EditorCam.GetView(),
+        .m_Proj  = g_EditorCam.GetProjection(),
     };
 
-    memcpy(uniformBuffersMapped[currentImage], &Ubo, sizeof(Ubo));
+    m_CameraUbos[currentImage]->SetData(device, &Ubo);
 }
 
 void Application::DrawFrame()
@@ -1308,7 +1237,7 @@ void Application::DrawFrame()
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(currentFrame);
+    UpdateCameraBuffer(currentFrame);
 
     vkResetFences(device, 1, &inFlightFences[currentFrame]);
 

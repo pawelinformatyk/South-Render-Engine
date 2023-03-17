@@ -56,6 +56,8 @@ void Renderer::Init()
 
     s_QuadModelBuffer = VertexIndexBuffer::Create(
         s_Context->GetLogicalDevice(),
+        s_Context->GetCommandBuffer(),
+        s_Context->GetGraphicQueue().m_Queue,
         {static_cast<const void*>(QuadVertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(QuadVertices.size())},
         {static_cast<const void*>(QuadIndices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(QuadIndices.size())});
 
@@ -69,11 +71,10 @@ void Renderer::Init()
 
     const glm::mat4 Ubo[2] = {g_EditorCam.GetView(), g_EditorCam.GetProjection()};
 
-    const UniformBuffer::CreateInfo UniformBufferCi {
-        .Data = Ubo,
-        .Size = 2 * sizeof(glm::mat4),
-    };
-    s_CameraUniformBuffer = UniformBuffer::Create(s_Context->GetLogicalDevice(), UniformBufferCi);
+    // const UniformBuffer::CreateInfo UniformBufferCi {
+    //     .m_Size = sizeof(glm::mat4),
+    // };
+    // s_CameraUniformBuffer = UniformBuffer::Create(s_Context->GetLogicalDevice(), UniformBufferCi);
 
     // LoadExampleScene();
 
@@ -285,6 +286,8 @@ void Renderer::LoadExampleScene()
 
     s_ExampleSceneBuffer = VertexIndexBuffer::Create(
         s_Context->GetLogicalDevice(),
+        s_Context->GetCommandBuffer(),
+        s_Context->GetGraphicQueue().m_Queue,
         {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
         {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())});
 }
