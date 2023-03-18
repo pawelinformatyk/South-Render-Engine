@@ -16,13 +16,11 @@ public:
 
     static GraphicCard* Create(VkInstance VulkanInstance, const CreateInfo& InCreateInfo);
 
-    // #TODO: StringView
-
     VkPhysicalDevice                  GetPhysicalDevice() const;
     const std::vector<const char*>&   GetExtensionsNames() const;
     const VkPhysicalDeviceFeatures&   GetFeatures() const;
     const VkPhysicalDeviceProperties& GetProperties() const;
-    const std::string&                GetTypeName() const;
+    std::string_view                  GetTypeName() const;
 
 private:
     GraphicCard() = default;
@@ -35,8 +33,14 @@ private:
 };
 
 
-/**
- * Logical device with graphic and present queues.
+/*
+ * Most operations in Vulkan, anything from drawing to uploading textures, requires commands to be submitted to a queue.
+ * Queues originate from different queue families that allow only a certain subset of commands (Example: queue family that only allows
+ * processing of compute commands or one that only allows memory transfer related commands.
+ *
+ * Logical device purpose it to interface with physical device. We also need to specify which
+ * queues to create now that we've queried which queue families are available. You can even create multiple logical devices from
+ * the same physical device if you have varying requirements.
  */
 class LogicalDeviceAndQueues
 {

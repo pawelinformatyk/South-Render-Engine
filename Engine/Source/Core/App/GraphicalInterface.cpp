@@ -147,7 +147,7 @@ void GraphicalInterface::Show(float FrameTime_Seconds)
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("DeviceType");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%s", GPU.GetTypeName().c_str());
+            ImGui::Text("%s", GPU.GetTypeName());
 
             ImGui::TableNextRow();
 

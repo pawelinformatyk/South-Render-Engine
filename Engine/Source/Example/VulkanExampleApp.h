@@ -196,13 +196,7 @@ private:
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
-    bool isDeviceSuitable(VkPhysicalDevice device);
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-
-    std::vector<const char*> getRequiredExtensions();
+    std::vector<const char*> GetRequiredInstanceExtensions() const;
 
     //~ Validations layers.
 private:

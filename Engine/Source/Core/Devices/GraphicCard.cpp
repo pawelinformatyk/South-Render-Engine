@@ -188,7 +188,8 @@ bool CheckExtensions(const VkPhysicalDevice InPhysDev, const std::vector<const c
     return true;
 }
 
-std::optional<uint32_t> FindQueueFamilyIndex(const VkPhysicalDevice InPhysDev, const VkQueueFlagBits InFlags)
+std::optional<std::pair<uint32_t, uint32_t>> FindGraphicAndPresentQueueFamilyIndex(const VkPhysicalDevice InPhysDev,
+                                                                                   const VkSurfaceKHR     InSurface)
 {
     uint32_t QueueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(InPhysDev, &QueueFamilyCount, nullptr);
@@ -196,34 +197,46 @@ std::optional<uint32_t> FindQueueFamilyIndex(const VkPhysicalDevice InPhysDev, c
     std::vector<VkQueueFamilyProperties> QueueFamilies(QueueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(InPhysDev, &QueueFamilyCount, QueueFamilies.data());
 
+    std::optional<uint32_t> GraphicIndex {};
+
     for(uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
     {
-        if(QueueFamilies[QueueFamilyIndex].queueFlags & InFlags)
+        if(QueueFamilies[QueueFamilyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            return QueueFamilyIndex;
+            GraphicIndex = QueueFamilyIndex;
+
+            break;
         }
     }
 
-    return {};
-}
+    if(!GraphicIndex.has_value())
+    {
+        return {};
+    }
 
-std::optional<uint32_t> FindPresentQueueFamilyIndex(const VkPhysicalDevice InPhysDev, const VkSurfaceKHR InSurface)
-{
-    uint32_t QueueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(InPhysDev, &QueueFamilyCount, nullptr);
-
-    std::vector<VkQueueFamilyProperties> QueueFamilies(QueueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(InPhysDev, &QueueFamilyCount, QueueFamilies.data());
+    std::optional<uint32_t> PresentIndex {};
 
     for(uint32_t QueueFamilyIndex = 0; QueueFamilyIndex < QueueFamilyCount; ++QueueFamilyIndex)
     {
+        if(GraphicIndex.value() == QueueFamilyIndex)
+        {
+            continue;
+        }
+
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(InPhysDev, QueueFamilyIndex, InSurface, &presentSupport);
 
         if(presentSupport)
         {
-            return QueueFamilyIndex;
+            PresentIndex = QueueFamilyIndex;
+
+            break;
         }
+    }
+
+    if(PresentIndex.has_value())
+    {
+        return std::make_pair(GraphicIndex.value(), PresentIndex.value());
     }
 
     return {};
@@ -271,7 +284,7 @@ const VkPhysicalDeviceProperties& GraphicCard::GetProperties() const
     return m_Properties;
 }
 
-const std::string& GraphicCard::GetTypeName() const
+std::string_view GraphicCard::GetTypeName() const
 {
     return m_TypeName;
 }
@@ -280,25 +293,21 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU,
 {
     const VkPhysicalDevice PhysDev = InGPU.GetPhysicalDevice();
 
-    const std::optional<uint32_t> GraphicQueueFamilyIndex = Private::FindQueueFamilyIndex(PhysDev, VK_QUEUE_GRAPHICS_BIT);
-    if(!GraphicQueueFamilyIndex.has_value())
-    {
-        return nullptr;
-    }
-
-    const std::optional<uint32_t> PresentQueueFamilyIndex = Private::FindPresentQueueFamilyIndex(PhysDev, InSurface);
-    if(!PresentQueueFamilyIndex.has_value())
+    const std::optional<std::pair<uint32_t, uint32_t>> GraphicAndPresentQueueFamilyIndex =
+        Private::FindGraphicAndPresentQueueFamilyIndex(PhysDev, InSurface);
+    if(!GraphicAndPresentQueueFamilyIndex.has_value())
     {
         return nullptr;
     }
 
     constexpr float QueuePrio = 1.f;
 
+    // This structure describes the number of queues we want for a single queue family
     const VkDeviceQueueCreateInfo GraphicQueueCi {
         .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         .pNext            = nullptr,
         .flags            = 0x00,
-        .queueFamilyIndex = GraphicQueueFamilyIndex.value(),
+        .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first,
         .queueCount       = 1,
         .pQueuePriorities = &QueuePrio,
     };
@@ -307,7 +316,7 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU,
         .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         .pNext            = nullptr,
         .flags            = 0x00,
-        .queueFamilyIndex = PresentQueueFamilyIndex.value(),
+        .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second,
         .queueCount       = 1,
         .pQueuePriorities = &QueuePrio,
     };
@@ -327,8 +336,8 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU,
 
     auto* OutLogDev = new LogicalDeviceAndQueues;
 
-    OutLogDev->m_GraphicQueueFamilyIndex = GraphicQueueFamilyIndex.value();
-    OutLogDev->m_PresentQueueFamilyIndex = PresentQueueFamilyIndex.value();
+    OutLogDev->m_GraphicQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first;
+    OutLogDev->m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
 
     vkCreateDevice(PhysDev, &LogicDeviceCreateInfo, nullptr, &OutLogDev->m_LogicalDevice);
 

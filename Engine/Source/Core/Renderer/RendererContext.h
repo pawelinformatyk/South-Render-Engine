@@ -1,4 +1,3 @@
-// ReSharper disable CppInconsistentNaming
 #pragma once
 
 #include "glm.hpp"
