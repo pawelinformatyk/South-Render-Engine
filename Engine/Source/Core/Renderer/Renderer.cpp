@@ -32,25 +32,21 @@ void Renderer::Init()
                                                   glm::vec3(-0.5f, -0.5f, 0.f),
                                                   glm::vec3(0.f),
                                                   glm::vec2(0.f),
-                                                  glm::vec3(1.f, 1.f, 1),
                                               },
                                               {
                                                   glm::vec3(0.5f, -0.5f, 0.f),
                                                   glm::vec3(0.f),
                                                   glm::vec2(0.f),
-                                                  glm::vec3(.6f, .25f, 1.f),
                                               },
                                               {
                                                   glm::vec3(0.5f, 0.5f, 0.f),
                                                   glm::vec3(0.f),
                                                   glm::vec2(0.f),
-                                                  glm::vec3(.6f, .25f, 1.f),
                                               },
                                               {
                                                   glm::vec3(-0.5f, 0.5f, 0.f),
                                                   glm::vec3(0.f),
                                                   glm::vec2(0.f),
-                                                  glm::vec3(1.f, 1.f, 1),
                                               }};
     const std::vector<uint32_t> QuadIndices  = {0, 1, 2, 2, 3, 0};
 
@@ -268,15 +264,12 @@ void Renderer::LoadExampleScene()
 
     for(const auto& Shape : Shapes)
     {
-        const glm::vec3 Color = glm::vec3(Dist(Rng), Dist(Rng), Dist(Rng));
-
         for(const auto& Index : Shape.mesh.indices)
         {
             const Vertex ShapeVertex = {
-                .m_Pos   = {Attrib.vertices[3 * Index.vertex_index + 0],
+                .m_Pos = {Attrib.vertices[3 * Index.vertex_index + 0],
                           Attrib.vertices[3 * Index.vertex_index + 1],
                           Attrib.vertices[3 * Index.vertex_index + 2]},
-                .m_Color = Color,
             };
 
             Vertices.emplace_back(ShapeVertex);

@@ -5,39 +5,38 @@
 
 namespace South
 {
-    class VertexIndexBuffer;
-    class VertexBuffer;
-    class SVulkanVertexIndexBuffer;
 
-    struct Vertex
-    {
-        glm::vec3 m_Pos;
-        glm::vec3 m_Normal;
-        glm::vec2 m_TexCoords;
-        glm::vec3 m_Color;
+class VertexIndexBuffer;
+class VertexBuffer;
+class SVulkanVertexIndexBuffer;
 
-        static const VkVertexInputBindingDescription& GetBindingDescription();
-        static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
+struct Vertex
+{
+    glm::vec3 m_Pos;
+    glm::vec3 m_Normal;
+    glm::vec2 m_TexCoords;
 
-    private:
-        static VkVertexInputBindingDescription m_BindingDesc;
-        static std::array<VkVertexInputAttributeDescription, 4> m_AttributesDescs;
-    };
+    static const VkVertexInputBindingDescription&                  GetBindingDescription();
+    static const std::array<VkVertexInputAttributeDescription, 3>& GetAttributesDescriptions();
 
-    // #TODO : One/two/three... meshes - one/two buffer
-    class StaticMesh
-    {
-    public:
-        StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
+private:
+    static VkVertexInputBindingDescription                  m_BindingDesc;
+    static std::array<VkVertexInputAttributeDescription, 3> m_AttributesDescs;
+};
 
-    private:
-        std::vector<Vertex> m_Vertices;
-        std::vector<uint16_t> m_Indices;
+// #TODO : One/two/three... meshes - one/two buffer
+class StaticMesh
+{
+public:
+    StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
 
-        // VertexIndexBuffer* indexBuffer;
-        // VertexBuffer* verticesBuffer;
-        SVulkanVertexIndexBuffer* m_VI_Buffer;
-    };
+private:
+    std::vector<Vertex>   m_Vertices;
+    std::vector<uint16_t> m_Indices;
 
+    // VertexIndexBuffer* indexBuffer;
+    // VertexBuffer* verticesBuffer;
+    SVulkanVertexIndexBuffer* m_VI_Buffer;
+};
 
 } // namespace South

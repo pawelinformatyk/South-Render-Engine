@@ -12,6 +12,7 @@
 #include "Core/Shaders/ShadersLibrary.h"
 #include "Core/Window/Window.h"
 #include "Editor/Camera.h"
+#include "Editor/Mesh.h"
 #include "stb_image.h"
 
 #include <algorithm>
@@ -37,7 +38,7 @@ namespace South::VulkanTutorial
 
 Camera g_EditorCam;
 
-const std::vector<const char*> g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
                                         {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
@@ -496,8 +497,8 @@ void Application::createGraphicsPipeline()
     VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    auto bindingDescription    = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    auto bindingDescription    = Vertex::GetBindingDescription();
+    auto attributeDescriptions = Vertex::GetAttributesDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount   = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -1467,35 +1468,4 @@ bool Application::CheckValidationLayers() const
     return true;
 }
 
-VkVertexInputBindingDescription Vertex::getBindingDescription()
-{
-    VkVertexInputBindingDescription bindingDescription {};
-    bindingDescription.binding   = 0;
-    bindingDescription.stride    = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return bindingDescription;
-}
-
-std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions()
-{
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions {};
-
-    attributeDescriptions[0].binding  = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset   = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding  = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset   = offsetof(Vertex, color);
-
-    attributeDescriptions[2].binding  = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format   = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset   = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
 } // namespace South::VulkanTutorial

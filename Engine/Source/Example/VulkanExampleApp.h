@@ -19,30 +19,11 @@ class Window;
 namespace VulkanTutorial
 {
 
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-
-    bool isComplete();
-};
-
 struct SwapChainSupportDetails
 {
     VkSurfaceCapabilitiesKHR        capabilities {};
     std::vector<VkSurfaceFormatKHR> formats {};
     std::vector<VkPresentModeKHR>   presentModes {};
-};
-
-struct Vertex
-{
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-    static VkVertexInputBindingDescription getBindingDescription();
-
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 };
 
 class Application
