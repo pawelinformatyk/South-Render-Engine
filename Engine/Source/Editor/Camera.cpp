@@ -48,7 +48,7 @@ glm::mat4 Camera::GetViewProjection() const
 
 glm::quat Camera::GetOrientation() const
 {
-    return glm::quat(glm::vec3(1.f, 0.f, 0.f));
+    return glm::quat(glm::vec3(m_Pitch, m_Yaw, 0.f));
 }
 
 glm::vec3 Camera::GetForwardVector() const
@@ -68,7 +68,7 @@ glm::vec3 Camera::GetUpVector() const
 
 void Camera::MoveForward(float Delta)
 {
-    const glm::vec3 Forward = Delta * GetForwardVector();
+    const glm::vec3 Forward = m_MoveSpeed * Delta * GetForwardVector();
 
     m_Position += Forward;
 
@@ -77,7 +77,7 @@ void Camera::MoveForward(float Delta)
 
 void Camera::MoveRight(float Delta)
 {
-    const glm::vec3 RightVector = Delta * GetRightVector();
+    const glm::vec3 RightVector = m_MoveSpeed * Delta * GetRightVector();
 
     m_Position += RightVector;
 
@@ -86,16 +86,39 @@ void Camera::MoveRight(float Delta)
 
 void Camera::MoveUp(float Delta)
 {
-    const glm::vec3 UpVector = Delta * GetUpVector();
+    const glm::vec3 UpVector = m_MoveSpeed * Delta * GetUpVector();
 
     m_Position += UpVector;
 
     UpdateView();
 }
 
+void Camera::LookRight(float Delta)
+{
+    m_Yaw += m_RotationSpeed * Delta;
+
+    UpdateDirection();
+    UpdateView();
+}
+
+void Camera::LookUp(float Delta)
+{
+    m_Pitch += m_RotationSpeed * Delta;
+
+    UpdateDirection();
+    UpdateView();
+}
+
 void Camera::UpdateView()
 {
     m_View = glm::lookAt(m_Position, m_Direction, glm::vec3(0.f, 0.f, 1.f));
+}
+
+void Camera::UpdateDirection()
+{
+    m_Direction.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    m_Direction.y = sin(glm::radians(m_Pitch));
+    m_Direction.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 }
 
 } // namespace South

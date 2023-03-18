@@ -63,32 +63,48 @@ Application::Application()
         *m_Window,
         [this](int Key, int Scancode, int Action, int Mods)
         {
-            constexpr float Delta = .1f;
-
-            if(Key == GLFW_KEY_W)
-            {
-                g_EditorCam.MoveForward(Delta);
-            }
-            else if(Key == GLFW_KEY_S)
-            {
-                g_EditorCam.MoveForward(-Delta);
-            }
-            else if(Key == GLFW_KEY_D)
-            {
-                g_EditorCam.MoveRight(Delta);
-            }
-            else if(Key == GLFW_KEY_A)
-            {
-                g_EditorCam.MoveRight(-Delta);
-            }
-            else if(Key == GLFW_KEY_E)
-            {
-                g_EditorCam.MoveUp(Delta);
-            }
-            else if(Key == GLFW_KEY_Q)
-            {
-                g_EditorCam.MoveUp(-Delta);
-            }
+            // constexpr float Delta = .1f;
+            //
+            // if(Key == GLFW_KEY_W)
+            // {
+            //     g_EditorCam.MoveForward(Delta);
+            // }
+            // else if(Key == GLFW_KEY_S)
+            // {
+            //     g_EditorCam.MoveForward(-Delta);
+            // }
+            // else if(Key == GLFW_KEY_D)
+            // {
+            //     g_EditorCam.MoveRight(Delta);
+            // }
+            // else if(Key == GLFW_KEY_A)
+            // {
+            //     g_EditorCam.MoveRight(-Delta);
+            // }
+            // else if(Key == GLFW_KEY_E)
+            // {
+            //     g_EditorCam.MoveUp(Delta);
+            // }
+            // else if(Key == GLFW_KEY_Q)
+            // {
+            //     g_EditorCam.MoveUp(-Delta);
+            // }
+            // else if(Key == GLFW_KEY_RIGHT)
+            // {
+            //     g_EditorCam.LookRight(Delta);
+            // }
+            // else if(Key == GLFW_KEY_LEFT)
+            // {
+            //     g_EditorCam.LookRight(-Delta);
+            // }
+            // else if(Key == GLFW_KEY_UP)
+            // {
+            //     g_EditorCam.LookUp(Delta);
+            // }
+            // else if(Key == GLFW_KEY_DOWN)
+            // {
+            //     g_EditorCam.LookUp(-Delta);
+            // }
         },
         [this](int bIconified)
         {
@@ -120,8 +136,11 @@ Application::Application()
     createLogicalDevice();
     createSwapChain();
 
-    g_EditorCam.SetView(glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.0f, 0.0f, 0.0f));
-    g_EditorCam.SetProjection(glm::radians(45.0f), m_SwapChainExtent.width / static_cast<float>(m_SwapChainExtent.height), 0.01f, 10.0f);
+    g_EditorCam.SetView(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.0f, 0.0f, 0.0f));
+    g_EditorCam.SetProjection(glm::radians(45.0f),
+                              static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height),
+                              0.01f,
+                              10.0f);
 
     createImageViews();
     createRenderPass();
@@ -926,7 +945,6 @@ void Application::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wid
 
     endSingleTimeCommands(commandBuffer);
 }
-
 
 void Application::CreateCameraUbos()
 {

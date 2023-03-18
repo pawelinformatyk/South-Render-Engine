@@ -28,8 +28,12 @@ public:
     void MoveRight(float Delta);
     void MoveUp(float Delta);
 
+    void LookRight(float Delta);
+    void LookUp(float Delta);
+
 private:
     void UpdateView();
+    void UpdateDirection();
 
     glm::mat4 m_View = glm::mat4(1.f);
 
@@ -42,6 +46,12 @@ private:
     float m_Aspect = 0.f;
     float m_Near   = 0.f;
     float m_Far    = 0.f;
+
+    float m_Pitch = 0.f;
+    float m_Yaw   = 0.f;
+
+    float m_MoveSpeed     = 1.5f;
+    float m_RotationSpeed = 5.f;
 };
 
 } // namespace South
