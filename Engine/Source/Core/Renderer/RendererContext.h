@@ -8,109 +8,108 @@ struct GLFWwindow;
 
 namespace South
 {
-    class GraphicCard;
-    class Queue;
+class GraphicCard;
+class LogicalDeviceAndQueues;
 
-    struct PushConstant
-    {
-        glm::mat4 Model;
-        glm::mat4 View;
-        glm::mat4 Projection;
-    };
+struct PushConstant
+{
+    glm::mat4 Model;
+    glm::mat4 View;
+    glm::mat4 Projection;
+};
 
-    // Class holding all "global" vulkan related variables.
-    class RendererContext
-    {
-        friend class Renderer;
+// Class holding all "global" vulkan related variables.
+class RendererContext
+{
+    friend class Renderer;
 
-    public:
-        void Init();
-        void DeInit();
+public:
+    void Init();
+    void DeInit();
 
-        [[nodiscard]] VkInstance GetVulkanInstance() const;
-        [[nodiscard]] const Queue& GetGraphicQueue() const;
-        [[nodiscard]] VkDevice GetLogicalDevice() const;
-        [[nodiscard]] const GraphicCard& GetGraphicCard() const;
-        [[nodiscard]] VkRenderPass GetRenderPass() const;
-        [[nodiscard]] VkCommandBuffer GetCommandBuffer() const;
-        [[nodiscard]] VkCommandPool GetCommandPool() const;
-        [[nodiscard]] VkDescriptorPool GetDescriptorPool() const;
-        [[nodiscard]] VkPipelineLayout GetPipelineLayout() const;
+    VkInstance         GetVulkanInstance() const;
+    VkQueue            GetGraphicQueue() const;
+    uint32_t           GetGraphicQueueFamilyIndex() const;
+    VkDevice           GetLogicalDevice() const;
+    const GraphicCard& GetGraphicCard() const;
+    VkRenderPass       GetRenderPass() const;
+    VkCommandBuffer    GetCommandBuffer() const;
+    VkCommandPool      GetCommandPool() const;
+    VkDescriptorPool   GetDescriptorPool() const;
+    VkPipelineLayout   GetPipelineLayout() const;
 
-    private:
-        void CreateInstance();
+private:
+    void CreateInstance();
 
-        void CreateSurface(GLFWwindow& InWindow);
-        void CreateSwapChain(GLFWwindow& InWindow);
-        void CreateImageViews();
-        void CreateRenderPass();
-        void CreateGraphicsPipeline();
-        void CreateCommandPool();
-        void CreateFramebuffers();
-        void CreateCommandBuffers();
-        void CreateSyncObjects();
-        void CreateDescriptorPool();
+    void CreateSurface(GLFWwindow& InWindow);
+    void CreateSwapChain(GLFWwindow& InWindow);
+    void CreateImageViews();
+    void CreateRenderPass();
+    void CreateGraphicsPipeline();
+    void CreateCommandPool();
+    void CreateFramebuffers();
+    void CreateCommandBuffers();
+    void CreateSyncObjects();
+    void CreateDescriptorPool();
 
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
-        VkPresentModeKHR ChooseSwapPresentMode(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
-        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& InCapabilities, GLFWwindow& InWindow);
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
+    VkPresentModeKHR   ChooseSwapPresentMode(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
+    VkExtent2D         ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& InCapabilities, GLFWwindow& InWindow);
 
-        std::vector<const char*> GetRequiredInstanceExtensions();
+    std::vector<const char*> GetRequiredInstanceExtensions();
 
-        VkInstance m_VulkanInstance = nullptr;
+    VkInstance m_VulkanInstance = nullptr;
 
-        VkSurfaceKHR m_Surface     = nullptr;
-        VkSwapchainKHR m_SwapChain = nullptr;
-        std::vector<VkImage> m_SwapChainImages;
-        VkFormat m_SwapChainImageFormat;
-        VkExtent2D m_SwapChainExtent;
-        std::vector<VkImageView> m_SwapChainImageViews;
-        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+    VkSurfaceKHR               m_Surface   = nullptr;
+    VkSwapchainKHR             m_SwapChain = nullptr;
+    std::vector<VkImage>       m_SwapChainImages;
+    VkFormat                   m_SwapChainImageFormat;
+    VkExtent2D                 m_SwapChainExtent;
+    std::vector<VkImageView>   m_SwapChainImageViews;
+    std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
-        VkImage m_DepthImage;
-        VkDeviceMemory m_DepthImageMemory;
-        VkImageView m_DepthImageView;
+    VkImage        m_DepthImage;
+    VkDeviceMemory m_DepthImageMemory;
+    VkImageView    m_DepthImageView;
 
-        VkRenderPass m_RenderPass         = nullptr;
-        VkPipelineLayout m_PipelineLayout = nullptr;
+    VkRenderPass     m_RenderPass     = nullptr;
+    VkPipelineLayout m_PipelineLayout = nullptr;
 
-    private:
-        VkPipeline m_GraphicsPipeline = nullptr;
+private:
+    VkPipeline m_GraphicsPipeline = nullptr;
 
-        VkDescriptorPool m_DescriptorPool;
+    VkDescriptorPool m_DescriptorPool;
 
-        VkCommandPool m_CommandPool           = nullptr;
-        VkCommandBuffer m_CommandBuffer       = nullptr;
-        VkSemaphore m_ImageAvailableSemaphore = nullptr;
-        VkSemaphore m_RenderFinishedSemaphore = nullptr;
-        VkFence m_FlightFence                 = nullptr;
+    VkCommandPool   m_CommandPool             = nullptr;
+    VkCommandBuffer m_CommandBuffer           = nullptr;
+    VkSemaphore     m_ImageAvailableSemaphore = nullptr;
+    VkSemaphore     m_RenderFinishedSemaphore = nullptr;
+    VkFence         m_FlightFence             = nullptr;
 
-        GraphicCard* m_GraphicCard = nullptr;
-        VkDevice m_Device          = nullptr;
-        Queue* m_GraphicQueue      = nullptr;
+    GraphicCard*            m_GPU           = nullptr;
+    LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
 
-        //~ Validations layers.
-    private:
-        void CreateMessenger();
-        void DestroyMessenger();
+    //~ Validations layers.
+private:
+    void CreateMessenger();
+    void DestroyMessenger();
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL
-            ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
-                                      VkDebugUtilsMessageTypeFlagsEXT InMessageType,
-                                      const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
-                                      void* InUserData);
+    static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
+                                                                    VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
+                                                                    const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
+                                                                    void*                                       InUserData);
 
-        [[nodiscard]] bool CheckValidationLayers() const;
+    bool CheckValidationLayers() const;
 
-        const std::vector<const char*> m_RequiredValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+    const std::vector<const char*> m_RequiredValidationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 #ifdef NDEBUG
-        const bool m_bEnableValidationLayers = false;
+    const bool m_bEnableValidationLayers = false;
 #else
-        const bool m_bEnableValidationLayers = true;
+    const bool m_bEnableValidationLayers = true;
 #endif
 
-        VkDebugUtilsMessengerEXT m_Messenger;
-        //~ Validations layers.
-    };
+    VkDebugUtilsMessengerEXT m_Messenger;
+    //~ Validations layers.
+};
 }; // namespace South

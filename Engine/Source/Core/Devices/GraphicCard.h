@@ -5,57 +5,60 @@
 namespace South
 {
 
-    class Queue
+class GraphicCard
+{
+public:
+    struct CreateInfo
     {
-    public:
-        uint32_t m_QueueFamily = 0;
-        VkQueue m_Queue        = nullptr;
+        std::vector<const char*> RequiredExtensions;
+        VkPhysicalDeviceFeatures RequiredFeatures;
     };
 
-    // Class representing one graphic card specified by requirements.
-    // Logical devices and queues are created from this object.
-    //
-    class GraphicCard
-    {
-    public:
-        using QueueConditionCallback = std::function<bool(const VkQueueFamilyProperties&, int Index)>;
+    static GraphicCard* Create(VkInstance VulkanInstance, const CreateInfo& InCreateInfo);
 
-        struct CreateInfo
-        {
-            VkInstance VulkanInstance = nullptr;
-            std::vector<const char*> RequiredExtensions;
-            VkPhysicalDeviceFeatures RequiredFeatures;
-        };
+    // #TODO: StringView
 
-        static GraphicCard* Create(const CreateInfo& InCreateInfo);
-        // #TODO :
-        // static std::vector<GraphicCard*> Create(const CreateInfo& InCreateInfo);
+    VkPhysicalDevice                  GetPhysicalDevice() const;
+    const std::vector<const char*>&   GetExtensionsNames() const;
+    const VkPhysicalDeviceFeatures&   GetFeatures() const;
+    const VkPhysicalDeviceProperties& GetProperties() const;
+    const std::string&                GetTypeName() const;
 
-        // Creates new logical device with one graphic queue.
-        bool CreateLogicalDevice(VkDevice& OutLogicalDevice, Queue& OutGraphicQueue) const;
+private:
+    GraphicCard() = default;
 
-        // Creates new logical device with queues that met conditions.
-        // One queue one condition.
-        void CreateLogicalDevice(VkDevice OutLogicalDevice,
-                                 std::vector<Queue*>& OutQueues,
-                                 const std::vector<QueueConditionCallback>& InConditions) const;
+    VkPhysicalDevice           m_PhysicalDevice  = nullptr;
+    std::vector<const char*>   m_ExtensionsNames = {};
+    VkPhysicalDeviceFeatures   m_Features        = {};
+    VkPhysicalDeviceProperties m_Properties      = {};
+    std::string                m_TypeName        = {};
+};
 
-        [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
-        [[nodiscard]] const VkPhysicalDeviceFeatures& GetFeatures() const;
-        [[nodiscard]] const VkPhysicalDeviceProperties& GetProperties() const;
-        [[nodiscard]] const std::string& GetTypeName() const;
 
-    private:
-        static VkPhysicalDevice FindPhysicalDevice(const CreateInfo& InCreateInfo);
-        static bool CheckFeatures(const VkPhysicalDevice InGpu, const VkPhysicalDeviceFeatures& InRequiredFeatures);
-        static bool CheckExtensions(const VkPhysicalDevice InGpu, const std::vector<const char*>& InRequiredExtensions);
-        static std::optional<uint32_t> FindQueueFamilyIndex(const VkPhysicalDevice InGpu, VkQueueFlagBits InFlags);
+/**
+ * Logical device with graphic and present queues.
+ */
+class LogicalDeviceAndQueues
+{
+public:
+    static LogicalDeviceAndQueues* Create(const GraphicCard& InGPU, VkSurfaceKHR InSurface);
 
-        VkPhysicalDevice m_PhysicalDevice          = nullptr;
-        std::vector<const char*> m_ExtensionsNames = {};
-        VkPhysicalDeviceFeatures m_Features        = {};
-        VkPhysicalDeviceProperties m_Properties    = {};
-        std::string m_TypeName;
-    };
+    VkDevice GetLogicalDevice() const;
+    VkQueue  GetGraphicQueue() const;
+    uint32_t GetGraphicQueueFamilyIndex() const;
+    VkQueue  GetPresentQueue() const;
+    uint32_t GetPresentQueueFamilyIndex() const;
+
+private:
+    LogicalDeviceAndQueues() = default;
+
+    VkDevice m_LogicalDevice = nullptr;
+
+    VkQueue  m_GraphicQueue            = nullptr;
+    uint32_t m_GraphicQueueFamilyIndex = 0;
+
+    VkQueue  m_PresentQueue            = nullptr;
+    uint32_t m_PresentQueueFamilyIndex = 0;
+};
 
 } // namespace South

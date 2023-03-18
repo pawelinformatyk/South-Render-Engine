@@ -26,17 +26,18 @@ void GraphicalInterface::Init()
 
     ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().ToGlfw(), true);
 
-    const RendererContext& Context      = Renderer::GetContext();
-    const GraphicCard&     GPU          = Context.GetGraphicCard();
-    const Queue&           GraphicQueue = Context.GetGraphicQueue();
+    const RendererContext& Context                 = Renderer::GetContext();
+    const GraphicCard&     GPU                     = Context.GetGraphicCard();
+    VkQueue                GraphicQueue            = Context.GetGraphicQueue();
+    uint32_t               GraphicQueueFamilyIndex = Context.GetGraphicQueueFamilyIndex();
 
     // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
     ImGui_ImplVulkan_InitInfo InitInfo = {
         .Instance        = Context.GetVulkanInstance(),
         .PhysicalDevice  = GPU.GetPhysicalDevice(),
         .Device          = Context.GetLogicalDevice(),
-        .QueueFamily     = GraphicQueue.m_QueueFamily,
-        .Queue           = GraphicQueue.m_Queue,
+        .QueueFamily     = GraphicQueueFamilyIndex,
+        .Queue           = GraphicQueue,
         .PipelineCache   = VK_NULL_HANDLE,
         .DescriptorPool  = Context.GetDescriptorPool(),
         .Subpass         = 0,
@@ -276,7 +277,7 @@ void GraphicalInterface::FindAndAddFonts()
     IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
 
     const RendererContext& Context       = Renderer::GetContext();
-    const Queue&           GraphicQueue  = Context.GetGraphicQueue();
+    VkQueue                GraphicQueue  = Context.GetGraphicQueue();
     VkDevice               LogicalDevice = Context.GetLogicalDevice();
 
     VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
@@ -301,7 +302,7 @@ void GraphicalInterface::FindAndAddFonts()
 
     vkEndCommandBuffer(CmdBuffer);
 
-    vkQueueSubmit(GraphicQueue.m_Queue, 1, &SubmitInfo, VK_NULL_HANDLE);
+    vkQueueSubmit(GraphicQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
 
     vkDeviceWaitIdle(LogicalDevice);
 

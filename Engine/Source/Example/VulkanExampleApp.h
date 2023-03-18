@@ -9,6 +9,8 @@ struct GLFWwindow;
 
 namespace South
 {
+class GraphicCard;
+class LogicalDeviceAndQueues;
 class UniformBuffer;
 class VertexIndexBuffer;
 
@@ -57,11 +59,8 @@ private:
     VkInstance   m_VulkanInstance = nullptr;
     VkSurfaceKHR surface          = nullptr;
 
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice         device         = nullptr;
-
-    VkQueue graphicsQueue = nullptr;
-    VkQueue presentQueue  = nullptr;
+    GraphicCard*            m_GPU           = nullptr;
+    LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
 
     VkSwapchainKHR             swapChain = nullptr;
     std::vector<VkImage>       swapChainImages;
@@ -112,9 +111,7 @@ private:
 
     void createSurface();
 
-    void pickPhysicalDevice();
-
-    void createLogicalDevice();
+    void CreateDevices();
 
     void createSwapChain();
 

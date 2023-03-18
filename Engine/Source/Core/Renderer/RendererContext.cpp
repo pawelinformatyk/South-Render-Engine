@@ -16,19 +16,24 @@ VkInstance RendererContext::GetVulkanInstance() const
     return m_VulkanInstance;
 }
 
-const Queue& RendererContext::GetGraphicQueue() const
+VkQueue RendererContext::GetGraphicQueue() const
 {
-    return *m_GraphicQueue;
+    return m_LogicalDevice->GetGraphicQueue();
+}
+
+uint32_t RendererContext::GetGraphicQueueFamilyIndex() const
+{
+    return m_LogicalDevice->GetGraphicQueueFamilyIndex();
 }
 
 VkDevice RendererContext::GetLogicalDevice() const
 {
-    return m_Device;
+    return m_LogicalDevice->GetLogicalDevice();
 }
 
 const GraphicCard& RendererContext::GetGraphicCard() const
 {
-    return *m_GraphicCard;
+    return *m_GPU;
 }
 
 VkRenderPass RendererContext::GetRenderPass() const
@@ -73,21 +78,17 @@ void RendererContext::Init()
 
     CreateSurface(*GlfwWindow);
 
-    // Create GPU.
-    const GraphicCard::CreateInfo GpuCreateInfo {
-        .VulkanInstance     = m_VulkanInstance,
-        .RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
-        .RequiredFeatures =
-            {
-                .multiViewport = true,
-            },
-    };
-    m_GraphicCard = GraphicCard::Create(GpuCreateInfo);
+    m_GPU = GraphicCard::Create(m_VulkanInstance,
+                                GraphicCard::CreateInfo {
+                                    .RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
+                                    .RequiredFeatures =
+                                        {
+                                            .multiViewport = true,
+                                        },
+                                });
 
-    m_GraphicQueue = new Queue;
 
-    // Create logic device with graphic queue.
-    m_GraphicCard->CreateLogicalDevice(m_Device, *m_GraphicQueue);
+    m_LogicalDevice = LogicalDeviceAndQueues::Create(*m_GPU, m_Surface);
 
     // ShadersLibrary::Init();
     // ShadersLibrary::AddShader("Base_V", "Resources/Shaders/Base.vert", VK_SHADER_STAGE_VERTEX_BIT);
@@ -108,33 +109,33 @@ void RendererContext::DeInit()
 {
     ShadersLibrary::Deinit();
 
-    vkDestroyImageView(m_Device, m_DepthImageView, nullptr);
-    vkDestroyImage(m_Device, m_DepthImage, nullptr);
-    vkFreeMemory(m_Device, m_DepthImageMemory, nullptr);
+    vkDestroyImageView(GetLogicalDevice(), m_DepthImageView, nullptr);
+    vkDestroyImage(GetLogicalDevice(), m_DepthImage, nullptr);
+    vkFreeMemory(GetLogicalDevice(), m_DepthImageMemory, nullptr);
 
-    vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+    vkDestroyDescriptorPool(GetLogicalDevice(), m_DescriptorPool, nullptr);
 
-    vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
-    vkDestroyFence(m_Device, m_FlightFence, nullptr);
+    vkDestroySemaphore(GetLogicalDevice(), m_RenderFinishedSemaphore, nullptr);
+    vkDestroySemaphore(GetLogicalDevice(), m_ImageAvailableSemaphore, nullptr);
+    vkDestroyFence(GetLogicalDevice(), m_FlightFence, nullptr);
 
-    vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+    vkDestroyCommandPool(GetLogicalDevice(), m_CommandPool, nullptr);
 
     for(const auto& framebuffer : m_SwapChainFramebuffers)
     {
-        vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
+        vkDestroyFramebuffer(GetLogicalDevice(), framebuffer, nullptr);
     }
 
-    vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
-    vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
+    vkDestroyPipeline(GetLogicalDevice(), m_GraphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(GetLogicalDevice(), m_PipelineLayout, nullptr);
+    vkDestroyRenderPass(GetLogicalDevice(), m_RenderPass, nullptr);
 
     for(const auto& ImageView : m_SwapChainImageViews)
     {
-        vkDestroyImageView(m_Device, ImageView, nullptr);
+        vkDestroyImageView(GetLogicalDevice(), ImageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+    vkDestroySwapchainKHR(GetLogicalDevice(), m_SwapChain, nullptr);
 
 
     if(m_bEnableValidationLayers)
@@ -144,7 +145,7 @@ void RendererContext::DeInit()
 
     vkDestroySurfaceKHR(m_VulkanInstance, m_Surface, nullptr);
 
-    vkDestroyDevice(m_Device, nullptr);
+    vkDestroyDevice(GetLogicalDevice(), nullptr);
 
     vkDestroyInstance(m_VulkanInstance, nullptr);
 }
@@ -186,8 +187,8 @@ void RendererContext::CreateSurface(GLFWwindow& InWindow)
 
 void RendererContext::CreateSwapChain(GLFWwindow& window)
 {
-    const VkPhysicalDevice PhysDevice       = m_GraphicCard->GetPhysicalDevice();
-    uint32_t               QueueFamilyIndex = m_GraphicQueue->m_QueueFamily;
+    const VkPhysicalDevice PhysDevice       = m_GPU->GetPhysicalDevice();
+    uint32_t               QueueFamilyIndex = GetGraphicQueueFamilyIndex();
 
     VkSurfaceCapabilitiesKHR Capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysDevice, m_Surface, &Capabilities);
@@ -221,11 +222,11 @@ void RendererContext::CreateSwapChain(GLFWwindow& window)
         .clipped               = VK_TRUE,
         .oldSwapchain          = VK_NULL_HANDLE,
     };
-    vkCreateSwapchainKHR(m_Device, &SwapchainCi, nullptr, &m_SwapChain);
+    vkCreateSwapchainKHR(GetLogicalDevice(), &SwapchainCi, nullptr, &m_SwapChain);
 
-    vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &ImageCount, nullptr);
+    vkGetSwapchainImagesKHR(GetLogicalDevice(), m_SwapChain, &ImageCount, nullptr);
     m_SwapChainImages.resize(ImageCount);
-    vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &ImageCount, m_SwapChainImages.data());
+    vkGetSwapchainImagesKHR(GetLogicalDevice(), m_SwapChain, &ImageCount, m_SwapChainImages.data());
 
     m_SwapChainImageFormat = SwapchainCi.imageFormat;
     m_SwapChainExtent      = SwapchainCi.imageExtent;
@@ -255,7 +256,7 @@ void RendererContext::CreateImageViews()
             .subresourceRange = subresourceRange,
         };
 
-        vkCreateImageView(m_Device, &sCreateInfo, nullptr, &m_SwapChainImageViews[i]);
+        vkCreateImageView(GetLogicalDevice(), &sCreateInfo, nullptr, &m_SwapChainImageViews[i]);
     }
 }
 
@@ -303,7 +304,7 @@ void RendererContext::CreateRenderPass()
         .pDependencies   = &dependency,
     };
 
-    vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_RenderPass);
+    vkCreateRenderPass(GetLogicalDevice(), &renderPassInfo, nullptr, &m_RenderPass);
 }
 
 void RendererContext::CreateGraphicsPipeline()
@@ -434,7 +435,7 @@ void RendererContext::CreateGraphicsPipeline()
         .pPushConstantRanges    = &PushConstantRange,
     };
 
-    vkCreatePipelineLayout(m_Device, &PipelineLayoutCi, nullptr, &m_PipelineLayout);
+    vkCreatePipelineLayout(GetLogicalDevice(), &PipelineLayoutCi, nullptr, &m_PipelineLayout);
 
 
     const VkGraphicsPipelineCreateInfo GraphicsPipelineCi {
@@ -457,7 +458,7 @@ void RendererContext::CreateGraphicsPipeline()
         .basePipelineHandle = VK_NULL_HANDLE,
     };
 
-    vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &GraphicsPipelineCi, nullptr, &m_GraphicsPipeline);
+    vkCreateGraphicsPipelines(GetLogicalDevice(), VK_NULL_HANDLE, 1, &GraphicsPipelineCi, nullptr, &m_GraphicsPipeline);
 }
 
 void RendererContext::CreateCommandPool()
@@ -466,10 +467,10 @@ void RendererContext::CreateCommandPool()
         .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext            = nullptr,
         .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = m_GraphicQueue->m_QueueFamily,
+        .queueFamilyIndex = GetGraphicQueueFamilyIndex(),
     };
 
-    vkCreateCommandPool(m_Device, &PoolInfo, nullptr, &m_CommandPool);
+    vkCreateCommandPool(GetLogicalDevice(), &PoolInfo, nullptr, &m_CommandPool);
 }
 
 void RendererContext::CreateFramebuffers()
@@ -491,7 +492,7 @@ void RendererContext::CreateFramebuffers()
             .layers          = 1,
         };
 
-        vkCreateFramebuffer(m_Device, &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
+        vkCreateFramebuffer(GetLogicalDevice(), &FramebufferInfo, nullptr, &m_SwapChainFramebuffers[i]);
     }
 }
 
@@ -505,7 +506,7 @@ void RendererContext::CreateCommandBuffers()
         .commandBufferCount = 1,
     };
 
-    vkAllocateCommandBuffers(m_Device, &AllocInfo, &m_CommandBuffer);
+    vkAllocateCommandBuffers(GetLogicalDevice(), &AllocInfo, &m_CommandBuffer);
 }
 
 void RendererContext::CreateSyncObjects()
@@ -521,9 +522,9 @@ void RendererContext::CreateSyncObjects()
         .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
 
-    vkCreateSemaphore(m_Device, &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
-    vkCreateSemaphore(m_Device, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
-    vkCreateFence(m_Device, &FenceInfo, nullptr, &m_FlightFence);
+    vkCreateSemaphore(GetLogicalDevice(), &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
+    vkCreateSemaphore(GetLogicalDevice(), &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
+    vkCreateFence(GetLogicalDevice(), &FenceInfo, nullptr, &m_FlightFence);
 }
 
 void RendererContext::CreateDescriptorPool()
@@ -547,7 +548,7 @@ void RendererContext::CreateDescriptorPool()
         .poolSizeCount = static_cast<uint32_t>(sizeof(PoolSizes) / sizeof(PoolSizes[0])),
         .pPoolSizes    = PoolSizes,
     };
-    vkCreateDescriptorPool(m_Device, &DescriptorPoolCi, nullptr, &m_DescriptorPool);
+    vkCreateDescriptorPool(GetLogicalDevice(), &DescriptorPoolCi, nullptr, &m_DescriptorPool);
 }
 
 VkSurfaceFormatKHR RendererContext::ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface)
