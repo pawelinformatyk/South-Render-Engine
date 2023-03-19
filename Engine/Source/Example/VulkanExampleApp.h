@@ -35,6 +35,10 @@ public:
     void Run();
 
 private:
+    void ProcessEvents();
+
+    float m_FrameTime_Sec = 0.f;
+
     std::unique_ptr<Window> m_Window = nullptr;
 
     VkInstance   m_VulkanInstance = nullptr;
@@ -61,6 +65,13 @@ private:
     VkDeviceMemory depthImageMemory = nullptr;
     VkImageView    depthImageView   = nullptr;
 
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence>     inFlightFences;
+    uint32_t                 currentFrame = 0;
+
     VkImage        textureImage       = nullptr;
     VkDeviceMemory textureImageMemory = nullptr;
     VkImageView    textureImageView   = nullptr;
@@ -73,14 +84,9 @@ private:
     VkDescriptorPool             descriptorPool = nullptr;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    std::vector<VkCommandBuffer> commandBuffers;
-
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence>     inFlightFences;
-    uint32_t                 currentFrame = 0;
 
     bool framebufferResized = false;
+
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
@@ -178,6 +184,7 @@ private:
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
+
 
     //~ Validations layers.
 private:

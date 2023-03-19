@@ -224,12 +224,22 @@ void Application::Run()
 {
     while(!glfwWindowShouldClose(m_Window->ToGlfw()))
     {
-        m_Window->ProcessEvents();
+        ProcessEvents();
+
+        std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
         DrawFrame();
+
+        m_FrameTime_Sec = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
     }
 
+    // #TODO: What is this?
     vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
+}
+
+void Application::ProcessEvents()
+{
+    m_Window->ProcessEvents();
 }
 
 void Application::framebufferResizeCallback(GLFWwindow* window, int width, int height)
