@@ -7,6 +7,7 @@ struct GLFWwindow;
 
 namespace South
 {
+
 class GraphicCard;
 class LogicalDeviceAndQueues;
 
@@ -31,59 +32,13 @@ public:
     uint32_t           GetGraphicQueueFamilyIndex() const;
     VkDevice           GetLogicalDevice() const;
     const GraphicCard& GetGraphicCard() const;
-    VkRenderPass       GetRenderPass() const;
-    VkCommandBuffer    GetCommandBuffer() const;
-    VkCommandPool      GetCommandPool() const;
-    VkDescriptorPool   GetDescriptorPool() const;
-    VkPipelineLayout   GetPipelineLayout() const;
 
 private:
     void CreateInstance();
 
     void CreateSurface(GLFWwindow& InWindow);
-    void CreateSwapChain(GLFWwindow& InWindow);
-    void CreateImageViews();
-    void CreateRenderPass();
-    void CreateGraphicsPipeline();
-    void CreateCommandPool();
-    void CreateFramebuffers();
-    void CreateCommandBuffers();
-    void CreateSyncObjects();
-    void CreateDescriptorPool();
-
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
-    VkPresentModeKHR   ChooseSwapPresentMode(VkPhysicalDevice InDevice, VkSurfaceKHR InSurface);
-    VkExtent2D         ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& InCapabilities, GLFWwindow& InWindow);
-
-    std::vector<const char*> GetRequiredInstanceExtensions();
 
     VkInstance m_VulkanInstance = nullptr;
-
-    VkSurfaceKHR               m_Surface   = nullptr;
-    VkSwapchainKHR             m_SwapChain = nullptr;
-    std::vector<VkImage>       m_SwapChainImages;
-    VkFormat                   m_SwapChainImageFormat;
-    VkExtent2D                 m_SwapChainExtent;
-    std::vector<VkImageView>   m_SwapChainImageViews;
-    std::vector<VkFramebuffer> m_SwapChainFramebuffers;
-
-    VkImage        m_DepthImage;
-    VkDeviceMemory m_DepthImageMemory;
-    VkImageView    m_DepthImageView;
-
-    VkRenderPass     m_RenderPass     = nullptr;
-    VkPipelineLayout m_PipelineLayout = nullptr;
-
-private:
-    VkPipeline m_GraphicsPipeline = nullptr;
-
-    VkDescriptorPool m_DescriptorPool;
-
-    VkCommandPool   m_CommandPool             = nullptr;
-    VkCommandBuffer m_CommandBuffer           = nullptr;
-    VkSemaphore     m_ImageAvailableSemaphore = nullptr;
-    VkSemaphore     m_RenderFinishedSemaphore = nullptr;
-    VkFence         m_FlightFence             = nullptr;
 
     GraphicCard*            m_GPU           = nullptr;
     LogicalDeviceAndQueues* m_LogicalDevice = nullptr;

@@ -1,6 +1,5 @@
 #include "sthpch.h"
 
-#include "Core/App/Application.h"
 #include "Core/App/GraphicalInterface.h"
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
@@ -24,31 +23,31 @@ void GraphicalInterface::Init()
     IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
-    ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().ToGlfw(), true);
-
-    const RendererContext& Context                 = Renderer::GetContext();
-    const GraphicCard&     GPU                     = Context.GetGraphicCard();
-    VkQueue                GraphicQueue            = Context.GetGraphicQueue();
-    uint32_t               GraphicQueueFamilyIndex = Context.GetGraphicQueueFamilyIndex();
-
-    // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
-    ImGui_ImplVulkan_InitInfo InitInfo = {
-        .Instance        = Context.GetVulkanInstance(),
-        .PhysicalDevice  = GPU.GetPhysicalDevice(),
-        .Device          = Context.GetLogicalDevice(),
-        .QueueFamily     = GraphicQueueFamilyIndex,
-        .Queue           = GraphicQueue,
-        .PipelineCache   = VK_NULL_HANDLE,
-        .DescriptorPool  = Context.GetDescriptorPool(),
-        .Subpass         = 0,
-        .MinImageCount   = 2,
-        .ImageCount      = 2,
-        .MSAASamples     = VK_SAMPLE_COUNT_1_BIT,
-        .Allocator       = VK_NULL_HANDLE,
-        .CheckVkResultFn = VK_NULL_HANDLE,
-    };
-
-    ImGui_ImplVulkan_Init(&InitInfo, Context.GetRenderPass());
+    // ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().ToGlfw(), true);
+    //
+    // const RendererContext& Context                 = Renderer::GetContext();
+    // const GraphicCard&     GPU                     = Context.GetGraphicCard();
+    // VkQueue                GraphicQueue            = Context.GetGraphicQueue();
+    // uint32_t               GraphicQueueFamilyIndex = Context.GetGraphicQueueFamilyIndex();
+    //
+    // // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
+    // ImGui_ImplVulkan_InitInfo InitInfo = {
+    //     .Instance       = Context.GetVulkanInstance(),
+    //     .PhysicalDevice = GPU.GetPhysicalDevice(),
+    //     .Device         = Context.GetLogicalDevice(),
+    //     .QueueFamily    = GraphicQueueFamilyIndex,
+    //     .Queue          = GraphicQueue,
+    //     .PipelineCache  = VK_NULL_HANDLE,
+    //     .DescriptorPool  = Context.GetDescriptorPool(),
+    //     .Subpass         = 0,
+    //     .MinImageCount   = 2,
+    //     .ImageCount      = 2,
+    //     .MSAASamples     = VK_SAMPLE_COUNT_1_BIT,
+    //     .Allocator       = VK_NULL_HANDLE,
+    //     .CheckVkResultFn = VK_NULL_HANDLE,
+    // };
+    //
+    // ImGui_ImplVulkan_Init(&InitInfo, Context.GetRenderPass());
 
     FindAndAddFonts();
     StyleColorsSouth();
@@ -56,7 +55,7 @@ void GraphicalInterface::Init()
 
 void GraphicalInterface::DeInit()
 {
-    vkDeviceWaitIdle(Renderer::GetContext().GetLogicalDevice());
+    // vkDeviceWaitIdle(Renderer::GetContext().GetLogicalDevice());
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -181,7 +180,7 @@ void GraphicalInterface::ShowTitlebar() const
     constexpr ImGuiWindowFlags TitleBarFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
                                                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking;
 
-    ImGui::Begin(Application::GetName(), nullptr, TitleBarFlags);
+    // ImGui::Begin(Application::GetName(), nullptr, TitleBarFlags);
 
     ImGui::BeginGroup();
     {
@@ -243,17 +242,17 @@ void GraphicalInterface::ShowTitlebar() const
 
             if(ImGui::Button("_"))
             {
-                Application::Get().Minimise();
+                // Application::Get().Minimise();
             }
 
             if(ImGui::Button("[ ]"))
             {
-                Application::Get().Maximise();
+                // Application::Get().Maximise();
             }
 
             if(ImGui::Button("X"))
             {
-                Application::Get().Close();
+                // Application::Get().Close();
             }
         }
         ImGui::EndMenuBar();
@@ -265,48 +264,50 @@ void GraphicalInterface::ShowTitlebar() const
 
 void GraphicalInterface::FindAndAddFonts()
 {
-    ImGuiIO& IO = ImGui::GetIO();
-
-    constexpr float FontSize = 17.f;
-    // #TODO : Path should be somewhere coded?
-    IO.FontDefault = IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", FontSize);
-    IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Cousine-Regular.ttf", FontSize);
-    IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Karla-Regular.ttf", FontSize);
-    IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyClean.ttf", FontSize);
-    IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
-    IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
-
-    const RendererContext& Context       = Renderer::GetContext();
-    VkQueue                GraphicQueue  = Context.GetGraphicQueue();
-    VkDevice               LogicalDevice = Context.GetLogicalDevice();
-
-    VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
-    VkCommandPool   CmdPool   = Context.GetCommandPool();
-
-    vkResetCommandPool(LogicalDevice, CmdPool, 0);
-
-    VkCommandBufferBeginInfo BeginInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    };
-    BeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
-
-    ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
-
-    const VkSubmitInfo SubmitInfo = {
-        .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers    = &CmdBuffer,
-    };
-
-    vkEndCommandBuffer(CmdBuffer);
-
-    vkQueueSubmit(GraphicQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
-
-    vkDeviceWaitIdle(LogicalDevice);
-
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
+    // ImGuiIO& IO = ImGui::GetIO();
+    //
+    // constexpr float FontSize = 17.f;
+    // // #TODO : Path should be somewhere coded?
+    // IO.FontDefault = IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Cousine-Regular.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Karla-Regular.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyClean.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
+    //
+    // const RendererContext& Context       = Renderer::GetContext();
+    // VkQueue                GraphicQueue  = Context.GetGraphicQueue();
+    // VkDevice               LogicalDevice = Context.GetLogicalDevice();
+    //
+    // // VkCommandBuffer CmdBuffer = Context.GetCommandBuffer();
+    // // VkCommandPool   CmdPool   = Context.GetCommandPool();
+    // VkCommandBuffer CmdBuffer = nullptr;
+    // VkCommandPool   CmdPool   = nullptr;
+    //
+    // vkResetCommandPool(LogicalDevice, CmdPool, 0);
+    //
+    // VkCommandBufferBeginInfo BeginInfo = {
+    //     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    // };
+    // BeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    //
+    // vkBeginCommandBuffer(CmdBuffer, &BeginInfo);
+    //
+    // ImGui_ImplVulkan_CreateFontsTexture(CmdBuffer);
+    //
+    // const VkSubmitInfo SubmitInfo = {
+    //     .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    //     .commandBufferCount = 1,
+    //     .pCommandBuffers    = &CmdBuffer,
+    // };
+    //
+    // vkEndCommandBuffer(CmdBuffer);
+    //
+    // vkQueueSubmit(GraphicQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
+    //
+    // vkDeviceWaitIdle(LogicalDevice);
+    //
+    // ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 void GraphicalInterface::StyleColorsSouth()
@@ -396,14 +397,14 @@ void GraphicalInterface::StyleColorsSouth()
 
 void GraphicalInterface::EndFrame()
 {
-    ImGui::Render();
-
-    ImDrawData* DrawData = ImGui::GetDrawData();
-
-    ImGui_ImplVulkan_RenderDrawData(DrawData, Renderer::GetContext().GetCommandBuffer());
-
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
+    // ImGui::Render();
+    //
+    // ImDrawData* DrawData = ImGui::GetDrawData();
+    //
+    // ImGui_ImplVulkan_RenderDrawData(DrawData, Renderer::GetContext().GetCommandBuffer());
+    //
+    // ImGui::UpdatePlatformWindows();
+    // ImGui::RenderPlatformWindowsDefault();
 }
 
 } // namespace South
