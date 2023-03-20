@@ -43,6 +43,11 @@ private:
     GraphicCard*            m_GPU           = nullptr;
     LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
 
+    std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+    std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+    std::vector<VkFence>     m_InFlightFences;
+    uint32_t                 m_CurrentFrameIndex = 0;
+
     //~ Validations layers.
 private:
     void CreateMessenger();

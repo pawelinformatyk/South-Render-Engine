@@ -46,8 +46,6 @@ private:
 
     inline static RendererContext* s_Context = nullptr;
 
-    // Image from swapchain.
-    inline static uint32_t s_ImageIndex = 0;
 
     inline static VertexIndexBuffer* s_QuadModelBuffer     = nullptr;
     inline static UniformBuffer*     s_CameraUniformBuffer = nullptr;

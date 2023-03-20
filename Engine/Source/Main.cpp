@@ -1,6 +1,5 @@
 #include "sthpch.h"
 
-#include "Core/App/Application.h"
 #include "Example/VulkanExampleApp.h"
 
 int main(int argc, char** argv)
@@ -9,7 +8,7 @@ int main(int argc, char** argv)
 
     STH_INFO("Application Start");
 
-    auto* App = new South::VulkanTutorial::Application;
+    auto* App = new South::Application;
 
     App->Run();
 

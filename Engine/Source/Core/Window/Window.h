@@ -10,11 +10,6 @@ namespace South
 class Window
 {
 public:
-    using KeyPressedCallback = std::function<void(int Key, int Scancode, int Action, int Mods)>;
-    using IconifiedCallback  = std::function<void(bool bIconified)>;
-    using MaximisedCallback  = std::function<void()>;
-    using MousePosCallback   = std::function<void(double, double)>;
-
     struct CreateInfo
     {
         bool        bFullscreen = true;
@@ -23,19 +18,10 @@ public:
         std::string Name;
     };
 
-    explicit Window(const CreateInfo& InInfo);
+    Window(const CreateInfo& InInfo);
+    ~Window();
 
-    static void Init(Window&                   Window,
-                     const KeyPressedCallback& InOnKeyPressedCallback,
-                     const IconifiedCallback&  InOnIconifiedCallback,
-                     const MaximisedCallback&  InOnMaximisedCallbackCallback,
-                     const MousePosCallback&   InOnMousePosChange);
-    static void DeInit(Window& Window);
-
-    GLFWwindow* ToGlfw() const
-    {
-        return m_glfwWindow;
-    }
+    GLFWwindow* ToGlfw() const;
 
 private:
     GLFWwindow* m_glfwWindow = nullptr;
@@ -47,17 +33,22 @@ private:
 public:
     void ProcessEvents();
 
-    void Minimise();
-    void Maximise();
+    // void Minimise();
+    // void Maximise();
 
 private:
-    struct WindowUserData
-    {
-        KeyPressedCallback OnWindowKeyPressed;
-        IconifiedCallback  OnWindowIconified;
-        MaximisedCallback  OnWindowMaximised;
-        MousePosCallback   OnMousePosChange;
-    } m_WindowUserData;
+    // using KeyPressedCallback = std::function<void(int Key, int Scancode, int Action, int Mods)>;
+    // using IconifiedCallback  = std::function<void(bool bIconified)>;
+    // using MaximisedCallback  = std::function<void()>;
+    // using MousePosCallback   = std::function<void(double, double)>;
+    //
+    // struct WindowUserData
+    // {
+    //     KeyPressedCallback OnWindowKeyPressed;
+    //     IconifiedCallback  OnWindowIconified;
+    //     MaximisedCallback  OnWindowMaximised;
+    //     MousePosCallback   OnMousePosChange;
+    // } m_WindowUserData;
 
     //~ Events
 };
