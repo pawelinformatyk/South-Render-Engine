@@ -140,52 +140,6 @@ void Renderer::BeginFrame()
     //     vkCmdBeginRenderPass(CmdBuffer, &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     //
     //     vkCmdBindPipeline(CmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, s_Context->m_GraphicsPipeline);
-
-    //
-
-    // const VkDevice LogDevice = s_Context->GetLogicalDevice();
-    //
-    // vkWaitForFences(LogDevice, 1, &s_Context->m_InFlightFences[s_Context->m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
-    //
-    // uint32_t ImageIndex;
-    // vkAcquireNextImageKHR(LogDevice,
-    //                       m_SwapChain,
-    //                       UINT64_MAX,
-    //                       s_Context->m_ImageAvailableSemaphores[s_Context->m_CurrentFrameIndex],
-    //                       VK_NULL_HANDLE,
-    //                       &ImageIndex);
-    //
-    // // UpdateCameraBuffer(m_CurrentFrameIndex);
-    //
-    // vkResetFences(LogDevice, 1, &s_Context->m_InFlightFences[s_Context->m_CurrentFrameIndex]);
-    //
-    // vkResetCommandBuffer(m_CommandBuffers[s_Context->m_CurrentFrameIndex], /*VkCommandBufferResetFlagBits*/ 0);
-    //
-    // VkCommandBufferBeginInfo beginInfo {};
-    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    //
-    // if(vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to begin recording command buffer!");
-    // }
-    //
-    // VkRenderPassBeginInfo renderPassInfo {};
-    // renderPassInfo.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    // renderPassInfo.renderPass        = m_RenderPass;
-    // renderPassInfo.framebuffer       = m_SwapChainFramebuffers[ImageIndex];
-    // renderPassInfo.renderArea.offset = {0, 0};
-    // renderPassInfo.renderArea.extent = m_SwapChainExtent;
-    //
-    // std::array<VkClearValue, 2> clearValues {};
-    // clearValues[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    // clearValues[1].depthStencil = {1.0f, 0};
-    //
-    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    // renderPassInfo.pClearValues    = clearValues.data();
-    //
-    // vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    //
-    // vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 }
 
 // void Renderer::RenderExampleScene()

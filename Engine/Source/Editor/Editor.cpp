@@ -8,6 +8,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "EditorViewport.h"
 #include "Example/stb_image.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
 
 #include "Core/Buffers/UniformBuffer.h"
 #include "Core/Buffers/VertexIndexBuffer.h"
@@ -102,47 +105,80 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
         {static_cast<const void*>(g_Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(g_Vertices.size())},
         {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
 
-    // IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    //
-    // ImGuiIO& IO = ImGui::GetIO();
-    //
-    // IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    // IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    // IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+    // #TODO: Add ImGui ignoring other rendering.
 
-    // ImGui_ImplGlfw_InitForVulkan(Application::Get().GetWindow().ToGlfw(), true);
-    //
-    // const RendererContext& Context                 = Renderer::GetContext();
-    // const GraphicCard&     GPU                     = Context.GetGraphicCard();
-    // VkQueue                GraphicQueue            = Context.GetGraphicQueue();
-    // uint32_t               GraphicQueueFamilyIndex = Context.GetGraphicQueueFamilyIndex();
-    //
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGuiIO& IO = ImGui::GetIO();
+
+    IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+
+    ImGui_ImplGlfw_InitForVulkan(&InWindow, true);
+
     // // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
-    // ImGui_ImplVulkan_InitInfo InitInfo = {
-    //     .Instance       = Context.GetVulkanInstance(),
-    //     .PhysicalDevice = GPU.GetPhysicalDevice(),
-    //     .Device         = Context.GetLogicalDevice(),
-    //     .QueueFamily    = GraphicQueueFamilyIndex,
-    //     .Queue          = GraphicQueue,
-    //     .PipelineCache  = VK_NULL_HANDLE,
-    //     .DescriptorPool  = Context.GetDescriptorPool(),
-    //     .Subpass         = 0,
-    //     .MinImageCount   = 2,
-    //     .ImageCount      = 2,
-    //     .MSAASamples     = VK_SAMPLE_COUNT_1_BIT,
-    //     .Allocator       = VK_NULL_HANDLE,
-    //     .CheckVkResultFn = VK_NULL_HANDLE,
-    // };
-    //
-    // ImGui_ImplVulkan_Init(&InitInfo, Context.GetRenderPass());
+    ImGui_ImplVulkan_InitInfo InitInfo = {
+        .Instance        = m_VulkanInstance,
+        .PhysicalDevice  = m_GPU->GetPhysicalDevice(),
+        .Device          = m_LogicalDevice->GetLogicalDevice(),
+        .QueueFamily     = m_LogicalDevice->GetGraphicQueueFamilyIndex(),
+        .Queue           = m_LogicalDevice->GetGraphicQueue(),
+        .PipelineCache   = nullptr,
+        .DescriptorPool  = m_DescriptorPool,
+        .Subpass         = 0,
+        .MinImageCount   = 2,
+        .ImageCount      = MAX_FRAMES_IN_FLIGHT,
+        .MSAASamples     = VK_SAMPLE_COUNT_1_BIT,
+        .Allocator       = nullptr,
+        .CheckVkResultFn = nullptr,
+    };
+    ImGui_ImplVulkan_Init(&InitInfo, m_RenderPass);
+
+    // constexpr float FontSize = 17.f;
+    // #TODO : Path should be somewhere coded?
+    // IO.FontDefault = IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\DroidSans.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Cousine-Regular.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Karla-Regular.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyClean.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
+    // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
+
+    vkResetCommandPool(m_LogicalDevice->GetLogicalDevice(), m_CommandPool, 0);
+
+    VkCommandBufferBeginInfo BeginInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    };
+    BeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], &BeginInfo);
+
+    ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffers[m_CurrentFrameIndex]);
+
+    const VkSubmitInfo SubmitInfo = {
+        .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers    = &m_CommandBuffers[m_CurrentFrameIndex],
+    };
+
+    vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex]);
+
+    vkQueueSubmit(m_LogicalDevice->GetGraphicQueue(), 1, &SubmitInfo, VK_NULL_HANDLE);
+
+    vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
+
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 Editor::~Editor()
 {
-    // ImGui_ImplVulkan_Shutdown();
-    // ImGui_ImplGlfw_Shutdown();
-    // ImGui::DestroyContext();
+    // #TODO: What is this?
+    vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
+
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     CleanupSwapChain();
 
@@ -195,96 +231,151 @@ void Editor::Tick()
     UpdateCamera(m_CurrentFrameIndex);
 }
 
-void Editor::Render()
+void Editor::BeginFrame()
 {
     const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
 
+    // Wait for the previous frame to finish
     vkWaitForFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
-
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(Device,
-                                            m_SwapChain,
-                                            UINT64_MAX,
-                                            m_ImageAvailableSemaphores[m_CurrentFrameIndex],
-                                            VK_NULL_HANDLE,
-                                            &imageIndex);
-
-    if(result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-        RecreateSwapChain();
-        return;
-    }
-    else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    {
-        throw std::runtime_error("failed to acquire swap chain image!");
-    }
-
-
     vkResetFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
-    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], /*VkCommandBufferResetFlagBits*/ 0);
-    RecordCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], imageIndex);
+    vkAcquireNextImageKHR(Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], nullptr, &m_CurrentImageIndex);
 
-    VkSubmitInfo submitInfo {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0x00);
 
-    VkSemaphore          waitSemaphores[] = {m_ImageAvailableSemaphores[m_CurrentFrameIndex]};
-    VkPipelineStageFlags waitStages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount         = 1;
-    submitInfo.pWaitSemaphores            = waitSemaphores;
-    submitInfo.pWaitDstStageMask          = waitStages;
+    const VkCommandBufferBeginInfo BeginInfo {
+        .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext            = nullptr,
+        .flags            = 0,
+        .pInheritanceInfo = nullptr,
+    };
+    vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], &BeginInfo);
 
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers    = &m_CommandBuffers[m_CurrentFrameIndex];
 
-    VkSemaphore signalSemaphores[]  = {m_RenderFinishedSemaphores[m_CurrentFrameIndex]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores    = signalSemaphores;
+    std::array<VkClearValue, 2> ClearColor {};
+    ClearColor[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    ClearColor[1].depthStencil = {1.0f, 0};
 
-    if(vkQueueSubmit(m_LogicalDevice->GetGraphicQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    const VkRenderPassBeginInfo RenderPassInfo {
+        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .pNext           = nullptr,
+        .renderPass      = m_RenderPass,
+        .framebuffer     = m_SwapChainFramebuffers[m_CurrentImageIndex],
+        .renderArea      = VkRect2D({0, 0}, m_SwapChainExtent),
+        .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
+        .pClearValues    = ClearColor.data(),
+    };
+    vkCmdBeginRenderPass(m_CommandBuffers[m_CurrentFrameIndex], &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkPresentInfoKHR presentInfo {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+}
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores    = signalSemaphores;
+void Editor::EndFrame()
+{
+    vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
+    vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex]);
+}
 
-    VkSwapchainKHR swapChains[] = {m_SwapChain};
-    presentInfo.swapchainCount  = 1;
-    presentInfo.pSwapchains     = swapChains;
+void Editor::Render()
+{
+    VkViewport viewport {};
+    viewport.x        = 0.0f;
+    viewport.y        = 0.0f;
+    viewport.width    = (float)m_SwapChainExtent.width;
+    viewport.height   = (float)m_SwapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &viewport);
 
-    presentInfo.pImageIndices = &imageIndex;
+    VkRect2D scissor {};
+    scissor.offset = {0, 0};
+    scissor.extent = m_SwapChainExtent;
+    vkCmdSetScissor(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &scissor);
 
-    result = vkQueuePresentKHR(m_LogicalDevice->GetPresentQueue(), &presentInfo);
+    const VkBuffer         QuadBuffer = m_QuadBuffer->GetBuffer();
+    constexpr VkDeviceSize Offset     = 0;
+    vkCmdBindVertexBuffers(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &QuadBuffer, &Offset);
 
-    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-    {
-        RecreateSwapChain();
-    }
-    else if(result != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to present swap chain image!");
-    }
+    vkCmdBindIndexBuffer(m_CommandBuffers[m_CurrentFrameIndex], QuadBuffer, m_QuadBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
 
-    m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+    vkCmdBindDescriptorSets(m_CommandBuffers[m_CurrentFrameIndex],
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_PipelineLayout,
+                            0,
+                            1,
+                            &m_DescriptorSets[m_CurrentFrameIndex],
+                            0,
+                            nullptr);
+
+    vkCmdDrawIndexed(m_CommandBuffers[m_CurrentFrameIndex], m_QuadBuffer->GetIndicesCount(), 1, 0, 0, 0);
 }
 
 void Editor::BeginGUI()
 {
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 }
 
 void Editor::RenderGUI()
 {
     // #TODO: Setup UI and when drawing ui layer get image of a scene (from framebuffer).
+
+    static ImGuiDockNodeFlags Opt_Flags = ImGuiDockNodeFlags_None;
+    //
+    // const ImGuiID DockSpaceId = ImGui::GetID("Dockspace");
+    // ImGui::DockSpace(DockSpaceId, ImVec2(0.0f, 0.0f), Opt_Flags);
+
+    const ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
+
+    // #TODO: Crash after x seconds - too many adding, get texture?
+    ImTextureID TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    ImGui::Image(TextureId, ViewportSize);
 }
 
 void Editor::EndGUI()
 {
+    ImGui::Render();
+
+    ImDrawData* DrawData = ImGui::GetDrawData();
+
+    ImGui_ImplVulkan_RenderDrawData(DrawData, m_CommandBuffers[m_CurrentFrameIndex]);
+
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
 }
 
+void Editor::Present()
+{
+    VkPipelineStageFlags WaitStages(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+
+    const VkSubmitInfo SubmitInfo {
+        .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext                = nullptr,
+        .waitSemaphoreCount   = 1,
+        .pWaitSemaphores      = &m_ImageAvailableSemaphores[m_CurrentFrameIndex],
+        .pWaitDstStageMask    = &WaitStages,
+        .commandBufferCount   = 1,
+        .pCommandBuffers      = &m_CommandBuffers[m_CurrentFrameIndex],
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
+    };
+    vkQueueSubmit(m_LogicalDevice->GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
+
+    const VkPresentInfoKHR PresentInfo {
+        .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext              = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
+        .swapchainCount     = 1,
+        .pSwapchains        = &m_SwapChain,
+        .pImageIndices      = &m_CurrentImageIndex,
+        .pResults           = nullptr,
+    };
+    vkQueuePresentKHR(m_LogicalDevice->GetPresentQueue(), &PresentInfo);
+
+    m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+}
 
 void Editor::CleanupSwapChain()
 {
@@ -950,22 +1041,27 @@ void Editor::CreateCameraUbos()
 
 void Editor::CreateDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes {};
-    poolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    poolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    // #TODO: How many PoolSizes? And how many sets.
+    const std::vector<VkDescriptorPoolSize> PoolSizes = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                                         {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
-    VkDescriptorPoolCreateInfo poolInfo {};
-    poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes    = poolSizes.data();
-    poolInfo.maxSets       = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-    if(vkCreateDescriptorPool(m_LogicalDevice->GetLogicalDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create descriptor pool!");
-    }
+    const VkDescriptorPoolCreateInfo CreateInfo = {
+        .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+        .maxSets       = 1000 * static_cast<uint32_t>(PoolSizes.size()),
+        .poolSizeCount = static_cast<uint32_t>(PoolSizes.size()),
+        .pPoolSizes    = PoolSizes.data(),
+    };
+    vkCreateDescriptorPool(m_LogicalDevice->GetLogicalDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
 }
 
 void Editor::CreateDescriptorSets()
@@ -1131,74 +1227,6 @@ void Editor::CreateCommandBuffers()
     if(vkAllocateCommandBuffers(m_LogicalDevice->GetLogicalDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
-    }
-}
-
-void Editor::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
-{
-    VkCommandBufferBeginInfo beginInfo {};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    if(vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
-
-    VkRenderPassBeginInfo renderPassInfo {};
-    renderPassInfo.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass        = m_RenderPass;
-    renderPassInfo.framebuffer       = m_SwapChainFramebuffers[imageIndex];
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = m_SwapChainExtent;
-
-    std::array<VkClearValue, 2> clearValues {};
-    clearValues[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValues[1].depthStencil = {1.0f, 0};
-
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues    = clearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
-
-    VkViewport viewport {};
-    viewport.x        = 0.0f;
-    viewport.y        = 0.0f;
-    viewport.width    = (float)m_SwapChainExtent.width;
-    viewport.height   = (float)m_SwapChainExtent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor {};
-    scissor.offset = {0, 0};
-    scissor.extent = m_SwapChainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-
-    const VkBuffer         QuadBuffer = m_QuadBuffer->GetBuffer();
-    constexpr VkDeviceSize Offset     = 0;
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &QuadBuffer, &Offset);
-
-    vkCmdBindIndexBuffer(commandBuffer, QuadBuffer, m_QuadBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
-
-    vkCmdBindDescriptorSets(commandBuffer,
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            m_PipelineLayout,
-                            0,
-                            1,
-                            &m_DescriptorSets[m_CurrentFrameIndex],
-                            0,
-                            nullptr);
-
-    vkCmdDrawIndexed(commandBuffer, m_QuadBuffer->GetIndicesCount(), 1, 0, 0, 0);
-
-    vkCmdEndRenderPass(commandBuffer);
-
-    if(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to record command buffer!");
     }
 }
 

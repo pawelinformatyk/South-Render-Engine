@@ -29,11 +29,17 @@ public:
     ~Editor();
 
     void Tick();
+
+    void BeginFrame();
+    void EndFrame();
+
     void Render();
 
     void BeginGUI();
     void RenderGUI();
     void EndGUI();
+
+    void Present();
 
 private:
     EditorViewport* m_MainViewport = nullptr;
@@ -70,6 +76,7 @@ private:
     std::vector<VkSemaphore> m_RenderFinishedSemaphores;
     std::vector<VkFence>     m_InFlightFences;
     uint32_t                 m_CurrentFrameIndex = 0;
+    uint32_t                 m_CurrentImageIndex = 0;
 
     VkImage        m_TextureImage       = nullptr;
     VkDeviceMemory m_TextureImageMemory = nullptr;
@@ -82,6 +89,7 @@ private:
 
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
+
 
     void CleanupSwapChain();
 
@@ -157,8 +165,6 @@ private:
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void CreateCommandBuffers();
-
-    void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void CreateSyncObjects();
 

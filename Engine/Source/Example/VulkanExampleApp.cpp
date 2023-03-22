@@ -22,9 +22,7 @@ Application::Application()
     m_Editor = std::make_unique<Editor>(*m_Window->ToGlfw());
 }
 
-Application::~Application()
-{
-}
+Application::~Application() = default;
 
 void Application::Run()
 {
@@ -34,7 +32,8 @@ void Application::Run()
 
         std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
-        Renderer::BeginFrame();
+        // Renderer::BeginFrame();
+        m_Editor->BeginFrame();
         {
             m_Editor->Tick();
 
@@ -44,13 +43,13 @@ void Application::Run()
             m_Editor->RenderGUI();
             m_Editor->EndGUI();
         }
-        Renderer::EndFrame();
+        m_Editor->EndFrame();
+        // Renderer::EndFrame();
+
+        m_Editor->Present();
 
         m_FrameTime_Sec = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
     }
-
-    // #TODO: What is this?
-    // vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
 }
 
 void Application::ProcessEvents()
