@@ -6,8 +6,8 @@
 #include "GLFW/glfw3.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "EditorViewport.h"
 #include "Example/stb_image.h"
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
@@ -16,20 +16,8 @@
 #include "Core/Buffers/VertexIndexBuffer.h"
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Shaders/ShadersLibrary.h"
-#include "Core/Window/Window.h"
-#include "Editor/Camera.h"
-#include "Editor/Mesh.h"
-#include <algorithm>
-#include <array>
-#include <cstdint>
-#include <cstring>
-#include <ext/matrix_clip_space.hpp>
-#include <fstream>
-#include <limits>
-#include <stdexcept>
-#include <vec2.hpp>
-#include <vec3.hpp>
-#include <vector>
+#include "EditorViewport.h"
+#include "Mesh.h"
 
 namespace South
 {
@@ -169,6 +157,8 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
     vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    m_TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 Editor::~Editor()
@@ -328,9 +318,7 @@ void Editor::RenderGUI()
 
     const ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
 
-    // #TODO: Crash after x seconds - too many adding, get texture?
-    ImTextureID TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    ImGui::Image(TextureId, ViewportSize);
+    ImGui::Image(m_TextureId, ViewportSize);
 }
 
 void Editor::EndGUI()
@@ -1258,8 +1246,12 @@ void Editor::CreateSyncObjects()
 
 void Editor::UpdateCamera(uint32_t currentImage)
 {
+    static auto StartTime = std::chrono::high_resolution_clock::now();
+    const auto  CurrTime  = std::chrono::high_resolution_clock::now();
+    const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
+
     const UniformBufferObject Ubo {
-        .m_Model = glm::mat4(1.0f),
+        .m_Model = glm::rotate(glm::mat4(1.0f), DeltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         .m_View  = g_EditorCam.GetView(),
         .m_Proj  = g_EditorCam.GetProjection(),
     };

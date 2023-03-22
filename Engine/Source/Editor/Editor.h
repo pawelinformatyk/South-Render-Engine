@@ -1,5 +1,7 @@
 #pragma once
 
+#include "imconfig.h"
+
 #include <vulkan/vulkan_core.h>
 
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -90,6 +92,7 @@ private:
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
 
+    ImTextureID m_TextureId;
 
     void CleanupSwapChain();
 
