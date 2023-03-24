@@ -61,6 +61,8 @@ private:
     std::vector<VkImageView>   m_SwapChainImageViews;
     std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
+    VkImageView m_LastFrame = nullptr;
+
     VkRenderPass          m_RenderPass          = nullptr;
     VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
     VkPipelineLayout      m_PipelineLayout      = nullptr;

@@ -115,7 +115,6 @@
     <ClCompile Include="Source\Editor\Camera.cpp" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Editor\EditorViewport.cpp" />
-    <ClCompile Include="Source\Editor\Entity.cpp" />
     <ClCompile Include="Source\Editor\Scene.cpp" />
     <ClCompile Include="Source\Editor\Mesh.cpp" />
     <ClCompile Include="Source\Core\Tutorial.cpp" />
@@ -147,7 +146,6 @@
     <ClInclude Include="Source\Editor\Camera.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
     <ClInclude Include="Source\Editor\EditorViewport.h" />
-    <ClInclude Include="Source\Editor\Entity.h" />
     <ClInclude Include="Source\Editor\Mesh.h" />
     <ClInclude Include="Source\Core\Tutorial.h" />
     <ClInclude Include="Source\Editor\Scene.h" />

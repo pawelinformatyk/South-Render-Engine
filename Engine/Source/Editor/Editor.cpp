@@ -241,7 +241,6 @@ void Editor::BeginFrame()
     };
     vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], &BeginInfo);
 
-
     std::array<VkClearValue, 2> ClearColor {};
     ClearColor[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
     ClearColor[1].depthStencil = {1.0f, 0};
@@ -310,24 +309,48 @@ void Editor::BeginGUI()
 void Editor::RenderGUI()
 {
     // #TODO: Setup UI and when drawing ui layer get image of a scene (from framebuffer).
+    if(m_CurrentFrameIndex == 0 || !m_SwapChainImageViews[0])
+    {
+        return;
+    }
 
-    static ImGuiDockNodeFlags Opt_Flags = ImGuiDockNodeFlags_None;
-    //
-    // const ImGuiID DockSpaceId = ImGui::GetID("Dockspace");
-    // ImGui::DockSpace(DockSpaceId, ImVec2(0.0f, 0.0f), Opt_Flags);
+    ImGuiIO& IO                     = ImGui::GetIO();
+    IO.ConfigWindowsResizeFromEdges = IO.BackendFlags & ImGuiBackendFlags_HasMouseCursors;
 
-    const ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
+    constexpr ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                             ImGuiWindowFlags_NoNavFocus;
 
-    ImGui::Image(m_TextureId, ViewportSize);
+    ImGuiViewport* Viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(Viewport->Pos);
+    ImGui::SetNextWindowSize(Viewport->Size);
+    ImGui::SetNextWindowViewport(Viewport->ID);
+
+    ImGui::Begin("DockspaceD", nullptr, WindowFlags);
+    {
+        const ImGuiID DockSpaceId = ImGui::GetID("Dockspace");
+        ImGui::DockSpace(DockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+        ImGui::Begin("Viewport");
+        {
+            const ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
+
+            m_TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_SwapChainImageViews[0], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+            ImGui::Image(m_TextureId, ViewportSize);
+        }
+        ImGui::End();
+    }
+    ImGui::End();
 }
 
 void Editor::EndGUI()
 {
     ImGui::Render();
 
-    ImDrawData* DrawData = ImGui::GetDrawData();
+    ImDrawData& DrawData = *ImGui::GetDrawData();
 
-    ImGui_ImplVulkan_RenderDrawData(DrawData, m_CommandBuffers[m_CurrentFrameIndex]);
+    ImGui_ImplVulkan_RenderDrawData(&DrawData, m_CommandBuffers[m_CurrentFrameIndex]);
 
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
@@ -480,7 +503,7 @@ void Editor::CreateSwapChain()
     createInfo.imageColorSpace  = surfaceFormat.colorSpace;
     createInfo.imageExtent      = extent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
     const uint32_t queueFamilyIndices[] = {m_LogicalDevice->GetGraphicQueueFamilyIndex(), m_LogicalDevice->GetPresentQueueFamilyIndex()};
 
