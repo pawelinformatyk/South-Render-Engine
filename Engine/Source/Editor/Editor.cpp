@@ -21,6 +21,95 @@
 
 namespace South
 {
+namespace Private
+{
+
+void InitImGuiStyle()
+{
+    ImGuiStyle& Style = ImGui::GetStyle();
+
+    ImVec4* Colors                         = Style.Colors;
+    Colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    Colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, .50f);
+    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    Colors[ImGuiCol_PopupBg]               = ImVec4(0.19f, 0.19f, 0.19f, 0.92f);
+    Colors[ImGuiCol_Border]                = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
+    Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
+    Colors[ImGuiCol_FrameBg]               = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+    Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
+    Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+    Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.4156f, 0.3529f, 0.8039f, 1.00f);
+    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+    Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
+    Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
+    Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.66f, 0.66f, 0.66f, 0.54f);
+    Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_SliderGrab]            = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
+    Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
+    Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+    Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.70f);
+    Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_Header]                = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);
+    Colors[ImGuiCol_HeaderActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.33f);
+    Colors[ImGuiCol_Separator]             = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+    Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
+    Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+    Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+    Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
+    Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+    Colors[ImGuiCol_Tab]                   = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    Colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
+    Colors[ImGuiCol_TabUnfocused]          = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.05f, 0.05f, 0.05f, 0.50f);
+    Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    Colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.00f, 0.00f, 0.70f);
+    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(1.00f, 0.00f, 0.00f, 0.20f);
+    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
+
+    Style.WindowPadding     = ImVec2(8.00f, 8.00f);
+    Style.FramePadding      = ImVec2(5.00f, 2.00f);
+    Style.CellPadding       = ImVec2(6.00f, 6.00f);
+    Style.ItemSpacing       = ImVec2(6.00f, 6.00f);
+    Style.ItemInnerSpacing  = ImVec2(6.00f, 6.00f);
+    Style.TouchExtraPadding = ImVec2(0.00f, 0.00f);
+    Style.IndentSpacing     = 25;
+    Style.ScrollbarSize     = 15;
+    Style.GrabMinSize       = 10;
+    Style.WindowBorderSize  = 1;
+    Style.ChildBorderSize   = 1;
+    Style.PopupBorderSize   = 1;
+    Style.FrameBorderSize   = 1;
+    Style.TabBorderSize     = 1;
+    Style.WindowRounding    = 0.f;
+    Style.ChildRounding     = 4;
+    Style.FrameRounding     = 3;
+    Style.PopupRounding     = 4;
+    Style.ScrollbarRounding = 9;
+    Style.GrabRounding      = 3;
+    Style.LogSliderDeadzone = 4;
+    Style.TabRounding       = 4;
+}
+
+} // namespace Private
 
 Camera g_EditorCam;
 
@@ -158,7 +247,7 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-    m_TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_TextureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    Private::InitImGuiStyle();
 }
 
 Editor::~Editor()
@@ -309,10 +398,7 @@ void Editor::BeginGUI()
 void Editor::RenderGUI()
 {
     // #TODO: Setup UI and when drawing ui layer get image of a scene (from framebuffer).
-    if(m_CurrentFrameIndex == 0 || !m_SwapChainImageViews[0])
-    {
-        return;
-    }
+
 
     ImGuiIO& IO                     = ImGui::GetIO();
     IO.ConfigWindowsResizeFromEdges = IO.BackendFlags & ImGuiBackendFlags_HasMouseCursors;
@@ -321,23 +407,30 @@ void Editor::RenderGUI()
                                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
                                              ImGuiWindowFlags_NoNavFocus;
 
-    ImGuiViewport* Viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(Viewport->Pos);
-    ImGui::SetNextWindowSize(Viewport->Size);
-    ImGui::SetNextWindowViewport(Viewport->ID);
+    const ImGuiViewport& Viewport = *ImGui::GetMainViewport();
 
-    ImGui::Begin("DockspaceD", nullptr, WindowFlags);
+    ImGui::SetNextWindowPos(Viewport.Pos);
+    ImGui::SetNextWindowSize(Viewport.Size);
+    ImGui::SetNextWindowViewport(Viewport.ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
+    ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4 {0.0f, 0.0f, 0.0f, 0.0f});
+
+    ImGui::Begin("Editor", nullptr, WindowFlags);
     {
-        const ImGuiID DockSpaceId = ImGui::GetID("Dockspace");
-        ImGui::DockSpace(DockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+        ImGui::PopStyleColor(); // MenuBarBg
+        ImGui::PopStyleVar(2);
+
+        ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
         ImGui::Begin("Viewport");
         {
             const ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
 
-            m_TextureId = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_SwapChainImageViews[0], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-            ImGui::Image(m_TextureId, ViewportSize);
+            if(m_TextureId)
+            {
+                ImGui::Image(m_TextureId, ViewportSize);
+            }
         }
         ImGui::End();
     }
@@ -384,6 +477,9 @@ void Editor::Present()
         .pResults           = nullptr,
     };
     vkQueuePresentKHR(m_LogicalDevice->GetPresentQueue(), &PresentInfo);
+
+    // m_TextureId =
+    //     ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_SwapChainImageViews[m_CurrentFrameIndex], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
