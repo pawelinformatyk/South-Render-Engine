@@ -17,7 +17,7 @@ public:
 private:
     void ProcessEvents();
 
-    float m_FrameTime_Sec = 0.f;
+    double m_FrameTime_Sec = 0.f;
 
     std::unique_ptr<Window> m_Window = nullptr;
 

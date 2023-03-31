@@ -28,6 +28,8 @@ void Application::Run()
 {
     while(!glfwWindowShouldClose(m_Window->ToGlfw()))
     {
+        m_Window->Tick(m_FrameTime_Sec);
+
         ProcessEvents();
 
         std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
@@ -35,6 +37,7 @@ void Application::Run()
         // Renderer::BeginFrame();
         m_Editor->BeginFrame();
         {
+            // #TODO: Move before BeginFrame?
             m_Editor->Tick();
 
             m_Editor->Render();
@@ -48,7 +51,7 @@ void Application::Run()
 
         m_Editor->Present();
 
-        m_FrameTime_Sec = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
+        m_FrameTime_Sec = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
     }
 }
 

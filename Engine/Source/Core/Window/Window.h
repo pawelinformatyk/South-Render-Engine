@@ -23,6 +23,8 @@ public:
 
     GLFWwindow* ToGlfw() const;
 
+    void Tick(double InDeltaTime);
+
 private:
     GLFWwindow* m_glfwWindow = nullptr;
 

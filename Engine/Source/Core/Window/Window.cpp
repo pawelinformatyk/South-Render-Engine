@@ -90,6 +90,15 @@ GLFWwindow* Window::ToGlfw() const
     return m_glfwWindow;
 }
 
+// #TODO : Add class TickableObject so app can find these classes and then iterate and tick.
+void Window::Tick(const double InDeltaTime)
+{
+    const int         Fps      = static_cast<int>(1 / InDeltaTime);
+    const std::string NewTitle = m_Specification.Name + " FPS: " + std::to_string(Fps);
+
+    glfwSetWindowTitle(m_glfwWindow, NewTitle.c_str());
+}
+
 void Window::ProcessEvents()
 {
     glfwPollEvents();

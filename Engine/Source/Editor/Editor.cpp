@@ -478,8 +478,8 @@ void Editor::Present()
     };
     vkQueuePresentKHR(m_LogicalDevice->GetPresentQueue(), &PresentInfo);
 
-    // m_TextureId =
-    //     ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_SwapChainImageViews[m_CurrentFrameIndex], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    m_TextureId =
+        ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_SwapChainImageViews[m_CurrentFrameIndex], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
