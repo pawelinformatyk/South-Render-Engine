@@ -61,20 +61,31 @@ private:
     std::vector<VkImageView>   m_SwapChainImageViews;
     std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
-    VkImageView m_LastFrame = nullptr;
+    VkImage        m_SwapchainDepthImage       = nullptr;
+    VkDeviceMemory m_SwapchainDepthImageMemory = nullptr;
+    VkImageView    m_SwapchainDepthImageView   = nullptr;
 
-    VkRenderPass          m_RenderPass          = nullptr;
-    VkDescriptorSetLayout m_DescriptorSetLayout = nullptr;
-    VkPipelineLayout      m_PipelineLayout      = nullptr;
-    VkPipeline            m_GraphicsPipeline    = nullptr;
+    VkRenderPass     m_SwapchainRenderPass       = nullptr;
+    VkPipelineLayout m_SwapchainPipelineLayout   = nullptr;
+    VkPipeline       m_SwapchainGraphicsPipeline = nullptr;
 
-    VkCommandPool m_CommandPool = nullptr;
+    VkExtent2D                  m_ViewportExtent = {100, 100};
+    std::vector<VkImage>        m_ViewportImages;
+    std::vector<VkDeviceMemory> m_ViewportImagesMemories;
+    std::vector<VkImageView>    m_ViewportImagesViews;
+    std::vector<VkFramebuffer>  m_ViewportFramebuffers;
 
-    VkImage        m_DepthImage       = nullptr;
-    VkDeviceMemory m_DepthImageMemory = nullptr;
-    VkImageView    m_DepthImageView   = nullptr;
+    VkRenderPass     m_ViewportRenderPass       = nullptr;
+    VkPipelineLayout m_ViewportPipelineLayout   = nullptr;
+    VkPipeline       m_ViewportGraphicsPipeline = nullptr;
 
+    VkImage        m_ViewportDepthImage       = nullptr;
+    VkDeviceMemory m_ViewportDepthImageMemory = nullptr;
+    VkImageView    m_ViewportDepthImageView   = nullptr;
+
+    VkCommandPool                m_CommandPool = nullptr;
     std::vector<VkCommandBuffer> m_CommandBuffers;
+    VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
 
     std::vector<VkSemaphore> m_ImageAvailableSemaphores;
     std::vector<VkSemaphore> m_RenderFinishedSemaphores;
@@ -94,7 +105,8 @@ private:
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
 
-    ImTextureID m_TextureId;
+    std::vector<ImTextureID> m_ViewportTextures;
+    ImTextureID              m_LastViewportTexture = nullptr;
 
     void CleanupSwapChain();
 
@@ -106,21 +118,24 @@ private:
 
     void CreateDevices();
 
-    void CreateSwapChain();
+    void CreateSwapchain();
+    void CreateSwapchainImageViews();
+    void CreateSwapchainRenderPass();
+    void CreateSwapchainGraphicsPipeline();
+    void CreateSwapchainFramebuffers();
 
-    void CreateImageViews();
-
-    void CreateRenderPass();
+    void CreateViewportImages();
+    void CreateViewportImageViews();
+    void CreateViewportRenderPass();
+    void CreateViewportGraphicsPipeline();
+    void CreateViewportFramebuffers();
 
     void CreateDescriptorSetLayout();
 
-    void CreateGraphicsPipeline();
-
-    void CreateFramebuffers();
-
     void CreateCommandPool();
 
-    void CreateDepthResources();
+    void CreateSwapchainDepthResources();
+    void CreateViewportDepthResources();
 
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
@@ -135,15 +150,6 @@ private:
     void CreateTextureSampler();
 
     VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-
-    void CreateImage(uint32_t              width,
-                     uint32_t              height,
-                     VkFormat              format,
-                     VkImageTiling         tiling,
-                     VkImageUsageFlags     usage,
-                     VkMemoryPropertyFlags properties,
-                     VkImage&              image,
-                     VkDeviceMemory&       imageMemory);
 
     void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
@@ -166,8 +172,6 @@ private:
     void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void CreateCommandBuffers();
 

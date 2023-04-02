@@ -14,8 +14,8 @@ Application::Application()
 {
     m_Window = std::make_unique<Window>(Window::CreateInfo {
         .bFullscreen = false,
-        .Width       = 540,
-        .Height      = 540,
+        .Width       = 1280,
+        .Height      = 720,
         .Name        = "South",
     });
 
