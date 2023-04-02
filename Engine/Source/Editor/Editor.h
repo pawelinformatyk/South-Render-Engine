@@ -54,28 +54,30 @@ private:
     GLFWwindow*  m_Window  = nullptr;
     VkSurfaceKHR m_Surface = nullptr;
 
-    VkSwapchainKHR             m_SwapChain = nullptr;
-    std::vector<VkImage>       m_SwapChainImages;
     VkFormat                   m_SwapChainImageFormat = {};
     VkExtent2D                 m_SwapChainExtent      = {};
+    VkSwapchainKHR             m_SwapChain            = nullptr;
+    std::vector<VkImage>       m_SwapChainImages;
     std::vector<VkImageView>   m_SwapChainImageViews;
     std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
     VkRenderPass m_SwapchainRenderPass = nullptr;
 
-    VkExtent2D                  m_ViewportExtent = {100, 100};
+    VkFormat   m_ViewportImageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+    VkExtent2D m_ViewportExtent      = {100, 100};
+
     std::vector<VkImage>        m_ViewportImages;
     std::vector<VkDeviceMemory> m_ViewportImagesMemories;
     std::vector<VkImageView>    m_ViewportImagesViews;
     std::vector<VkFramebuffer>  m_ViewportFramebuffers;
 
-    VkRenderPass     m_ViewportRenderPass       = nullptr;
-    VkPipelineLayout m_ViewportPipelineLayout   = nullptr;
-    VkPipeline       m_ViewportGraphicsPipeline = nullptr;
-
     VkImage        m_ViewportDepthImage       = nullptr;
     VkDeviceMemory m_ViewportDepthImageMemory = nullptr;
     VkImageView    m_ViewportDepthImageView   = nullptr;
+
+    VkRenderPass     m_ViewportRenderPass       = nullptr;
+    VkPipelineLayout m_ViewportPipelineLayout   = nullptr;
+    VkPipeline       m_ViewportGraphicsPipeline = nullptr;
 
     VkCommandPool                m_CommandPool = nullptr;
     std::vector<VkCommandBuffer> m_CommandBuffers;

@@ -219,7 +219,6 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
                               10.0f);
 
     CreateSwapchainImageViews();
-    CreateViewportImageViews();
 
     CreateSwapchainRenderPass();
     CreateViewportRenderPass();
@@ -254,8 +253,6 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
         m_LogicalDevice->GetGraphicQueue(),
         {static_cast<const void*>(g_Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(g_Vertices.size())},
         {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
-
-    // #TODO: Add ImGui ignoring other rendering.
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -795,6 +792,7 @@ void Editor::CreateViewportImages()
 
     m_ViewportImages.resize(ImageCount);
     m_ViewportImagesMemories.resize(ImageCount);
+    m_ViewportImagesViews.resize(m_ViewportImages.size());
 
     for(uint32_t i = 0; i < m_ViewportImages.size(); i++)
     {
@@ -802,12 +800,14 @@ void Editor::CreateViewportImages()
                              m_GPU->GetPhysicalDevice(),
                              m_ViewportExtent.width,
                              m_ViewportExtent.height,
-                             m_SwapChainImageFormat,
+                             m_ViewportImageFormat,
                              VK_IMAGE_TILING_OPTIMAL,
                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                              m_ViewportImages[i],
                              m_ViewportImagesMemories[i]);
+
+        m_ViewportImagesViews[i] = CreateImageView(m_ViewportImages[i], m_ViewportImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
@@ -821,20 +821,10 @@ void Editor::CreateSwapchainImageViews()
     }
 }
 
-void Editor::CreateViewportImageViews()
-{
-    m_ViewportImagesViews.resize(m_ViewportImages.size());
-
-    for(uint32_t i = 0; i < m_ViewportImages.size(); i++)
-    {
-        m_ViewportImagesViews[i] = CreateImageView(m_ViewportImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-    }
-}
-
 void Editor::CreateViewportRenderPass()
 {
     const VkAttachmentDescription ColorAttachment {
-        .format         = m_SwapChainImageFormat,
+        .format         = m_ViewportImageFormat,
         .samples        = VK_SAMPLE_COUNT_1_BIT,
         .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
