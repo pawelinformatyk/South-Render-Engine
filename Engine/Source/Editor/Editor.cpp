@@ -31,59 +31,59 @@ void InitImGuiStyle()
     ImVec4* Colors                         = Style.Colors;
     Colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    Colors[ImGuiCol_WindowBg]              = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_PopupBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_WindowBg]              = ImVec4(0.00f, 0.00f, 0.00f, .50f);
+    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, .50f);
+    Colors[ImGuiCol_PopupBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_Border]                = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
     Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
-    Colors[ImGuiCol_FrameBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_FrameBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
-    Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
-    Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.31f, 0.04f, 0.53f, 1.00f);
-    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 0.50f);
+    Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.31f, 0.04f, 0.53f, 0.50f);
+    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.66f, 0.66f, 0.66f, 0.54f);
-    Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 0.50f);
     Colors[ImGuiCol_SliderGrab]            = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
     Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
-    Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+    Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 0.50f);
     Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.70f);
-    Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.50f);
     Colors[ImGuiCol_Header]                = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);
     Colors[ImGuiCol_HeaderActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.33f);
     Colors[ImGuiCol_Separator]             = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
     Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-    Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+    Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 0.50f);
     Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
     Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-    Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+    Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 0.50f);
     Colors[ImGuiCol_Tab]                   = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-    Colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    Colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 0.50f);
     Colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
     Colors[ImGuiCol_TabUnfocused]          = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-    Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 0.50f);
+    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
-    Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 0.50f);
+    Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
     Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.00f, 0.00f, 0.70f);
-    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
 
     Style.WindowPadding     = ImVec2(8.00f, 8.00f);
     Style.FramePadding      = ImVec2(5.00f, 2.00f);
@@ -228,7 +228,6 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
 
     ShadersLibrary::Init();
 
-    CreateSwapchainGraphicsPipeline();
     CreateViewportGraphicsPipeline();
 
     CreateCommandPool();
@@ -286,7 +285,7 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, m_ViewportRenderPass);
+    ImGui_ImplVulkan_Init(&InitInfo, m_SwapchainRenderPass);
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -349,8 +348,8 @@ Editor::~Editor()
     vkDestroyPipelineLayout(Device, m_ViewportPipelineLayout, nullptr);
     vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
 
-    vkDestroyPipeline(Device, m_SwapchainGraphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(Device, m_SwapchainPipelineLayout, nullptr);
+    // vkDestroyPipeline(Device, m_SwapchainGraphicsPipeline, nullptr);
+    // vkDestroyPipelineLayout(Device, m_SwapchainPipelineLayout, nullptr);
     vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -438,9 +437,9 @@ void Editor::Render()
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
     };
-    vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipeline);
-
     vkCmdBeginRenderPass(m_CommandBuffers[m_CurrentFrameIndex], &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipeline);
 
     // Render
     UpdateCamera(m_CurrentFrameIndex);
@@ -495,8 +494,6 @@ void Editor::BeginGui()
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
     };
-    vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_SwapchainGraphicsPipeline);
-
     vkCmdBeginRenderPass(m_CommandBuffers[m_CurrentFrameIndex], &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     ImGui_ImplVulkan_NewFrame();
@@ -603,12 +600,7 @@ void Editor::EndGui()
 {
     ImGui::Render();
 
-    ImDrawData& DrawData = *ImGui::GetDrawData();
-
-    ImGui_ImplVulkan_RenderDrawData(&DrawData, m_CommandBuffers[m_CurrentFrameIndex]);
-
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffers[m_CurrentFrameIndex]);
 
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
 }
@@ -629,6 +621,9 @@ void Editor::Present()
         .pSignalSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
     };
     vkQueueSubmit(m_LogicalDevice->GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
+
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
 
     const VkPresentInfoKHR PresentInfo {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -994,119 +989,6 @@ void Editor::CreateDescriptorSetLayout()
     }
 }
 
-void Editor::CreateSwapchainGraphicsPipeline()
-{
-    const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
-
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_V", "Resources/Shaders/vulkanTutorial.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            ->GetInfo();
-
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_F", "Resources/Shaders/vulkanTutorial.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
-            ->GetInfo();
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
-
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    auto bindingDescription    = Vertex::GetBindingDescription();
-    auto attributeDescriptions = Vertex::GetAttributesDescriptions();
-
-    vertexInputInfo.vertexBindingDescriptionCount   = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions      = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions    = attributeDescriptions.data();
-
-    VkPipelineInputAssemblyStateCreateInfo inputAssembly {};
-    inputAssembly.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-    VkPipelineViewportStateCreateInfo viewportState {};
-    viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.scissorCount  = 1;
-
-    VkPipelineRasterizationStateCreateInfo rasterizer {};
-    rasterizer.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable        = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode             = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth               = 1.0f;
-    rasterizer.cullMode                = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    rasterizer.depthBiasEnable         = VK_FALSE;
-
-    VkPipelineMultisampleStateCreateInfo multisampling {};
-    multisampling.sType                = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampling.sampleShadingEnable  = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    VkPipelineDepthStencilStateCreateInfo depthStencil {};
-    depthStencil.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable       = VK_TRUE;
-    depthStencil.depthWriteEnable      = VK_TRUE;
-    depthStencil.depthCompareOp        = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.stencilTestEnable     = VK_FALSE;
-
-    VkPipelineColorBlendAttachmentState colorBlendAttachment {};
-    colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-
-    VkPipelineColorBlendStateCreateInfo colorBlending {};
-    colorBlending.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable     = VK_FALSE;
-    colorBlending.logicOp           = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount   = 1;
-    colorBlending.pAttachments      = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = 0.0f;
-    colorBlending.blendConstants[1] = 0.0f;
-    colorBlending.blendConstants[2] = 0.0f;
-    colorBlending.blendConstants[3] = 0.0f;
-
-    std::vector<VkDynamicState>      dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-    VkPipelineDynamicStateCreateInfo dynamicState {};
-    dynamicState.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates    = dynamicStates.data();
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
-    pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts    = &m_DescriptorSetLayout;
-
-    if(vkCreatePipelineLayout(Device, &pipelineLayoutInfo, nullptr, &m_SwapchainPipelineLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
-
-    VkGraphicsPipelineCreateInfo pipelineInfo {};
-    pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount          = 2;
-    pipelineInfo.pStages             = shaderStages;
-    pipelineInfo.pVertexInputState   = &vertexInputInfo;
-    pipelineInfo.pInputAssemblyState = &inputAssembly;
-    pipelineInfo.pViewportState      = &viewportState;
-    pipelineInfo.pRasterizationState = &rasterizer;
-    pipelineInfo.pMultisampleState   = &multisampling;
-    pipelineInfo.pDepthStencilState  = &depthStencil;
-    pipelineInfo.pColorBlendState    = &colorBlending;
-    pipelineInfo.pDynamicState       = &dynamicState;
-    pipelineInfo.layout              = m_SwapchainPipelineLayout;
-    pipelineInfo.renderPass          = m_SwapchainRenderPass;
-    pipelineInfo.subpass             = 0;
-    pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
-
-    if(vkCreateGraphicsPipelines(Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_SwapchainGraphicsPipeline) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
-}
-
 void Editor::CreateViewportGraphicsPipeline()
 {
     const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
@@ -1231,7 +1113,7 @@ void Editor::CreateSwapchainFramebuffers()
         const VkFramebufferCreateInfo FramebufferInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext           = nullptr,
-            .renderPass      = m_ViewportRenderPass,
+            .renderPass      = m_SwapchainRenderPass,
             .attachmentCount = static_cast<uint32_t>(Attachments.size()),
             .pAttachments    = Attachments.data(),
             .width           = m_SwapChainExtent.width,
@@ -1753,17 +1635,52 @@ VkShaderModule Editor::CreateShaderModule(const std::vector<char>& code)
     return shaderModule;
 }
 
-VkSurfaceFormatKHR Editor::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR Editor::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats)
 {
-    for(const auto& availableFormat : availableFormats)
+    const std::array RequestSurfaceImageFormat = {
+        VK_FORMAT_B8G8R8A8_UNORM,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        VK_FORMAT_B8G8R8_UNORM,
+        VK_FORMAT_R8G8B8_UNORM,
+    };
+
+    constexpr VkColorSpaceKHR RequestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+
+    // First check if only one format, VK_FORMAT_UNDEFINED, is available, which
+    // would imply that any format is available
+    if(InAvailableFormats.size() == 1)
     {
-        if(availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        if(InAvailableFormats[0].format == VK_FORMAT_UNDEFINED)
         {
-            return availableFormat;
+            VkSurfaceFormatKHR ret;
+            ret.format     = RequestSurfaceImageFormat[0];
+            ret.colorSpace = RequestSurfaceColorSpace;
+            return ret;
+        }
+        else
+        {
+            // No point in searching another format
+            return InAvailableFormats[0];
         }
     }
+    else
+    {
+        // Request several formats, the first found will be used
+        for(const VkFormat RequestFormat : RequestSurfaceImageFormat)
+        {
+            for(const VkSurfaceFormatKHR AvailableFormat : InAvailableFormats)
+            {
+                if(AvailableFormat.format == RequestFormat && AvailableFormat.colorSpace == RequestSurfaceColorSpace)
+                {
+                    return AvailableFormat;
+                }
+            }
+        }
 
-    return availableFormats[0];
+        // If none of the requested image formats could be found, use the first
+        // available
+        return InAvailableFormats[0];
+    }
 }
 
 VkPresentModeKHR Editor::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)

@@ -65,9 +65,7 @@ private:
     VkDeviceMemory m_SwapchainDepthImageMemory = nullptr;
     VkImageView    m_SwapchainDepthImageView   = nullptr;
 
-    VkRenderPass     m_SwapchainRenderPass       = nullptr;
-    VkPipelineLayout m_SwapchainPipelineLayout   = nullptr;
-    VkPipeline       m_SwapchainGraphicsPipeline = nullptr;
+    VkRenderPass m_SwapchainRenderPass = nullptr;
 
     VkExtent2D                  m_ViewportExtent = {100, 100};
     std::vector<VkImage>        m_ViewportImages;
@@ -121,7 +119,6 @@ private:
     void CreateSwapchain();
     void CreateSwapchainImageViews();
     void CreateSwapchainRenderPass();
-    void CreateSwapchainGraphicsPipeline();
     void CreateSwapchainFramebuffers();
 
     void CreateViewportImages();
@@ -181,7 +178,7 @@ private:
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats);
 
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 
