@@ -31,59 +31,59 @@ void InitImGuiStyle()
     ImVec4* Colors                         = Style.Colors;
     Colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    Colors[ImGuiCol_WindowBg]              = ImVec4(0.00f, 0.00f, 0.00f, .50f);
-    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, .50f);
-    Colors[ImGuiCol_PopupBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, .50f);
+    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    Colors[ImGuiCol_PopupBg]               = ImVec4(0.19f, 0.19f, 0.19f, 0.92f);
     Colors[ImGuiCol_Border]                = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
     Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
-    Colors[ImGuiCol_FrameBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_FrameBg]               = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
     Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
-    Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 0.50f);
-    Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.31f, 0.04f, 0.53f, 0.50f);
-    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+    Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.31f, 0.04f, 0.53f, 1.00f);
+    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.66f, 0.66f, 0.66f, 0.54f);
-    Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 0.50f);
+    Colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
     Colors[ImGuiCol_SliderGrab]            = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
     Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
-    Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 0.50f);
+    Colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
     Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.70f);
-    Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.50f);
+    Colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
     Colors[ImGuiCol_Header]                = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);
     Colors[ImGuiCol_HeaderActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.33f);
     Colors[ImGuiCol_Separator]             = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
     Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-    Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 0.50f);
+    Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
     Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
     Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-    Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 0.50f);
+    Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
     Colors[ImGuiCol_Tab]                   = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-    Colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 0.50f);
+    Colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
     Colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
     Colors[ImGuiCol_TabUnfocused]          = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-    Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 0.50f);
-    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     Colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 0.50f);
-    Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.00f, 0.00f, 0.70f);
-    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
-    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(1.00f, 0.00f, 0.00f, 0.20f);
+    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
 
     Style.WindowPadding     = ImVec2(8.00f, 8.00f);
     Style.FramePadding      = ImVec2(5.00f, 2.00f);
@@ -232,7 +232,6 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
 
     CreateCommandPool();
 
-    CreateSwapchainDepthResources();
     CreateViewportDepthResources();
 
     CreateSwapchainFramebuffers();
@@ -343,6 +342,10 @@ Editor::~Editor()
     CleanupSwapChain();
 
     const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
+
+    vkDestroyImageView(Device, m_ViewportDepthImageView, nullptr);
+    vkDestroyImage(Device, m_ViewportDepthImage, nullptr);
+    vkFreeMemory(Device, m_ViewportDepthImageMemory, nullptr);
 
     vkDestroyPipeline(Device, m_ViewportGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(Device, m_ViewportPipelineLayout, nullptr);
@@ -646,10 +649,6 @@ void Editor::CleanupSwapChain()
 {
     const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
 
-    vkDestroyImageView(Device, m_SwapchainDepthImageView, nullptr);
-    vkDestroyImage(Device, m_SwapchainDepthImage, nullptr);
-    vkFreeMemory(Device, m_SwapchainDepthImageMemory, nullptr);
-
     for(auto framebuffer : m_SwapChainFramebuffers)
     {
         vkDestroyFramebuffer(Device, framebuffer, nullptr);
@@ -680,7 +679,6 @@ void Editor::RecreateSwapChain()
 
     CreateSwapchain();
     CreateSwapchainImageViews();
-    CreateSwapchainDepthResources();
     CreateSwapchainFramebuffers();
 }
 
@@ -910,44 +908,28 @@ void Editor::CreateSwapchainRenderPass()
         .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     };
 
-    const VkAttachmentDescription DepthAttachment {
-        .format         = FindDepthFormat(),
-        .samples        = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-    };
-
     const VkAttachmentReference ColorAttachmentRef {
         .attachment = 0,
         .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    };
-
-    const VkAttachmentReference DepthAttachmentRef {
-        .attachment = 1,
-        .layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
     };
 
     const VkSubpassDescription Subpass {
         .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
         .colorAttachmentCount    = 1,
         .pColorAttachments       = &ColorAttachmentRef,
-        .pDepthStencilAttachment = &DepthAttachmentRef,
+        .pDepthStencilAttachment = nullptr,
     };
 
     const VkSubpassDependency Dependency {
         .srcSubpass    = VK_SUBPASS_EXTERNAL,
         .dstSubpass    = 0,
-        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
     };
 
-    const std::array Attachments = {ColorAttachment, DepthAttachment};
+    const std::array Attachments = {ColorAttachment};
 
     const VkRenderPassCreateInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
@@ -1108,7 +1090,7 @@ void Editor::CreateSwapchainFramebuffers()
 
     for(size_t i = 0; i < m_SwapChainImageViews.size(); i++)
     {
-        std::array Attachments = {m_SwapChainImageViews[i], m_SwapchainDepthImageView};
+        std::array Attachments = {m_SwapChainImageViews[i]};
 
         const VkFramebufferCreateInfo FramebufferInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -1157,23 +1139,6 @@ void Editor::CreateCommandPool()
     {
         throw std::runtime_error("failed to create graphics command pool!");
     }
-}
-
-void Editor::CreateSwapchainDepthResources()
-{
-    const VkFormat DepthFormat = FindDepthFormat();
-
-    Private::CreateImage(m_LogicalDevice->GetLogicalDevice(),
-                         m_GPU->GetPhysicalDevice(),
-                         m_SwapChainExtent.width,
-                         m_SwapChainExtent.height,
-                         DepthFormat,
-                         VK_IMAGE_TILING_OPTIMAL,
-                         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                         m_SwapchainDepthImage,
-                         m_SwapchainDepthImageMemory);
-    m_SwapchainDepthImageView = CreateImageView(m_SwapchainDepthImage, DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void Editor::CreateViewportDepthResources()
@@ -1637,12 +1602,10 @@ VkShaderModule Editor::CreateShaderModule(const std::vector<char>& code)
 
 VkSurfaceFormatKHR Editor::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats)
 {
-    const std::array RequestSurfaceImageFormat = {
-        VK_FORMAT_B8G8R8A8_UNORM,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FORMAT_B8G8R8_UNORM,
-        VK_FORMAT_R8G8B8_UNORM,
-    };
+    const std::array RequestSurfaceImageFormat = {VK_FORMAT_B8G8R8A8_UNORM,
+                                                  VK_FORMAT_R8G8B8A8_UNORM,
+                                                  VK_FORMAT_B8G8R8_UNORM,
+                                                  VK_FORMAT_R8G8B8_UNORM};
 
     constexpr VkColorSpaceKHR RequestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
 

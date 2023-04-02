@@ -61,10 +61,6 @@ private:
     std::vector<VkImageView>   m_SwapChainImageViews;
     std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
-    VkImage        m_SwapchainDepthImage       = nullptr;
-    VkDeviceMemory m_SwapchainDepthImageMemory = nullptr;
-    VkImageView    m_SwapchainDepthImageView   = nullptr;
-
     VkRenderPass m_SwapchainRenderPass = nullptr;
 
     VkExtent2D                  m_ViewportExtent = {100, 100};
@@ -131,7 +127,6 @@ private:
 
     void CreateCommandPool();
 
-    void CreateSwapchainDepthResources();
     void CreateViewportDepthResources();
 
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
