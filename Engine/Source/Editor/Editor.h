@@ -54,6 +54,28 @@ private:
     GLFWwindow*  m_Window  = nullptr;
     VkSurfaceKHR m_Surface = nullptr;
 
+    VkCommandPool                m_CommandPool = nullptr;
+    std::vector<VkCommandBuffer> m_CommandBuffers;
+    VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
+
+    std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+    std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+    std::vector<VkFence>     m_InFlightFences;
+    uint32_t                 m_CurrentFrameIndex = 0;
+    uint32_t                 m_CurrentImageIndex = 0;
+
+    VkImage        m_TextureImage       = nullptr;
+    VkDeviceMemory m_TextureImageMemory = nullptr;
+    VkImageView    m_TextureImageView   = nullptr;
+    VkSampler      m_TextureSampler     = nullptr;
+
+    VertexIndexBuffer* m_QuadBuffer = nullptr;
+
+    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos {};
+
+    VkDescriptorPool             m_DescriptorPool = nullptr;
+    std::vector<VkDescriptorSet> m_DescriptorSets;
+
     VkFormat                   m_SwapChainImageFormat = {};
     VkExtent2D                 m_SwapChainExtent      = {};
     VkSwapchainKHR             m_SwapChain            = nullptr;
@@ -78,28 +100,6 @@ private:
     VkRenderPass     m_ViewportRenderPass       = nullptr;
     VkPipelineLayout m_ViewportPipelineLayout   = nullptr;
     VkPipeline       m_ViewportGraphicsPipeline = nullptr;
-
-    VkCommandPool                m_CommandPool = nullptr;
-    std::vector<VkCommandBuffer> m_CommandBuffers;
-    VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
-
-    std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-    std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-    std::vector<VkFence>     m_InFlightFences;
-    uint32_t                 m_CurrentFrameIndex = 0;
-    uint32_t                 m_CurrentImageIndex = 0;
-
-    VkImage        m_TextureImage       = nullptr;
-    VkDeviceMemory m_TextureImageMemory = nullptr;
-    VkImageView    m_TextureImageView   = nullptr;
-    VkSampler      m_TextureSampler     = nullptr;
-
-    VertexIndexBuffer* m_QuadBuffer = nullptr;
-
-    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos {};
-
-    VkDescriptorPool             m_DescriptorPool = nullptr;
-    std::vector<VkDescriptorSet> m_DescriptorSets;
 
     std::vector<ImTextureID> m_ViewportTextures;
     ImTextureID              m_LastViewportTexture = nullptr;
