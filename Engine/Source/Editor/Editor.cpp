@@ -18,7 +18,6 @@
 #include "Core/Shaders/ShadersLibrary.h"
 #include "EditorViewport.h"
 #include "Mesh.h"
-#include "imgui_internal.h"
 
 namespace South
 {
@@ -32,19 +31,19 @@ void InitImGuiStyle()
     ImVec4* Colors                         = Style.Colors;
     Colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    Colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, .50f);
-    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    Colors[ImGuiCol_PopupBg]               = ImVec4(0.19f, 0.19f, 0.19f, 0.92f);
+    Colors[ImGuiCol_WindowBg]              = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_PopupBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_Border]                = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
     Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
-    Colors[ImGuiCol_FrameBg]               = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+    Colors[ImGuiCol_FrameBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
     Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
     Colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+    Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.4156f, 0.3529f, 0.8039f, 1.00f);
-    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+    Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.31f, 0.04f, 0.53f, 1.00f);
+    Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
     Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.66f, 0.66f, 0.66f, 0.54f);
@@ -68,23 +67,23 @@ void InitImGuiStyle()
     Colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
     Colors[ImGuiCol_TabUnfocused]          = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+    Colors[ImGuiCol_DockingPreview]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_PlotHistogram]         = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+    Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
     Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    Colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+    Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
     Colors[ImGuiCol_NavHighlight]          = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
     Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.00f, 0.00f, 0.70f);
-    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(1.00f, 0.00f, 0.00f, 0.20f);
-    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
+    Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 
     Style.WindowPadding     = ImVec2(8.00f, 8.00f);
     Style.FramePadding      = ImVec2(5.00f, 2.00f);
@@ -481,7 +480,7 @@ void Editor::Render()
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
 }
 
-void Editor::BeginGUI()
+void Editor::BeginGui()
 {
     std::array<VkClearValue, 2> ClearColor {};
     ClearColor[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -505,33 +504,8 @@ void Editor::BeginGUI()
     ImGui::NewFrame();
 }
 
-void Editor::RenderGUI()
+void Editor::RenderGui()
 {
-    // ImGui::BeginMenuBar();
-    // {
-    //     const float ControlButtonsWidth = ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x + ImGui::CalcTextSize("X").x +
-    //                                       Style.ItemSpacing.x * 2.f + Style.FramePadding.x * 6.f;
-    //
-    //     // Title bar is always size of the window so I can get that instead of using GetCursor...
-    //     ImGui::SetCursorPosX(Viewport->Size.x - ControlButtonsWidth - 6.f);
-    //
-    //     if(ImGui::Button("_"))
-    //     {
-    //         // Application::Get().Minimise();
-    //     }
-    //
-    //     if(ImGui::Button("[ ]"))
-    //     {
-    //         // Application::Get().Maximise();
-    //     }
-    //
-    //     if(ImGui::Button("X"))
-    //     {
-    //         // Application::Get().Close();
-    //     }
-    // }
-    // ImGui::EndMenuBar();
-
     ImGuiIO& IO                     = ImGui::GetIO();
     IO.ConfigWindowsResizeFromEdges = IO.BackendFlags & ImGuiBackendFlags_HasMouseCursors;
 
@@ -625,7 +599,7 @@ void Editor::RenderGUI()
     ImGui::End();
 }
 
-void Editor::EndGUI()
+void Editor::EndGui()
 {
     ImGui::Render();
 

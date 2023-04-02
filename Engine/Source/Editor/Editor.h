@@ -37,9 +37,9 @@ public:
 
     void Render();
 
-    void BeginGUI();
-    void RenderGUI();
-    void EndGUI();
+    void BeginGui();
+    void RenderGui();
+    void EndGui();
 
     void Present();
 

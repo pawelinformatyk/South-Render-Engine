@@ -42,9 +42,9 @@ void Application::Run()
 
             m_Editor->Render();
 
-            m_Editor->BeginGUI();
-            m_Editor->RenderGUI();
-            m_Editor->EndGUI();
+            m_Editor->BeginGui();
+            m_Editor->RenderGui();
+            m_Editor->EndGui();
         }
         m_Editor->EndFrame();
         // Renderer::EndFrame();
