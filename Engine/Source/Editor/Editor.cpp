@@ -17,6 +17,7 @@
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Shaders/ShadersLibrary.h"
 #include "EditorViewport.h"
+#include "Event.h"
 #include "Mesh.h"
 
 namespace South
@@ -206,7 +207,7 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
 
     CreateDevices();
 
-    CreateSwapchain();
+    CreateSwapchain(1280, 720);
 
     m_ViewportExtent = m_SwapChainExtent;
 
@@ -389,8 +390,19 @@ Editor::~Editor()
     vkDestroyInstance(m_VulkanInstance, nullptr);
 }
 
-void Editor::Tick()
+void Editor::OnEvent(const Event& InEvent)
 {
+    if(const auto* SizeEvent = dynamic_cast<const WindowSizeEvent*>(&InEvent))
+    {
+        // #TODO: This should be handled in a Window.
+        RecreateSwapChain(SizeEvent->m_Height, SizeEvent->m_Width);
+    }
+}
+
+void Editor::Tick(double InFrameTime_Sec)
+{
+    m_LastFrame_Sec = InFrameTime_Sec;
+
     m_MainViewport->Tick();
 }
 
@@ -503,7 +515,8 @@ void Editor::BeginGui()
 
 void Editor::RenderGui()
 {
-    ImGuiIO& IO                     = ImGui::GetIO();
+    ImGuiStyle& Style               = ImGui::GetStyle();
+    ImGuiIO&    IO                  = ImGui::GetIO();
     IO.ConfigWindowsResizeFromEdges = IO.BackendFlags & ImGuiBackendFlags_HasMouseCursors;
 
     const ImGuiViewport& Viewport = *ImGui::GetMainViewport();
@@ -544,18 +557,6 @@ void Editor::RenderGui()
 
                 ImGui::Separator();
 
-                if(ImGui::BeginMenu("Project Settings"))
-                {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
                 if(ImGui::BeginMenu("Editor Settings"))
                 {
                     ImGui::Button("Font");
@@ -575,6 +576,37 @@ void Editor::RenderGui()
                 }
 
                 ImGui::Separator();
+
+                const int Fps = static_cast<int>(1 / m_LastFrame_Sec);
+                ImGui::Text("FPS: %4d / %.2f ms", Fps, m_LastFrame_Sec * 1e3);
+
+                ImGui::Separator();
+            }
+            ImGui::EndMenuBar();
+
+            ImGui::BeginMenuBar();
+            {
+                const float ControlButtonsWidth =
+                    ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x + ImGui::CalcTextSize("X").x + Style.FramePadding.x * 6.f;
+
+                ImGui::SetCursorPosX(Viewport.Size.x - ControlButtonsWidth - 50.f);
+
+                ImGui::Separator();
+
+                if(ImGui::Button("_"))
+                {
+                    Application::Get().OnEvent(WindowMinimizeEvent());
+                }
+
+                if(ImGui::Button("[ ]"))
+                {
+                    Application::Get().OnEvent(WindowMaximizeEvent());
+                }
+
+                if(ImGui::Button("X"))
+                {
+                    Application::Get().OnEvent(WindowCloseEvent());
+                }
             }
             ImGui::EndMenuBar();
         }
@@ -659,22 +691,14 @@ void Editor::CleanupSwapChain()
     vkDestroySwapchainKHR(Device, m_SwapChain, nullptr);
 }
 
-void Editor::RecreateSwapChain()
+void Editor::RecreateSwapChain(const int InWidth, const int InHeight)
 {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(m_Window, &width, &height);
-
-    while(width == 0 || height == 0)
-    {
-        glfwGetFramebufferSize(m_Window, &width, &height);
-        glfwWaitEvents();
-    }
-
+    // #TODO: Change without waiting
     vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
 
     CleanupSwapChain();
 
-    CreateSwapchain();
+    CreateSwapchain(InWidth, InHeight);
     CreateSwapchainImageViews();
     CreateSwapchainFramebuffers();
 }
@@ -729,18 +753,24 @@ void Editor::CreateDevices()
     m_LogicalDevice = LogicalDeviceAndQueues::Create(*m_GPU, m_Surface);
 }
 
-void Editor::CreateSwapchain()
+void Editor::CreateSwapchain(const int InWidth, const int InHeight)
 {
     SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_GPU->GetPhysicalDevice());
 
     VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR   presentMode   = ChooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D         extent        = ChooseSwapExtent(swapChainSupport.capabilities);
 
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-    if(swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+    m_SwapChainExtent = {static_cast<uint32_t>(InWidth), static_cast<uint32_t>(InHeight)};
+
+    const VkSurfaceCapabilitiesKHR Capabilities = swapChainSupport.capabilities;
+
+    m_SwapChainExtent.width  = std::clamp(m_SwapChainExtent.width, Capabilities.minImageExtent.width, Capabilities.maxImageExtent.width);
+    m_SwapChainExtent.height = std::clamp(m_SwapChainExtent.height, Capabilities.minImageExtent.height, Capabilities.maxImageExtent.height);
+
+    uint32_t imageCount = Capabilities.minImageCount + 1;
+    if(Capabilities.maxImageCount > 0 && imageCount > Capabilities.maxImageCount)
     {
-        imageCount = swapChainSupport.capabilities.maxImageCount;
+        imageCount = Capabilities.maxImageCount;
     }
 
     VkSwapchainCreateInfoKHR createInfo {};
@@ -750,7 +780,7 @@ void Editor::CreateSwapchain()
     createInfo.minImageCount    = imageCount;
     createInfo.imageFormat      = surfaceFormat.format;
     createInfo.imageColorSpace  = surfaceFormat.colorSpace;
-    createInfo.imageExtent      = extent;
+    createInfo.imageExtent      = m_SwapChainExtent;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
@@ -760,7 +790,7 @@ void Editor::CreateSwapchain()
     createInfo.queueFamilyIndexCount = 2;
     createInfo.pQueueFamilyIndices   = queueFamilyIndices;
 
-    createInfo.preTransform   = swapChainSupport.capabilities.currentTransform;
+    createInfo.preTransform   = Capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode    = presentMode;
     createInfo.clipped        = VK_TRUE;
@@ -777,7 +807,6 @@ void Editor::CreateSwapchain()
     vkGetSwapchainImagesKHR(Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
 
     m_SwapChainImageFormat = surfaceFormat.format;
-    m_SwapChainExtent      = extent;
 }
 
 void Editor::CreateViewportImages()
@@ -1649,25 +1678,6 @@ VkPresentModeKHR Editor::ChooseSwapPresentMode(const std::vector<VkPresentModeKH
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Editor::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
-{
-    if(capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-    {
-        return capabilities.currentExtent;
-    }
-    else
-    {
-        int width, height;
-        glfwGetFramebufferSize(m_Window, &width, &height);
-
-        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-
-        actualExtent.width  = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-        return actualExtent;
-    }
-}
 
 SwapChainSupportDetails Editor::QuerySwapChainSupport(VkPhysicalDevice device)
 {

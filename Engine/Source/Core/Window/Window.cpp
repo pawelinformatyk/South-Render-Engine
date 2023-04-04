@@ -6,76 +6,101 @@
 namespace South
 {
 
-Window::Window(const CreateInfo& InInfo) : m_Specification(InInfo)
+Window::Window(const CreateInfo& InInfo)
 {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+    // #TODO: Remove native glfw decorations.
     // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-    const auto& [bFullscreen, Width, Height, Name] = InInfo;
+    m_glfwWindow = glfwCreateWindow(InInfo.Width, InInfo.Height, InInfo.Name.c_str(), nullptr, nullptr);
 
-    m_glfwWindow = glfwCreateWindow(Width, Height, Name.c_str(), nullptr, nullptr);
-
-    if(bFullscreen)
+    if(InInfo.bFullscreen)
     {
         glfwMaximizeWindow(m_glfwWindow);
     }
 
-    // auto&           glfwWindow = *Window.m_glfwWindow;
-    // WindowUserData& UserData   = Window.m_WindowUserData;
-    //
-    // Window.m_WindowUserData.OnWindowKeyPressed = InOnKeyPressedCallback;
-    // Window.m_WindowUserData.OnMousePosChange   = InOnMousePosChange;
-    // m_WindowUserData.OnWindowIconified  = InOnIconifiedCallback;
-    // m_WindowUserData.OnWindowMaximised  = InOnMaximisedCallback;
+    // #TODO: Remove
+    glfwSetWindowPos(m_glfwWindow, 600, 200);
 
-    // glfwSetWindowUserPointer(&glfwWindow, &UserData);
-    //
-    // glfwSetKeyCallback(&glfwWindow,
-    //                    [](GLFWwindow* Window, int Key, int Scancode, int Action, int Mods)
-    //                    {
-    //                        const WindowUserData& UserData = *static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
-    //
-    //                        if(UserData.OnWindowKeyPressed)
-    //                        {
-    //                            UserData.OnWindowKeyPressed(Key, Scancode, Action, Mods);
-    //                        }
-    //                    });
-    //
-    // glfwSetWindowIconifyCallback(m_glfwWindow,
-    //                              [](GLFWwindow* Window, int Iconified)
-    //                              {
-    //                                  WindowUserData* UserData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
-    //
-    //                                  if(UserData && UserData->OnWindowIconified)
-    //                                  {
-    //                                      UserData->OnWindowIconified(Iconified);
-    //                                  }
-    //                              });
-    //
-    // glfwSetWindowMaximizeCallback(m_glfwWindow,
-    //                               [](GLFWwindow* Window, int Maximized)
-    //                               {
-    //                                   WindowUserData* UserData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
-    //
-    //                                   if(UserData && UserData->OnWindowMaximised)
-    //                                   {
-    //                                       UserData->OnWindowMaximised();
-    //                                   }
-    //                               });
-    //
-    // glfwSetCursorPosCallback(&glfwWindow,
-    //                          [](GLFWwindow* Window, double X, double Y)
-    //                          {
-    //                              const WindowUserData& UserData = *static_cast<WindowUserData*>(glfwGetWindowUserPointer(Window));
-    //
-    //                              if(UserData.OnMousePosChange)
-    //                              {
-    //                                  UserData.OnMousePosChange(X, Y);
-    //                              }
-    //                          });
+    m_EventsCallback = InInfo.EventsCallback;
+
+    glfwSetWindowUserPointer(m_glfwWindow, &m_EventsCallback);
+
+    glfwSetWindowPosCallback(m_glfwWindow,
+                             [](GLFWwindow* InWindow, const int InX, const int InY)
+                             {
+                                 const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                 Callback(WindowMoveEvent(InX, InY));
+                             });
+
+    glfwSetWindowSizeCallback(m_glfwWindow,
+                              [](GLFWwindow* InWindow, const int InWidth, const int InHeight)
+                              {
+                                  const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                  Callback(WindowSizeEvent(InWidth, InHeight));
+                              });
+
+    glfwSetWindowCloseCallback(m_glfwWindow,
+                               [](GLFWwindow* InWindow)
+                               {
+                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                   Callback(WindowCloseEvent());
+                               });
+
+    glfwSetWindowFocusCallback(m_glfwWindow,
+                               [](GLFWwindow* InWindow, const int InFocused)
+                               {
+                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                   Callback(WindowFocusEvent(InFocused));
+                               });
+
+    glfwSetWindowIconifyCallback(m_glfwWindow,
+                                 [](GLFWwindow* InWindow, int)
+                                 {
+                                     const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                     Callback(WindowMinimizeEvent());
+                                 });
+
+    glfwSetWindowMaximizeCallback(m_glfwWindow,
+                                  [](GLFWwindow* InWindow, int)
+                                  {
+                                      const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                      Callback(WindowMaximizeEvent());
+                                  });
+
+    glfwSetKeyCallback(m_glfwWindow,
+                       [](GLFWwindow* InWindow, const int InKey, const int InScancode, const int InAction, const int InMods)
+                       {
+                           const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                           Callback(KeyClickEvent(InKey, InScancode, InAction, InMods));
+                       });
+
+    glfwSetMouseButtonCallback(m_glfwWindow,
+                               [](GLFWwindow* InWindow, const int InButton, const int InAction, const int InMods)
+                               {
+                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                   Callback(MouseClickEvent(InButton, InAction, InMods));
+                               });
+
+    glfwSetCursorPosCallback(m_glfwWindow,
+                             [](GLFWwindow* InWindow, const double InX, const double InY)
+                             {
+                                 const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                 Callback(MouseMoveEvent(InX, InY));
+                             });
 }
 
 Window::~Window()
@@ -93,10 +118,6 @@ GLFWwindow* Window::ToGlfw() const
 // #TODO : Add class TickableObject so app can find these classes and then iterate and tick.
 void Window::Tick(const double InDeltaTime)
 {
-    const int         Fps      = static_cast<int>(1 / InDeltaTime);
-    const std::string NewTitle = m_Specification.Name + " FPS: " + std::to_string(Fps);
-
-    glfwSetWindowTitle(m_glfwWindow, NewTitle.c_str());
 }
 
 void Window::ProcessEvents()
@@ -104,14 +125,14 @@ void Window::ProcessEvents()
     glfwPollEvents();
 }
 
-// void Window::Minimise()
-// {
-//     glfwIconifyWindow(m_glfwWindow);
-// }
-//
-// void Window::Maximise()
-// {
-//     glfwMaximizeWindow(m_glfwWindow);
-// }
+void Window::Minimise()
+{
+    glfwIconifyWindow(m_glfwWindow);
+}
+
+void Window::Maximise()
+{
+    glfwMaximizeWindow(m_glfwWindow);
+}
 
 } // namespace South

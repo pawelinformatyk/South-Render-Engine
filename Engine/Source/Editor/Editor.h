@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Example/VulkanExampleApp.h"
 #include "imconfig.h"
 
 #include <vulkan/vulkan_core.h>
@@ -30,7 +31,9 @@ public:
     Editor(GLFWwindow& InWindow);
     ~Editor();
 
-    void Tick();
+    void OnEvent(const Event& InEvent);
+
+    void Tick(double InFrameTime_Sec);
 
     void BeginFrame();
     void EndFrame();
@@ -44,6 +47,8 @@ public:
     void Present();
 
 private:
+    double m_LastFrame_Sec = 0.;
+
     EditorViewport* m_MainViewport = nullptr;
 
     VkInstance m_VulkanInstance = nullptr;
@@ -106,7 +111,7 @@ private:
 
     void CleanupSwapChain();
 
-    void RecreateSwapChain();
+    void RecreateSwapChain(int InWidth, int InHeight);
 
     void CreateInstance();
 
@@ -114,7 +119,8 @@ private:
 
     void CreateDevices();
 
-    void CreateSwapchain();
+    void CreateSwapchain(int InWidth, int InHeight);
+
     void CreateSwapchainImageViews();
     void CreateSwapchainRenderPass();
     void CreateSwapchainFramebuffers();
@@ -178,8 +184,6 @@ private:
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats);
 
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
