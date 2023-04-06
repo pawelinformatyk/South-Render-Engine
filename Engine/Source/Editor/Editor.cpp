@@ -186,25 +186,18 @@ const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
-Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
+Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&InWindow), m_ViewportExtent(InViewportExtent)
 {
     m_MainViewport = new EditorViewport();
-
-    CreateSwapchain(1280, 720);
-
-    m_ViewportExtent = m_SwapChainExtent;
 
     CreateViewportImages();
 
     g_EditorCam.SetView(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.0f, 0.0f, 0.0f));
     g_EditorCam.SetProjection(glm::radians(45.0f),
-                              static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height),
+                              static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height),
                               0.01f,
                               10.0f);
 
-    CreateSwapchainImageViews();
-
-    CreateSwapchainRenderPass();
     CreateViewportRenderPass();
 
     CreateDescriptorSetLayout();
@@ -217,7 +210,6 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
 
     CreateViewportDepthResources();
 
-    CreateSwapchainFramebuffers();
     CreateViewportFramebuffers();
 
     CreateTextureImage();
@@ -268,7 +260,7 @@ Editor::Editor(GLFWwindow& InWindow) : m_Window(&InWindow)
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, m_SwapchainRenderPass);
+    ImGui_ImplVulkan_Init(&InitInfo, Renderer::GetContext().GetSwapchainRenderPass());
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -371,7 +363,7 @@ void Editor::OnEvent(const Event& InEvent)
     if(const auto* SizeEvent = dynamic_cast<const WindowSizeEvent*>(&InEvent))
     {
         // #TODO: This should be handled in a Window.
-        RecreateSwapChain(SizeEvent->m_Height, SizeEvent->m_Width);
+        Renderer::GetContext().RecreateSwapChain(SizeEvent->m_Height, SizeEvent->m_Width);
     }
 }
 
@@ -390,7 +382,12 @@ void Editor::BeginFrame()
     vkWaitForFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
     vkResetFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
-    vkAcquireNextImageKHR(Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], nullptr, &m_CurrentImageIndex);
+    vkAcquireNextImageKHR(Device,
+                          Renderer::GetContext().GetSwapChain(),
+                          UINT64_MAX,
+                          m_ImageAvailableSemaphores[m_CurrentFrameIndex],
+                          nullptr,
+                          &m_CurrentImageIndex);
 
     vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], 0x00);
 
@@ -435,15 +432,15 @@ void Editor::Render()
     VkViewport viewport {};
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
-    viewport.width    = (float)m_SwapChainExtent.width;
-    viewport.height   = (float)m_SwapChainExtent.height;
+    viewport.width    = (float)m_ViewportExtent.width;
+    viewport.height   = (float)m_ViewportExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &viewport);
 
     VkRect2D scissor {};
     scissor.offset = {0, 0};
-    scissor.extent = m_SwapChainExtent;
+    scissor.extent = m_ViewportExtent;
     vkCmdSetScissor(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &scissor);
 
     const VkBuffer         QuadBuffer = m_QuadBuffer->GetBuffer();
@@ -476,9 +473,9 @@ void Editor::BeginGui()
     const VkRenderPassBeginInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext           = nullptr,
-        .renderPass      = m_SwapchainRenderPass,
-        .framebuffer     = m_SwapChainFramebuffers[m_CurrentImageIndex],
-        .renderArea      = VkRect2D({0, 0}, m_SwapChainExtent),
+        .renderPass      = Renderer::GetContext().GetSwapchainRenderPass(),
+        .framebuffer     = Renderer::GetContext().GetSwapChainFramebuffer(m_CurrentImageIndex),
+        .renderArea      = VkRect2D({0, 0}, m_ViewportExtent),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
     };
@@ -633,13 +630,15 @@ void Editor::Present()
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
+    VkSwapchainKHR Swapchain = Renderer::GetContext().GetSwapChain();
+
     const VkPresentInfoKHR PresentInfo {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pNext              = nullptr,
         .waitSemaphoreCount = 1,
         .pWaitSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
         .swapchainCount     = 1,
-        .pSwapchains        = &m_SwapChain,
+        .pSwapchains        = &Swapchain,
         .pImageIndices      = &m_CurrentImageIndex,
         .pResults           = nullptr,
     };
@@ -648,92 +647,6 @@ void Editor::Present()
     m_LastViewportTexture = m_ViewportTextures[m_CurrentFrameIndex];
 
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void Editor::CleanupSwapChain()
-{
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
-
-    for(auto framebuffer : m_SwapChainFramebuffers)
-    {
-        vkDestroyFramebuffer(Device, framebuffer, nullptr);
-    }
-
-    for(auto imageView : m_SwapChainImageViews)
-    {
-        vkDestroyImageView(Device, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(Device, m_SwapChain, nullptr);
-}
-
-void Editor::RecreateSwapChain(const int InWidth, const int InHeight)
-{
-    // #TODO: Change without waiting
-    vkDeviceWaitIdle(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice());
-
-    CleanupSwapChain();
-
-    CreateSwapchain(InWidth, InHeight);
-    CreateSwapchainImageViews();
-    CreateSwapchainFramebuffers();
-}
-
-void Editor::CreateSwapchain(const int InWidth, const int InHeight)
-{
-    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(Renderer::GetContext().GetPhysicalDevice());
-
-    VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR   presentMode   = ChooseSwapPresentMode(swapChainSupport.presentModes);
-
-    m_SwapChainExtent = {static_cast<uint32_t>(InWidth), static_cast<uint32_t>(InHeight)};
-
-    const VkSurfaceCapabilitiesKHR Capabilities = swapChainSupport.capabilities;
-
-    m_SwapChainExtent.width  = std::clamp(m_SwapChainExtent.width, Capabilities.minImageExtent.width, Capabilities.maxImageExtent.width);
-    m_SwapChainExtent.height = std::clamp(m_SwapChainExtent.height, Capabilities.minImageExtent.height, Capabilities.maxImageExtent.height);
-
-    uint32_t imageCount = Capabilities.minImageCount + 1;
-    if(Capabilities.maxImageCount > 0 && imageCount > Capabilities.maxImageCount)
-    {
-        imageCount = Capabilities.maxImageCount;
-    }
-
-    VkSwapchainCreateInfoKHR createInfo {};
-    createInfo.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = Renderer::GetContext().GetSurface();
-
-    createInfo.minImageCount    = imageCount;
-    createInfo.imageFormat      = surfaceFormat.format;
-    createInfo.imageColorSpace  = surfaceFormat.colorSpace;
-    createInfo.imageExtent      = m_SwapChainExtent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    const uint32_t queueFamilyIndices[] = {Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueueFamilyIndex(),
-                                           Renderer::GetContext().GetDeviceAndQueues().GetPresentQueueFamilyIndex()};
-
-    createInfo.imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.queueFamilyIndexCount = 2;
-    createInfo.pQueueFamilyIndices   = queueFamilyIndices;
-
-    createInfo.preTransform   = Capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode    = presentMode;
-    createInfo.clipped        = VK_TRUE;
-
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
-
-    if(vkCreateSwapchainKHR(Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create swap chain!");
-    }
-
-    vkGetSwapchainImagesKHR(Device, m_SwapChain, &imageCount, nullptr);
-    m_SwapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
-
-    m_SwapChainImageFormat = surfaceFormat.format;
 }
 
 void Editor::CreateViewportImages()
@@ -764,16 +677,6 @@ void Editor::CreateViewportImages()
                              m_ViewportImagesMemories[i]);
 
         m_ViewportImagesViews[i] = CreateImageView(m_ViewportImages[i], m_ViewportImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-    }
-}
-
-void Editor::CreateSwapchainImageViews()
-{
-    m_SwapChainImageViews.resize(m_SwapChainImages.size());
-
-    for(uint32_t i = 0; i < m_SwapChainImages.size(); i++)
-    {
-        m_SwapChainImageViews[i] = CreateImageView(m_SwapChainImages[i], m_SwapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
@@ -839,54 +742,6 @@ void Editor::CreateViewportRenderPass()
         .pDependencies   = &Dependency,
     };
     vkCreateRenderPass(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_ViewportRenderPass);
-}
-
-void Editor::CreateSwapchainRenderPass()
-{
-    const VkAttachmentDescription ColorAttachment {
-        .format         = m_SwapChainImageFormat,
-        .samples        = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    };
-
-    const VkAttachmentReference ColorAttachmentRef {
-        .attachment = 0,
-        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    };
-
-    const VkSubpassDescription Subpass {
-        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount    = 1,
-        .pColorAttachments       = &ColorAttachmentRef,
-        .pDepthStencilAttachment = nullptr,
-    };
-
-    const VkSubpassDependency Dependency {
-        .srcSubpass    = VK_SUBPASS_EXTERNAL,
-        .dstSubpass    = 0,
-        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    };
-
-    const std::array Attachments = {ColorAttachment};
-
-    const VkRenderPassCreateInfo RenderPassInfo {
-        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = static_cast<uint32_t>(Attachments.size()),
-        .pAttachments    = Attachments.data(),
-        .subpassCount    = 1,
-        .pSubpasses      = &Subpass,
-        .dependencyCount = 1,
-        .pDependencies   = &Dependency,
-    };
-    vkCreateRenderPass(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_SwapchainRenderPass);
 }
 
 void Editor::CreateDescriptorSetLayout()
@@ -1033,31 +888,6 @@ void Editor::CreateViewportGraphicsPipeline()
     }
 }
 
-void Editor::CreateSwapchainFramebuffers()
-{
-    m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
-
-    for(size_t i = 0; i < m_SwapChainImageViews.size(); i++)
-    {
-        std::array Attachments = {m_SwapChainImageViews[i]};
-
-        const VkFramebufferCreateInfo FramebufferInfo {
-            .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-            .pNext           = nullptr,
-            .renderPass      = m_SwapchainRenderPass,
-            .attachmentCount = static_cast<uint32_t>(Attachments.size()),
-            .pAttachments    = Attachments.data(),
-            .width           = m_SwapChainExtent.width,
-            .height          = m_SwapChainExtent.height,
-            .layers          = 1,
-        };
-        vkCreateFramebuffer(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
-                            &FramebufferInfo,
-                            nullptr,
-                            &m_SwapChainFramebuffers[i]);
-    }
-}
-
 void Editor::CreateViewportFramebuffers()
 {
     m_ViewportFramebuffers.resize(m_ViewportImagesViews.size());
@@ -1103,8 +933,8 @@ void Editor::CreateViewportDepthResources()
 
     Private::CreateImage(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
                          Renderer::GetContext().GetPhysicalDevice(),
-                         m_SwapChainExtent.width,
-                         m_SwapChainExtent.height,
+                         m_ViewportExtent.width,
+                         m_ViewportExtent.height,
                          DepthFormat,
                          VK_IMAGE_TILING_OPTIMAL,
                          VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,

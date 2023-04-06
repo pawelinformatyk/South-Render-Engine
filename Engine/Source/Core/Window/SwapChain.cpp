@@ -3,7 +3,6 @@
 #include "Core/Window/SwapChain.h"
 
 #include "Core/Devices/GraphicCard.h"
-#include "Core/Renderer/Renderer.h"
 #include "Core/Utils/VulkanUtils.h"
 
 #include <GLFW/glfw3.h>
@@ -72,12 +71,16 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
 
     uint32_t SurfaceFormatsCount;
     vkGetPhysicalDeviceSurfaceFormatsKHR(InInfo.PhysDevice, InInfo.Surface, &SurfaceFormatsCount, nullptr);
+
     std::vector<VkSurfaceFormatKHR> SurfaceFormats;
+    SurfaceFormats.resize(SurfaceFormatsCount);
     vkGetPhysicalDeviceSurfaceFormatsKHR(InInfo.PhysDevice, InInfo.Surface, &SurfaceFormatsCount, SurfaceFormats.data());
 
     uint32_t PresentModesCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(InInfo.PhysDevice, InInfo.Surface, &PresentModesCount, nullptr);
+
     std::vector<VkPresentModeKHR> PresentModes;
+    PresentModes.resize(PresentModesCount);
     vkGetPhysicalDeviceSurfacePresentModesKHR(InInfo.PhysDevice, InInfo.Surface, &PresentModesCount, PresentModes.data());
 
     const VkSurfaceFormatKHR SurfaceFormat = Private::ChooseSwapSurfaceFormat(SurfaceFormats);
@@ -124,10 +127,87 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
     {
         m_ImageViews.emplace_back(VulkanUtils::CreateImageView(Device, Image, m_ImageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
     }
+
+    const VkAttachmentDescription ColorAttachment {
+        .format         = m_ImageFormat,
+        .samples        = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    };
+
+    const VkAttachmentReference ColorAttachmentRef {
+        .attachment = 0,
+        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
+
+    const VkSubpassDescription Subpass {
+        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .colorAttachmentCount    = 1,
+        .pColorAttachments       = &ColorAttachmentRef,
+        .pDepthStencilAttachment = nullptr,
+    };
+
+    const VkSubpassDependency Dependency {
+        .srcSubpass    = VK_SUBPASS_EXTERNAL,
+        .dstSubpass    = 0,
+        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = 0,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    };
+
+    const std::array Attachments = {ColorAttachment};
+
+    const VkRenderPassCreateInfo RenderPassInfo {
+        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = static_cast<uint32_t>(Attachments.size()),
+        .pAttachments    = Attachments.data(),
+        .subpassCount    = 1,
+        .pSubpasses      = &Subpass,
+        .dependencyCount = 1,
+        .pDependencies   = &Dependency,
+    };
+    vkCreateRenderPass(Device, &RenderPassInfo, nullptr, &m_RenderPass);
+
+    m_Framebuffers.resize(m_ImageViews.size());
+
+    for(size_t i = 0; i < m_ImageViews.size(); i++)
+    {
+        const VkFramebufferCreateInfo FramebufferInfo {
+            .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .pNext           = nullptr,
+            .renderPass      = m_RenderPass,
+            .attachmentCount = 1,
+            .pAttachments    = &m_ImageViews[i],
+            .width           = m_Size.width,
+            .height          = m_Size.height,
+            .layers          = 1,
+        };
+        vkCreateFramebuffer(Device, &FramebufferInfo, nullptr, &m_Framebuffers[i]);
+    }
 }
 
 SwapChain::~SwapChain()
 {
+}
+
+VkSwapchainKHR SwapChain::GetVulkanSwapChain() const
+{
+    return m_VulkanSwapChain;
+}
+
+VkRenderPass SwapChain::GetRenderPass() const
+{
+    return m_RenderPass;
+}
+
+VkFramebuffer SwapChain::GetFramebuffer(uint32_t InIndex) const
+{
+    return m_Framebuffers[InIndex];
 }
 
 } // namespace South

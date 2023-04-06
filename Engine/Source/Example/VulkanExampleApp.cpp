@@ -32,7 +32,7 @@ Application::Application()
 
     Renderer::Init(RendererContext::CreateInfo(*m_Window->ToGlfw()));
 
-    m_Editor = std::make_unique<Editor>(*m_Window->ToGlfw());
+    m_Editor = std::make_unique<Editor>(VkExtent2D(1280, 720), *m_Window->ToGlfw());
 }
 
 Application::~Application()

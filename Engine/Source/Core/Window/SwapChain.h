@@ -42,6 +42,10 @@ public:
     explicit SwapChain(const CreateInfo& InInfo);
     ~SwapChain();
 
+    VkSwapchainKHR GetVulkanSwapChain() const;
+    VkRenderPass   GetRenderPass() const;
+    VkFramebuffer  GetFramebuffer(uint32_t InIndex) const;
+
 private:
     VkSwapchainKHR m_VulkanSwapChain = nullptr;
 
@@ -49,6 +53,8 @@ private:
     std::vector<VkImage>       m_Images;
     std::vector<VkImageView>   m_ImageViews;
     std::vector<VkFramebuffer> m_Framebuffers;
+
+    VkRenderPass m_RenderPass = nullptr;
 
     VkFormat        m_ImageFormat;
     VkColorSpaceKHR m_ImageColorSpace;

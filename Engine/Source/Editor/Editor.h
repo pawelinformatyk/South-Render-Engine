@@ -26,7 +26,7 @@ struct SwapChainSupportDetails
 class Editor
 {
 public:
-    Editor(GLFWwindow& InWindow);
+    Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow);
     ~Editor();
 
     void OnEvent(const Event& InEvent);
@@ -73,15 +73,6 @@ private:
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
 
-    VkFormat                   m_SwapChainImageFormat = {};
-    VkExtent2D                 m_SwapChainExtent      = {};
-    VkSwapchainKHR             m_SwapChain            = nullptr;
-    std::vector<VkImage>       m_SwapChainImages;
-    std::vector<VkImageView>   m_SwapChainImageViews;
-    std::vector<VkFramebuffer> m_SwapChainFramebuffers;
-
-    VkRenderPass m_SwapchainRenderPass = nullptr;
-
     VkFormat   m_ViewportImageFormat = VK_FORMAT_R8G8B8A8_SRGB;
     VkExtent2D m_ViewportExtent      = {100, 100};
 
@@ -101,18 +92,7 @@ private:
     std::vector<ImTextureID> m_ViewportTextures;
     ImTextureID              m_LastViewportTexture = nullptr;
 
-    void CleanupSwapChain();
-
-    void RecreateSwapChain(int InWidth, int InHeight);
-
-    void CreateSwapchain(int InWidth, int InHeight);
-
-    void CreateSwapchainImageViews();
-    void CreateSwapchainRenderPass();
-    void CreateSwapchainFramebuffers();
-
     void CreateViewportImages();
-    void CreateViewportImageViews();
     void CreateViewportRenderPass();
     void CreateViewportGraphicsPipeline();
     void CreateViewportFramebuffers();

@@ -32,6 +32,12 @@ public:
     const GraphicCard&            GetGraphicCard() const;
     const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
 
+    VkSwapchainKHR GetSwapChain() const;
+    VkRenderPass   GetSwapchainRenderPass() const;
+    VkFramebuffer  GetSwapChainFramebuffer(uint32_t InIndex) const;
+
+    void RecreateSwapChain(int InWidth, int InHeight);
+
 private:
     void CreateInstance();
     void CreateSurface(GLFWwindow& InGlfWwindow);
@@ -39,11 +45,12 @@ private:
 
     VkInstance m_VulkanInstance = nullptr;
 
+    VkSurfaceKHR m_Surface = nullptr;
+
     GraphicCard*            m_Gpu           = nullptr;
     LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
 
-    VkSurfaceKHR m_Surface   = nullptr;
-    SwapChain*   m_SwapChain = nullptr;
+    SwapChain* m_SwapChain = nullptr;
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 
