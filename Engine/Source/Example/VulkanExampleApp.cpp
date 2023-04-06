@@ -61,21 +61,21 @@ void Application::Run()
         std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
         // Renderer::BeginFrame();
-        // m_Editor->BeginFrame();
-        // {
-        //     // #TODO: Move before BeginFrame?
-        //     m_Editor->Tick(m_FrameTime_Sec);
-        //
-        //     m_Editor->Render();
-        //
-        //     m_Editor->BeginGui();
-        //     m_Editor->RenderGui();
-        //     m_Editor->EndGui();
-        // }
-        // m_Editor->EndFrame();
-        // // Renderer::EndFrame();
-        //
-        // m_Editor->Present();
+        m_Editor->BeginFrame();
+        {
+            // #TODO: Move before BeginFrame?
+            m_Editor->Tick(m_FrameTime_Sec);
+
+            m_Editor->Render();
+
+            m_Editor->BeginGui();
+            m_Editor->RenderGui();
+            m_Editor->EndGui();
+        }
+        m_Editor->EndFrame();
+        // Renderer::EndFrame();
+
+        m_Editor->Present();
 
         m_FrameTime_Sec = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - FrameStartTime).count();
     }

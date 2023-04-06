@@ -23,11 +23,14 @@ public:
     explicit RendererContext(const CreateInfo& Info);
     ~RendererContext();
 
-    VkInstance         GetVulkanInstance() const;
-    VkQueue            GetGraphicQueue() const;
-    uint32_t           GetGraphicQueueFamilyIndex() const;
-    VkDevice           GetLogicalDevice() const;
-    const GraphicCard& GetGraphicCard() const;
+    VkInstance                    GetVulkanInstance() const;
+    VkSurfaceKHR                  GetSurface() const;
+    VkQueue                       GetGraphicQueue() const;
+    uint32_t                      GetGraphicQueueFamilyIndex() const;
+    VkDevice                      GetLogicalDevice() const;
+    VkPhysicalDevice              GetPhysicalDevice();
+    const GraphicCard&            GetGraphicCard() const;
+    const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
 
 private:
     void CreateInstance();

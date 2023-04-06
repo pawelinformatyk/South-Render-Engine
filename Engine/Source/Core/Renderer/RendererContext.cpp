@@ -46,6 +46,11 @@ VkInstance RendererContext::GetVulkanInstance() const
     return m_VulkanInstance;
 }
 
+VkSurfaceKHR RendererContext::GetSurface() const
+{
+    return m_Surface;
+}
+
 VkQueue RendererContext::GetGraphicQueue() const
 {
     return m_LogicalDevice->GetGraphicQueue();
@@ -61,9 +66,19 @@ VkDevice RendererContext::GetLogicalDevice() const
     return m_LogicalDevice->GetLogicalDevice();
 }
 
+VkPhysicalDevice RendererContext::GetPhysicalDevice()
+{
+    return m_Gpu->GetPhysicalDevice();
+}
+
 const GraphicCard& RendererContext::GetGraphicCard() const
 {
     return *m_Gpu;
+}
+
+const LogicalDeviceAndQueues& RendererContext::GetDeviceAndQueues() const
+{
+    return *m_LogicalDevice;
 }
 
 void RendererContext::CreateInstance()
