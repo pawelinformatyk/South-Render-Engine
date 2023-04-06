@@ -30,7 +30,8 @@ private:
 
     double m_FrameTime_Sec = 0.;
 
-    bool m_bRunning = true;
+    bool m_bRunning   = true;
+    bool m_bMinimized = false;
 
     std::unique_ptr<Window> m_Window = nullptr;
 

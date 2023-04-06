@@ -44,6 +44,11 @@ void Application::Run()
 {
     while(m_bRunning)
     {
+        if(m_bMinimized)
+        {
+            continue;
+        }
+
         m_Window->Tick(m_FrameTime_Sec);
 
         ProcessEvents();
@@ -80,19 +85,20 @@ void Application::OnEvent(const Event& InEvent)
 {
     STH_INFO(InEvent.ToString());
 
+    // #TODO: Layers: window -> viewport, window -> some gui layer idk
     m_Editor->OnEvent(InEvent);
 
-    if(const auto* CloseEvent = dynamic_cast<const WindowCloseEvent*>(&InEvent))
+    if(InEvent.IsA<WindowCloseEvent>())
     {
         Close();
     }
 
-    if(const auto* MinimizeEvent = dynamic_cast<const WindowMinimizeEvent*>(&InEvent))
+    if(InEvent.IsA<WindowMinimizeEvent>())
     {
         Minimize();
     }
 
-    if(const auto* MaximizeEvent = dynamic_cast<const WindowMaximizeEvent*>(&InEvent))
+    if(InEvent.IsA<WindowMaximizeEvent>())
     {
         Maximize();
     }
@@ -105,9 +111,11 @@ void Application::Close()
 
 void Application::Minimize()
 {
+    // m_bMinimized = true;
 }
 
 void Application::Maximize()
 {
+    // m_bMinimized = false;
 }
 } // namespace South

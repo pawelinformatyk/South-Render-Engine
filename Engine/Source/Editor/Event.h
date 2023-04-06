@@ -12,6 +12,12 @@ class Event
 public:
     virtual ~Event() = default;
 
+    template<class T>
+    bool IsA() const
+    {
+        return (dynamic_cast<const T*>(this) != nullptr);
+    }
+
     virtual std::string ToString() const = 0;
 };
 
