@@ -18,6 +18,5 @@ int main(int argc, char** argv)
 
     South::Logger::DeInit();
 
-
     return 0;
 }

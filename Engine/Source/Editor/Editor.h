@@ -13,8 +13,6 @@ namespace South
 {
 class EditorViewport;
 class Camera;
-class GraphicCard;
-class LogicalDeviceAndQueues;
 class UniformBuffer;
 class VertexIndexBuffer;
 
@@ -51,13 +49,7 @@ private:
 
     EditorViewport* m_MainViewport = nullptr;
 
-    VkInstance m_VulkanInstance = nullptr;
-
-    GraphicCard*            m_GPU           = nullptr;
-    LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
-
-    GLFWwindow*  m_Window  = nullptr;
-    VkSurfaceKHR m_Surface = nullptr;
+    GLFWwindow* m_Window = nullptr;
 
     VkCommandPool                m_CommandPool = nullptr;
     std::vector<VkCommandBuffer> m_CommandBuffers;
@@ -112,12 +104,6 @@ private:
     void CleanupSwapChain();
 
     void RecreateSwapChain(int InWidth, int InHeight);
-
-    void CreateInstance();
-
-    void CreateSurface();
-
-    void CreateDevices();
 
     void CreateSwapchain(int InWidth, int InHeight);
 
@@ -186,31 +172,6 @@ private:
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-
-    std::vector<const char*> GetRequiredInstanceExtensions() const;
-
-    //~ Validations layers.
-private:
-    void CreateMessenger();
-    void DestroyMessenger();
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
-                                                                    VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
-                                                                    const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
-                                                                    void*                                       InUserData);
-
-    bool CheckValidationLayers() const;
-
-    const std::vector<const char*> m_RequiredValidationLayers = {"VK_LAYER_KHRONOS_validation"};
-
-#ifdef NDEBUG
-    const bool m_bEnableValidationLayers = false;
-#else
-    const bool m_bEnableValidationLayers = true;
-#endif
-
-    VkDebugUtilsMessengerEXT m_Messenger = nullptr;
-    //~ Validations layers.
 };
 
 } // namespace South

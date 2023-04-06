@@ -5,10 +5,14 @@
 namespace South
 {
 
-    namespace VulkanUtils
-    {
-        // #TODO : Should it be string?
-        std::string DeviceTypeToString(const VkPhysicalDeviceType InType);
-    } // namespace VulkanUtils
+namespace VulkanUtils
+{
+
+// #TODO : Should it be string?
+std::string DeviceTypeToString(VkPhysicalDeviceType InType);
+
+VkImageView CreateImageView(VkDevice InDevice, VkImage InImage, VkFormat InFormat, VkImageAspectFlags InAspectFlags);
+
+} // namespace VulkanUtils
 
 } // namespace South

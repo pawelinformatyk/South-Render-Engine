@@ -9,6 +9,8 @@ struct GLFWwindow;
 namespace South
 {
 
+class SwapChain;
+
 class Window
 {
 public:
@@ -21,7 +23,7 @@ public:
         EventCallback EventsCallback;
     };
 
-    Window(const CreateInfo& InInfo);
+    explicit Window(const CreateInfo& InInfo);
     ~Window();
 
     GLFWwindow* ToGlfw() const;

@@ -13,7 +13,7 @@ class UniformBuffer;
 class Renderer
 {
 public:
-    static void Init();
+    static void Init(const RendererContext::CreateInfo& Info);
     static void Deinit();
 
     static void BeginFrame();
@@ -45,10 +45,5 @@ private:
     static void LoadExampleScene();
 
     inline static RendererContext* s_Context = nullptr;
-
-
-    inline static VertexIndexBuffer* s_QuadModelBuffer     = nullptr;
-    inline static UniformBuffer*     s_CameraUniformBuffer = nullptr;
-    inline static VertexIndexBuffer* s_ExampleSceneBuffer  = nullptr;
 };
 } // namespace South

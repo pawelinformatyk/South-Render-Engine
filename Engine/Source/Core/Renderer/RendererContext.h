@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glm.hpp"
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -8,24 +7,21 @@ struct GLFWwindow;
 namespace South
 {
 
+class SwapChain;
 class GraphicCard;
 class LogicalDeviceAndQueues;
-
-struct PushConstant
-{
-    glm::mat4 Model;
-    glm::mat4 View;
-    glm::mat4 Projection;
-};
 
 // Class holding all "global" vulkan related variables.
 class RendererContext
 {
-    friend class Renderer;
-
 public:
-    void Init();
-    void DeInit();
+    struct CreateInfo
+    {
+        GLFWwindow& GlfwWindow;
+    };
+
+    explicit RendererContext(const CreateInfo& Info);
+    ~RendererContext();
 
     VkInstance         GetVulkanInstance() const;
     VkQueue            GetGraphicQueue() const;
@@ -35,18 +31,18 @@ public:
 
 private:
     void CreateInstance();
-
-    void CreateSurface(GLFWwindow& InWindow);
+    void CreateSurface(GLFWwindow& InGlfWwindow);
+    void CreateDevices();
 
     VkInstance m_VulkanInstance = nullptr;
 
-    GraphicCard*            m_GPU           = nullptr;
+    GraphicCard*            m_Gpu           = nullptr;
     LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
 
-    std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-    std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-    std::vector<VkFence>     m_InFlightFences;
-    uint32_t                 m_CurrentFrameIndex = 0;
+    VkSurfaceKHR m_Surface   = nullptr;
+    SwapChain*   m_SwapChain = nullptr;
+
+    std::vector<const char*> GetRequiredInstanceExtensions() const;
 
     //~ Validations layers.
 private:
@@ -68,7 +64,7 @@ private:
     const bool m_bEnableValidationLayers = true;
 #endif
 
-    VkDebugUtilsMessengerEXT m_Messenger;
+    VkDebugUtilsMessengerEXT m_Messenger {};
     //~ Validations layers.
 };
 }; // namespace South

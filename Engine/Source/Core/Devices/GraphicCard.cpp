@@ -244,24 +244,21 @@ std::optional<std::pair<uint32_t, uint32_t>> FindGraphicAndPresentQueueFamilyInd
 
 } // namespace Private
 
-
-GraphicCard* GraphicCard::Create(VkInstance VulkanInstance, const CreateInfo& InCreateInfo)
+GraphicCard::GraphicCard(const VkInstance InVulkanInstance, const CreateInfo& InCreateInfo)
 {
     const VkPhysicalDevice FoundDevice =
-        Private::FindPhysicalDevice(VulkanInstance, InCreateInfo.RequiredExtensions, InCreateInfo.RequiredFeatures);
+        Private::FindPhysicalDevice(InVulkanInstance, InCreateInfo.RequiredExtensions, InCreateInfo.RequiredFeatures);
     if(!FoundDevice)
     {
-        return nullptr;
+        return;
     }
 
-    auto* Gpu              = new GraphicCard;
-    Gpu->m_PhysicalDevice  = FoundDevice;
-    Gpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
-    vkGetPhysicalDeviceFeatures(FoundDevice, &Gpu->m_Features);
-    vkGetPhysicalDeviceProperties(FoundDevice, &Gpu->m_Properties);
-    Gpu->m_TypeName = VulkanUtils::DeviceTypeToString(Gpu->m_Properties.deviceType);
 
-    return Gpu;
+    m_PhysicalDevice  = FoundDevice;
+    m_ExtensionsNames = InCreateInfo.RequiredExtensions;
+    vkGetPhysicalDeviceFeatures(FoundDevice, &m_Features);
+    vkGetPhysicalDeviceProperties(FoundDevice, &m_Properties);
+    m_TypeName = VulkanUtils::DeviceTypeToString(m_Properties.deviceType);
 }
 
 VkPhysicalDevice GraphicCard::GetPhysicalDevice() const
@@ -289,7 +286,7 @@ std::string_view GraphicCard::GetTypeName() const
     return m_TypeName;
 }
 
-LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU, VkSurfaceKHR InSurface)
+LogicalDeviceAndQueues::LogicalDeviceAndQueues(const GraphicCard& InGPU, VkSurfaceKHR InSurface)
 {
     const VkPhysicalDevice PhysDev = InGPU.GetPhysicalDevice();
 
@@ -297,7 +294,8 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU,
         Private::FindGraphicAndPresentQueueFamilyIndex(PhysDev, InSurface);
     if(!GraphicAndPresentQueueFamilyIndex.has_value())
     {
-        return nullptr;
+        STH_VK_ERR("GraphicAndPresentQueueFamilyIndex not found.");
+        return;
     }
 
     constexpr float QueuePrio = 1.f;
@@ -334,17 +332,18 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGPU,
         .pEnabledFeatures        = &InGPU.GetFeatures(),
     };
 
-    auto* OutLogDev = new LogicalDeviceAndQueues;
+    m_GraphicQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first;
+    m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
 
-    OutLogDev->m_GraphicQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first;
-    OutLogDev->m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
+    vkCreateDevice(PhysDev, &LogicDeviceCreateInfo, nullptr, &m_LogicalDevice);
 
-    vkCreateDevice(PhysDev, &LogicDeviceCreateInfo, nullptr, &OutLogDev->m_LogicalDevice);
+    vkGetDeviceQueue(m_LogicalDevice, m_GraphicQueueFamilyIndex, 0, &m_GraphicQueue);
+    vkGetDeviceQueue(m_LogicalDevice, m_PresentQueueFamilyIndex, 0, &m_PresentQueue);
+}
 
-    vkGetDeviceQueue(OutLogDev->m_LogicalDevice, OutLogDev->m_GraphicQueueFamilyIndex, 0, &OutLogDev->m_GraphicQueue);
-    vkGetDeviceQueue(OutLogDev->m_LogicalDevice, OutLogDev->m_PresentQueueFamilyIndex, 0, &OutLogDev->m_PresentQueue);
-
-    return OutLogDev;
+LogicalDeviceAndQueues::~LogicalDeviceAndQueues()
+{
+    vkDestroyDevice(m_LogicalDevice, nullptr);
 }
 
 VkDevice LogicalDeviceAndQueues::GetLogicalDevice() const
