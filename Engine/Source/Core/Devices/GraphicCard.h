@@ -14,7 +14,7 @@ public:
         VkPhysicalDeviceFeatures RequiredFeatures;
     };
 
-    explicit GraphicCard(VkInstance InVulkanInstance, const CreateInfo& InCreateInfo);
+    static GraphicCard* Create(VkInstance InVulkanInstance, const CreateInfo& InCreateInfo);
 
     VkPhysicalDevice                  GetPhysicalDevice() const;
     const std::vector<const char*>&   GetExtensionsNames() const;
@@ -43,8 +43,8 @@ private:
 class LogicalDeviceAndQueues
 {
 public:
-    LogicalDeviceAndQueues(const GraphicCard& InGPU, VkSurfaceKHR InSurface);
-    ~LogicalDeviceAndQueues();
+    static LogicalDeviceAndQueues* Create(const GraphicCard& InGpu, VkSurfaceKHR InSurface);
+    static void                    Destroy(LogicalDeviceAndQueues& InDeviceAndQueues);
 
     VkDevice GetLogicalDevice() const;
     VkQueue  GetGraphicQueue() const;

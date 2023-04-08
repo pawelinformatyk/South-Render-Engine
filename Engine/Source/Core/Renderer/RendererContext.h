@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CommandPool.h"
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -47,10 +48,12 @@ private:
 
     VkSurfaceKHR m_Surface = nullptr;
 
-    GraphicCard*            m_Gpu           = nullptr;
-    LogicalDeviceAndQueues* m_LogicalDevice = nullptr;
+    std::unique_ptr<GraphicCard>            m_Gpu           = nullptr;
+    std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice = nullptr;
 
     SwapChain* m_SwapChain = nullptr;
+
+    std::unique_ptr<CommandPool> m_CommandPool;
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 

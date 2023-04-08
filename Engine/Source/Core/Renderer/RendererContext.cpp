@@ -3,6 +3,7 @@
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/RendererContext.h"
 
+#include "CommandPool.h"
 #include "Core/Window/SwapChain.h"
 
 #include <GLFW/glfw3.h>
@@ -34,12 +35,17 @@ RendererContext::RendererContext(const CreateInfo& Info)
                                                        .Surface       = m_Surface,
                                                        .Size          = VkExtent2D {1280, 720},
                                                        .PresentMode   = VK_PRESENT_MODE_FIFO_KHR});
+
+
+    m_CommandPool = std::unique_ptr<CommandPool>(
+        CommandPool::Create(m_LogicalDevice->GetLogicalDevice(),
+                            {VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_LogicalDevice->GetGraphicQueueFamilyIndex()}));
 }
 
 RendererContext::~RendererContext()
 {
-    delete m_Gpu;
-    delete m_LogicalDevice;
+    CommandPool::Destroy(*m_CommandPool);
+    LogicalDeviceAndQueues::Destroy(*m_LogicalDevice);
 
     if(m_bEnableValidationLayers)
     {
@@ -151,17 +157,17 @@ void RendererContext::CreateSurface(GLFWwindow& InGlfWwindow)
 
 void RendererContext::CreateDevices()
 {
-    m_Gpu = new GraphicCard(m_VulkanInstance,
-                            GraphicCard::CreateInfo {
-                                .RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
-                                .RequiredFeatures =
-                                    {
-                                        .multiViewport = true,
-                                    },
-                            });
+    m_Gpu = std::unique_ptr<GraphicCard>(GraphicCard::Create(m_VulkanInstance,
+                                                             GraphicCard::CreateInfo {
+                                                                 .RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
+                                                                 .RequiredFeatures =
+                                                                     {
+                                                                         .multiViewport = true,
+                                                                     },
+                                                             }));
 
 
-    m_LogicalDevice = new LogicalDeviceAndQueues(*m_Gpu, m_Surface);
+    m_LogicalDevice = std::unique_ptr<LogicalDeviceAndQueues>(LogicalDeviceAndQueues::Create(*m_Gpu, m_Surface));
 }
 
 std::vector<const char*> RendererContext::GetRequiredInstanceExtensions() const
