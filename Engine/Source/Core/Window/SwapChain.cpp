@@ -210,4 +210,9 @@ VkFramebuffer SwapChain::GetFramebuffer(uint32_t InIndex) const
     return m_Framebuffers[InIndex];
 }
 
+uint32_t SwapChain::GetFramebuffersCount() const
+{
+    return static_cast<uint32_t>(m_Framebuffers.size());
+}
+
 } // namespace South

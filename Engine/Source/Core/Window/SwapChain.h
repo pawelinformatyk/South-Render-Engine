@@ -45,6 +45,7 @@ public:
     VkSwapchainKHR GetVulkanSwapChain() const;
     VkRenderPass   GetRenderPass() const;
     VkFramebuffer  GetFramebuffer(uint32_t InIndex) const;
+    uint32_t       GetFramebuffersCount() const;
 
 private:
     VkSwapchainKHR m_VulkanSwapChain = nullptr;

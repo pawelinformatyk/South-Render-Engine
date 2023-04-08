@@ -26,19 +26,19 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::m_AttributesDescs {
         .location = 0,
         .binding  = 0,
         .format   = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset   = offsetof(Vertex, m_Pos),
+        .offset   = offsetof(Vertex, Pos),
     },
     VkVertexInputAttributeDescription {
         .location = 1,
         .binding  = 0,
         .format   = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset   = offsetof(Vertex, m_Normal),
+        .offset   = offsetof(Vertex, Normal),
     },
     VkVertexInputAttributeDescription {
         .location = 2,
         .binding  = 0,
         .format   = VK_FORMAT_R32G32_SFLOAT,
-        .offset   = offsetof(Vertex, m_TexCoords),
+        .offset   = offsetof(Vertex, TexCoords),
     },
 };
 

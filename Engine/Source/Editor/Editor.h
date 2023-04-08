@@ -17,13 +17,6 @@ class Camera;
 class UniformBuffer;
 class VertexIndexBuffer;
 
-struct SwapChainSupportDetails
-{
-    VkSurfaceCapabilitiesKHR        capabilities {};
-    std::vector<VkSurfaceFormatKHR> formats {};
-    std::vector<VkPresentModeKHR>   presentModes {};
-};
-
 class Editor
 {
 public:
@@ -45,6 +38,8 @@ public:
 
     void Present();
 
+    void LoadExampleScene();
+
 private:
     double m_LastFrame_Sec = 0.;
 
@@ -61,12 +56,13 @@ private:
     uint32_t                 m_CurrentFrameIndex = 0;
     uint32_t                 m_CurrentImageIndex = 0;
 
-    VkImage        m_TextureImage       = nullptr;
-    VkDeviceMemory m_TextureImageMemory = nullptr;
-    VkImageView    m_TextureImageView   = nullptr;
-    VkSampler      m_TextureSampler     = nullptr;
+    VkSampler m_TextureSampler = nullptr;
 
-    VertexIndexBuffer* m_QuadBuffer = nullptr;
+    // Scene:
+    VkImage            m_SceneTextureImage       = nullptr;
+    VkDeviceMemory     m_SceneTextureImageMemory = nullptr;
+    VkImageView        m_SceneTextureImageView   = nullptr;
+    VertexIndexBuffer* m_SceneBuffer             = nullptr;
 
     std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos {};
 
@@ -142,14 +138,6 @@ private:
     void CreateSyncObjects();
 
     void UpdateCamera(uint32_t currentImage);
-
-    VkShaderModule CreateShaderModule(const std::vector<char>& code);
-
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats);
-
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 };
 
 } // namespace South

@@ -8,6 +8,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "Example/stb_image.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
@@ -17,6 +20,7 @@
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Shaders/ShadersLibrary.h"
+#include "Core/Window/SwapChain.h"
 #include "EditorViewport.h"
 #include "Event.h"
 #include "Mesh.h"
@@ -192,11 +196,11 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
 
     CreateViewportImages();
 
-    g_EditorCam.SetView(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.0f, 0.0f, 0.0f));
+    g_EditorCam.SetView(glm::vec3(60.f, 50.f, 40.f), glm::vec3(0.0f, 0.0f, 0.0f));
     g_EditorCam.SetProjection(glm::radians(45.0f),
                               static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height),
                               0.01f,
-                              10.0f);
+                              1000.0f);
 
     CreateViewportRenderPass();
 
@@ -224,12 +228,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     const LogicalDeviceAndQueues& LogicalDevice  = Renderer::GetContext().GetDeviceAndQueues();
     VkInstance                    VulkanInstance = Renderer::GetContext().GetVulkanInstance();
 
-    m_QuadBuffer = VertexIndexBuffer::Create(
-        LogicalDevice.GetLogicalDevice(),
-        m_CommandBuffers[0],
-        LogicalDevice.GetGraphicQueue(),
-        {static_cast<const void*>(g_Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(g_Vertices.size())},
-        {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
+    LoadExampleScene();
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -258,7 +257,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, Renderer::GetContext().GetSwapchainRenderPass());
+    ImGui_ImplVulkan_Init(&InitInfo, Renderer::GetContext().GetSwapChain().GetRenderPass());
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -381,7 +380,7 @@ void Editor::BeginFrame()
     vkResetFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
     vkAcquireNextImageKHR(Device,
-                          Renderer::GetContext().GetSwapChain(),
+                          Renderer::GetContext().GetSwapChain().GetVulkanSwapChain(),
                           UINT64_MAX,
                           m_ImageAvailableSemaphores[m_CurrentFrameIndex],
                           nullptr,
@@ -441,12 +440,6 @@ void Editor::Render()
     scissor.extent = m_ViewportExtent;
     vkCmdSetScissor(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &scissor);
 
-    const VkBuffer         QuadBuffer = m_QuadBuffer->GetBuffer();
-    constexpr VkDeviceSize Offset     = 0;
-    vkCmdBindVertexBuffers(m_CommandBuffers[m_CurrentFrameIndex], 0, 1, &QuadBuffer, &Offset);
-
-    vkCmdBindIndexBuffer(m_CommandBuffers[m_CurrentFrameIndex], QuadBuffer, m_QuadBuffer->GetVerticesSize(), VK_INDEX_TYPE_UINT32);
-
     vkCmdBindDescriptorSets(m_CommandBuffers[m_CurrentFrameIndex],
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             m_ViewportPipelineLayout,
@@ -456,7 +449,8 @@ void Editor::Render()
                             0,
                             nullptr);
 
-    vkCmdDrawIndexed(m_CommandBuffers[m_CurrentFrameIndex], m_QuadBuffer->GetIndicesCount(), 1, 0, 0, 0);
+    // Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_QuadBuffer);
+    Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_SceneBuffer);
 
     // End
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
@@ -471,8 +465,8 @@ void Editor::BeginGui()
     const VkRenderPassBeginInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext           = nullptr,
-        .renderPass      = Renderer::GetContext().GetSwapchainRenderPass(),
-        .framebuffer     = Renderer::GetContext().GetSwapChainFramebuffer(m_CurrentImageIndex),
+        .renderPass      = Renderer::GetContext().GetSwapChain().GetRenderPass(),
+        .framebuffer     = Renderer::GetContext().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
         .renderArea      = VkRect2D({0, 0}, m_ViewportExtent),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
@@ -628,7 +622,7 @@ void Editor::Present()
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
-    VkSwapchainKHR Swapchain = Renderer::GetContext().GetSwapChain();
+    VkSwapchainKHR Swapchain = Renderer::GetContext().GetSwapChain().GetVulkanSwapChain();
 
     const VkPresentInfoKHR PresentInfo {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -647,18 +641,58 @@ void Editor::Present()
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Editor::CreateViewportImages()
+void Editor::LoadExampleScene()
 {
-    const SwapChainSupportDetails SwapChainSupport = QuerySwapChainSupport(Renderer::GetContext().GetPhysicalDevice());
+    std::random_device                    Dev;
+    std::mt19937                          Rng(Dev());
+    std::uniform_real_distribution<float> Dist(0.f, 1.f);
 
-    uint32_t ImageCount = SwapChainSupport.capabilities.minImageCount + 1;
-    if(SwapChainSupport.capabilities.maxImageCount > 0 && ImageCount > SwapChainSupport.capabilities.maxImageCount)
+    tinyobj::attrib_t             Attrib;
+    std::vector<tinyobj::shape_t> Shapes;
+
+    const std::string FileName = "Resources/Models/JunkShip.obj";
+
+    if(!tinyobj::LoadObj(&Attrib, &Shapes, nullptr, nullptr, nullptr, FileName.c_str()))
     {
-        ImageCount = SwapChainSupport.capabilities.maxImageCount;
+        return;
     }
 
-    m_ViewportImages.resize(ImageCount);
-    m_ViewportImagesMemories.resize(ImageCount);
+    std::vector<Vertex>   Vertices;
+    std::vector<uint32_t> Indices;
+
+    for(const auto& Shape : Shapes)
+    {
+        for(const auto& Index : Shape.mesh.indices)
+        {
+            const Vertex ShapeVertex = {
+                .Pos       = {Attrib.vertices[3 * Index.vertex_index + 0],
+                        Attrib.vertices[3 * Index.vertex_index + 1],
+                        Attrib.vertices[3 * Index.vertex_index + 2]},
+                .TexCoords = {Attrib.texcoords[2 * Index.texcoord_index + 0], 1.0f - Attrib.texcoords[2 * Index.texcoord_index + 1]},
+            };
+
+            Vertices.emplace_back(ShapeVertex);
+            Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
+        }
+    }
+
+    const LogicalDeviceAndQueues& LogicalDevice = Renderer::GetContext().GetDeviceAndQueues();
+
+    m_SceneBuffer = VertexIndexBuffer::Create(
+        LogicalDevice.GetLogicalDevice(),
+        m_CommandBuffers[0],
+        LogicalDevice.GetGraphicQueue(),
+        {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
+        {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())});
+}
+
+void Editor::CreateViewportImages()
+{
+    const uint32_t FramebuffersCount = Renderer::GetContext().GetSwapChain().GetFramebuffersCount();
+
+
+    m_ViewportImages.resize(FramebuffersCount);
+    m_ViewportImagesMemories.resize(FramebuffersCount);
     m_ViewportImagesViews.resize(m_ViewportImages.size());
 
     for(uint32_t i = 0; i < m_ViewportImages.size(); i++)
@@ -963,7 +997,7 @@ bool Editor::HasStencilComponent(VkFormat format)
 void Editor::CreateTextureImage()
 {
     int          texWidth, texHeight, texChannels;
-    stbi_uc*     pixels    = stbi_load("Resources/Textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc*     pixels    = stbi_load("Resources/Textures/JunkShipTexture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if(!pixels)
@@ -996,12 +1030,12 @@ void Editor::CreateTextureImage()
                          VK_IMAGE_TILING_OPTIMAL,
                          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                         m_TextureImage,
-                         m_TextureImageMemory);
+                         m_SceneTextureImage,
+                         m_SceneTextureImageMemory);
 
-    TransitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    CopyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-    TransitionImageLayout(m_TextureImage,
+    TransitionImageLayout(m_SceneTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    CopyBufferToImage(stagingBuffer, m_SceneTextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+    TransitionImageLayout(m_SceneTextureImage,
                           VK_FORMAT_R8G8B8A8_SRGB,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -1012,7 +1046,7 @@ void Editor::CreateTextureImage()
 
 void Editor::CreateTextureImageView()
 {
-    m_TextureImageView = CreateImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+    m_SceneTextureImageView = CreateImageView(m_SceneTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void Editor::CreateTextureSampler()
@@ -1190,7 +1224,7 @@ void Editor::CreateDescriptorSets()
 
         VkDescriptorImageInfo imageInfo {};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView   = m_TextureImageView;
+        imageInfo.imageView   = m_SceneTextureImageView;
         imageInfo.sampler     = m_TextureSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites {};
@@ -1352,119 +1386,12 @@ void Editor::UpdateCamera(uint32_t currentImage)
     const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
 
     const UniformBufferObject Ubo {
-        .m_Model = glm::rotate(glm::mat4(1.0f), DeltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        .m_Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f)),
         .m_View  = g_EditorCam.GetView(),
         .m_Proj  = g_EditorCam.GetProjection(),
     };
 
     m_CameraUbos[currentImage]->SetData(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
-}
-
-VkShaderModule Editor::CreateShaderModule(const std::vector<char>& code)
-{
-    VkShaderModuleCreateInfo createInfo {};
-    createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode    = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if(vkCreateShaderModule(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &createInfo, nullptr, &shaderModule) !=
-       VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create shader module!");
-    }
-
-    return shaderModule;
-}
-
-VkSurfaceFormatKHR Editor::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats)
-{
-    const std::array RequestSurfaceImageFormat = {VK_FORMAT_B8G8R8A8_UNORM,
-                                                  VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_FORMAT_B8G8R8_UNORM,
-                                                  VK_FORMAT_R8G8B8_UNORM};
-
-    constexpr VkColorSpaceKHR RequestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-
-    // First check if only one format, VK_FORMAT_UNDEFINED, is available, which
-    // would imply that any format is available
-    if(InAvailableFormats.size() == 1)
-    {
-        if(InAvailableFormats[0].format == VK_FORMAT_UNDEFINED)
-        {
-            VkSurfaceFormatKHR ret;
-            ret.format     = RequestSurfaceImageFormat[0];
-            ret.colorSpace = RequestSurfaceColorSpace;
-            return ret;
-        }
-        else
-        {
-            // No point in searching another format
-            return InAvailableFormats[0];
-        }
-    }
-    else
-    {
-        // Request several formats, the first found will be used
-        for(const VkFormat RequestFormat : RequestSurfaceImageFormat)
-        {
-            for(const VkSurfaceFormatKHR AvailableFormat : InAvailableFormats)
-            {
-                if(AvailableFormat.format == RequestFormat && AvailableFormat.colorSpace == RequestSurfaceColorSpace)
-                {
-                    return AvailableFormat;
-                }
-            }
-        }
-
-        // If none of the requested image formats could be found, use the first
-        // available
-        return InAvailableFormats[0];
-    }
-}
-
-VkPresentModeKHR Editor::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-{
-    for(const auto& availablePresentMode : availablePresentModes)
-    {
-        if(availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            return availablePresentMode;
-        }
-    }
-
-    return VK_PRESENT_MODE_FIFO_KHR;
-}
-
-
-SwapChainSupportDetails Editor::QuerySwapChainSupport(VkPhysicalDevice device)
-{
-    SwapChainSupportDetails details;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, Renderer::GetContext().GetSurface(), &details.capabilities);
-
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, Renderer::GetContext().GetSurface(), &formatCount, nullptr);
-
-    if(formatCount != 0)
-    {
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, Renderer::GetContext().GetSurface(), &formatCount, details.formats.data());
-    }
-
-    uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, Renderer::GetContext().GetSurface(), &presentModeCount, nullptr);
-
-    if(presentModeCount != 0)
-    {
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device,
-                                                  Renderer::GetContext().GetSurface(),
-                                                  &presentModeCount,
-                                                  details.presentModes.data());
-    }
-
-    return details;
 }
 
 } // namespace South

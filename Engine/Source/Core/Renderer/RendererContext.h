@@ -33,9 +33,7 @@ public:
     VkPhysicalDevice              GetPhysicalDevice();
     const GraphicCard&            GetGraphicCard() const;
     const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
-    VkSwapchainKHR                GetSwapChain() const;
-    VkRenderPass                  GetSwapchainRenderPass() const;
-    VkFramebuffer                 GetSwapChainFramebuffer(uint32_t InIndex) const;
+    SwapChain&                    GetSwapChain() const;
 
     void RecreateSwapChain(int InWidth, int InHeight);
 

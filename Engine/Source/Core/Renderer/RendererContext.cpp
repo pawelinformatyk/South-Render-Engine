@@ -36,7 +36,6 @@ RendererContext::RendererContext(const CreateInfo& Info)
                                                        .Size          = VkExtent2D {1280, 720},
                                                        .PresentMode   = VK_PRESENT_MODE_FIFO_KHR});
 
-
     m_CommandPool = std::unique_ptr<CommandPool>(
         CommandPool::Create(m_LogicalDevice->GetLogicalDevice(),
                             {VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_LogicalDevice->GetGraphicQueueFamilyIndex()}));
@@ -102,19 +101,9 @@ const LogicalDeviceAndQueues& RendererContext::GetDeviceAndQueues() const
     return *m_LogicalDevice;
 }
 
-VkSwapchainKHR RendererContext::GetSwapChain() const
+SwapChain& RendererContext::GetSwapChain() const
 {
-    return m_SwapChain->GetVulkanSwapChain();
-}
-
-VkRenderPass RendererContext::GetSwapchainRenderPass() const
-{
-    return m_SwapChain->GetRenderPass();
-}
-
-VkFramebuffer RendererContext::GetSwapChainFramebuffer(const uint32_t InIndex) const
-{
-    return m_SwapChain->GetFramebuffer(InIndex);
+    return *m_SwapChain;
 }
 
 void RendererContext::RecreateSwapChain(int InWidth, int InHeight)

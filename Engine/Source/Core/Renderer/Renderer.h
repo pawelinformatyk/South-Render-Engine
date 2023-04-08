@@ -21,16 +21,16 @@ public:
 
     // static void Submit(std::function<void()>&);
 
-    static void RenderExampleScene();
-
     static void RenderQuad(VkCommandBuffer InCommandBuffer, VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform);
 
     static void RenderTriangle(VkCommandBuffer InCommandBuffer, VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform);
 
-    static void RenderMesh(VkCommandBuffer          InCommandBuffer,
-                           VkPipelineLayout         InPipelineLayout,
-                           const VertexIndexBuffer& InMeshBuffer,
-                           const glm::mat4&         InTransform);
+    // static void RenderMesh(VkCommandBuffer          InCommandBuffer,
+    //                        VkPipelineLayout         InPipelineLayout,
+    //                        const VertexIndexBuffer& InMeshBuffer,
+    //                        const glm::mat4&         InTransform);
+
+    static void RenderMesh(VkCommandBuffer InCommandBuffer, const VertexIndexBuffer& InMeshBuffer);
 
     static void EndFrame();
 
@@ -43,8 +43,6 @@ public:
     }
 
 private:
-    static void LoadExampleScene();
-
     inline static RendererContext* s_Context = nullptr;
 };
 

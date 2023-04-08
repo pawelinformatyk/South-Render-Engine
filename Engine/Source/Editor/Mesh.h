@@ -12,9 +12,9 @@ class SVulkanVertexIndexBuffer;
 
 struct Vertex
 {
-    glm::vec3 m_Pos;
-    glm::vec3 m_Normal;
-    glm::vec2 m_TexCoords;
+    glm::vec3 Pos;
+    glm::vec3 Normal;
+    glm::vec2 TexCoords;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
     static const std::array<VkVertexInputAttributeDescription, 3>& GetAttributesDescriptions();
