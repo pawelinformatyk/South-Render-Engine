@@ -2,8 +2,6 @@
 
 #include "Core/Renderer/Renderer.h"
 
-#include "CommandPool.h"
-
 namespace South
 {
 

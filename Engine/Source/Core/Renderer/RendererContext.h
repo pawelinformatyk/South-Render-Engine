@@ -26,16 +26,16 @@ public:
 
     VkInstance                    GetVulkanInstance() const;
     VkSurfaceKHR                  GetSurface() const;
+    VkCommandPool                 GetCommandPool() const;
     VkQueue                       GetGraphicQueue() const;
     uint32_t                      GetGraphicQueueFamilyIndex() const;
     VkDevice                      GetLogicalDevice() const;
     VkPhysicalDevice              GetPhysicalDevice();
     const GraphicCard&            GetGraphicCard() const;
     const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
-
-    VkSwapchainKHR GetSwapChain() const;
-    VkRenderPass   GetSwapchainRenderPass() const;
-    VkFramebuffer  GetSwapChainFramebuffer(uint32_t InIndex) const;
+    VkSwapchainKHR                GetSwapChain() const;
+    VkRenderPass                  GetSwapchainRenderPass() const;
+    VkFramebuffer                 GetSwapChainFramebuffer(uint32_t InIndex) const;
 
     void RecreateSwapChain(int InWidth, int InHeight);
 
@@ -44,16 +44,12 @@ private:
     void CreateSurface(GLFWwindow& InGlfWwindow);
     void CreateDevices();
 
-    VkInstance m_VulkanInstance = nullptr;
-
-    VkSurfaceKHR m_Surface = nullptr;
-
-    std::unique_ptr<GraphicCard>            m_Gpu           = nullptr;
-    std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice = nullptr;
-
-    SwapChain* m_SwapChain = nullptr;
-
-    std::unique_ptr<CommandPool> m_CommandPool;
+    VkInstance                              m_VulkanInstance = nullptr;
+    VkSurfaceKHR                            m_Surface        = nullptr;
+    std::unique_ptr<CommandPool>            m_CommandPool    = nullptr;
+    std::unique_ptr<GraphicCard>            m_Gpu            = nullptr;
+    std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice  = nullptr;
+    SwapChain*                              m_SwapChain      = nullptr;
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 

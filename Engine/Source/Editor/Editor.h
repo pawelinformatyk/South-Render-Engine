@@ -11,6 +11,7 @@ struct GLFWwindow;
 
 namespace South
 {
+
 class EditorViewport;
 class Camera;
 class UniformBuffer;
@@ -51,7 +52,6 @@ private:
 
     GLFWwindow* m_Window = nullptr;
 
-    VkCommandPool                m_CommandPool = nullptr;
     std::vector<VkCommandBuffer> m_CommandBuffers;
     VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
 
@@ -98,8 +98,6 @@ private:
     void CreateViewportFramebuffers();
 
     void CreateDescriptorSetLayout();
-
-    void CreateCommandPool();
 
     void CreateViewportDepthResources();
 

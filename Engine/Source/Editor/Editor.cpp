@@ -206,8 +206,6 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
 
     CreateViewportGraphicsPipeline();
 
-    CreateCommandPool();
-
     CreateViewportDepthResources();
 
     CreateViewportFramebuffers();
@@ -271,7 +269,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
 
-    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), m_CommandPool, 0);
+    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), Renderer::GetContext().GetCommandPool(), 0);
 
     VkCommandBufferBeginInfo BeginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -913,20 +911,6 @@ void Editor::CreateViewportFramebuffers()
     }
 }
 
-void Editor::CreateCommandPool()
-{
-    VkCommandPoolCreateInfo poolInfo {};
-    poolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    poolInfo.queueFamilyIndex = Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueueFamilyIndex();
-
-    if(vkCreateCommandPool(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &poolInfo, nullptr, &m_CommandPool) !=
-       VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create graphics command pool!");
-    }
-}
-
 void Editor::CreateViewportDepthResources()
 {
     const VkFormat DepthFormat = FindDepthFormat();
@@ -1277,7 +1261,7 @@ VkCommandBuffer Editor::BeginSingleTimeCommands()
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = m_CommandPool,
+        .commandPool        = Renderer::GetContext().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
@@ -1304,7 +1288,10 @@ void Editor::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkQueueSubmit(Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueue());
 
-    vkFreeCommandBuffers(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), m_CommandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
+                         Renderer::GetContext().GetCommandPool(),
+                         1,
+                         &commandBuffer);
 }
 
 void Editor::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -1324,7 +1311,7 @@ void Editor::CreateCommandBuffers()
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = m_CommandPool,
+        .commandPool        = Renderer::GetContext().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size()),
     };

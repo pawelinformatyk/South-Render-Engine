@@ -66,6 +66,12 @@ VkSurfaceKHR RendererContext::GetSurface() const
     return m_Surface;
 }
 
+VkCommandPool RendererContext::GetCommandPool() const
+{
+    return m_CommandPool->GetPool();
+    ;
+}
+
 VkQueue RendererContext::GetGraphicQueue() const
 {
     return m_LogicalDevice->GetGraphicQueue();

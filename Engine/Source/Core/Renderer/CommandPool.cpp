@@ -31,4 +31,9 @@ void CommandPool::Destroy(CommandPool& InCmdPool)
     InCmdPool.m_VulkanPool = nullptr;
 }
 
+VkCommandPool CommandPool::GetPool() const
+{
+    return m_VulkanPool;
+}
+
 } // namespace South

@@ -16,6 +16,8 @@ public:
     static CommandPool* Create(VkDevice InLogicalDevice, const CreateInfo& Info);
     static void         Destroy(CommandPool& InCmdPool);
 
+    VkCommandPool GetPool() const;
+
 private:
     CommandPool() = default;
 

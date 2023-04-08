@@ -4,6 +4,7 @@
 
 namespace South
 {
+
 class VertexIndexBuffer;
 class UniformBuffer;
 
@@ -46,4 +47,5 @@ private:
 
     inline static RendererContext* s_Context = nullptr;
 };
+
 } // namespace South
