@@ -239,7 +239,7 @@ std::optional<std::pair<uint32_t, uint32_t>> FindGraphicAndPresentQueueFamilyInd
         return std::make_pair(GraphicIndex.value(), PresentIndex.value());
     }
 
-    return {};
+    return std::make_pair(GraphicIndex.value(), GraphicIndex.value());
 }
 
 } // namespace Private
@@ -303,7 +303,8 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
 
     constexpr float QueuePrio = 1.f;
 
-    // This structure describes the number of queues we want for a single queue family
+    std::vector<VkDeviceQueueCreateInfo> QueueCreateInfos;
+
     const VkDeviceQueueCreateInfo GraphicQueueInfo {
         .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         .pNext            = nullptr,
@@ -313,16 +314,25 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
         .pQueuePriorities = &QueuePrio,
     };
 
-    const VkDeviceQueueCreateInfo PresentQueueInfo {
-        .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-        .pNext            = nullptr,
-        .flags            = 0x00,
-        .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second,
-        .queueCount       = 1,
-        .pQueuePriorities = &QueuePrio,
-    };
+    QueueCreateInfos.emplace_back(GraphicQueueInfo);
 
-    const std::array QueueCreateInfos {GraphicQueueInfo, PresentQueueInfo};
+    if(GraphicAndPresentQueueFamilyIndex->first != GraphicAndPresentQueueFamilyIndex->second)
+    {
+        const VkDeviceQueueCreateInfo PresentQueueInfo {
+            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .pNext            = nullptr,
+            .flags            = 0x00,
+            .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second,
+            .queueCount       = 1,
+            .pQueuePriorities = &QueuePrio,
+        };
+
+        QueueCreateInfos.emplace_back(PresentQueueInfo);
+    }
+    else // Present and graphic queue are the same.
+    {
+        QueueCreateInfos[0].queueCount = 2;
+    }
 
     const VkDeviceCreateInfo LogicDeviceCreateInfo {
         .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
