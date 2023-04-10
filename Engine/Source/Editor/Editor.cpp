@@ -225,6 +225,16 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     CreateCommandBuffers();
     CreateSyncObjects();
 
+    const UniformBufferObject Ubo {
+        .m_View = g_EditorCam.GetView(),
+        .m_Proj = g_EditorCam.GetProjection(),
+    };
+
+    for(auto& CameraUbo : m_CameraUbos)
+    {
+        CameraUbo->SetData(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
+    }
+    
     const LogicalDeviceAndQueues& LogicalDevice  = Renderer::GetContext().GetDeviceAndQueues();
     VkInstance                    VulkanInstance = Renderer::GetContext().GetVulkanInstance();
 
@@ -423,9 +433,6 @@ void Editor::Render()
 
     vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipeline);
 
-    // Render
-    UpdateCamera(m_CurrentFrameIndex);
-
     VkViewport viewport {};
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
@@ -449,7 +456,19 @@ void Editor::Render()
                             0,
                             nullptr);
 
-    // Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_QuadBuffer);
+    static auto StartTime = std::chrono::high_resolution_clock::now();
+    const auto  CurrTime  = std::chrono::high_resolution_clock::now();
+    const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
+
+    const auto Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f));
+
+    vkCmdPushConstants(m_CommandBuffers[m_CurrentFrameIndex],
+                       m_ViewportPipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT,
+                       0,
+                       sizeof(glm::mat4),
+                       &Model);
+    
     Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_SceneBuffer);
 
     // End
@@ -812,11 +831,11 @@ void Editor::CreateViewportGraphicsPipeline()
     const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_V", "Resources/Shaders/vulkanTutorial.vert", VK_SHADER_STAGE_VERTEX_BIT)
+        ShadersLibrary::AddShader(Device, "VulkanTutorial_V", "Resources/Shaders/VulkanTutorial.vert", VK_SHADER_STAGE_VERTEX_BIT)
             ->GetInfo();
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_F", "Resources/Shaders/vulkanTutorial.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+        ShadersLibrary::AddShader(Device, "VulkanTutorial_F", "Resources/Shaders/VulkanTutorial.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             ->GetInfo();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
@@ -887,12 +906,22 @@ void Editor::CreateViewportGraphicsPipeline()
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates    = dynamicStates.data();
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
-    pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts    = &m_DescriptorSetLayout;
+    constexpr VkPushConstantRange PushConstantRange {
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+        .offset     = 0,
+        .size       = sizeof(glm::mat4),
+    };
 
-    if(vkCreatePipelineLayout(Device, &pipelineLayoutInfo, nullptr, &m_ViewportPipelineLayout) != VK_SUCCESS)
+    const VkPipelineLayoutCreateInfo PipelineLayoutInfo {
+        .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pNext                  = nullptr,
+        .setLayoutCount         = 1,
+        .pSetLayouts            = &m_DescriptorSetLayout,
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges    = &PushConstantRange,
+    };
+
+    if(vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr, &m_ViewportPipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -1377,21 +1406,6 @@ void Editor::CreateSyncObjects()
         vkCreateSemaphore(Device, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]);
         vkCreateFence(Device, &FenceInfo, nullptr, &m_InFlightFences[i]);
     }
-}
-
-void Editor::UpdateCamera(uint32_t currentImage)
-{
-    static auto StartTime = std::chrono::high_resolution_clock::now();
-    const auto  CurrTime  = std::chrono::high_resolution_clock::now();
-    const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
-
-    const UniformBufferObject Ubo {
-        .m_Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f)),
-        .m_View  = g_EditorCam.GetView(),
-        .m_Proj  = g_EditorCam.GetProjection(),
-    };
-
-    m_CameraUbos[currentImage]->SetData(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
 }
 
 } // namespace South

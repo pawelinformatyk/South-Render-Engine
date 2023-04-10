@@ -301,37 +301,32 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
         return nullptr;
     }
 
-    constexpr float QueuePrio = 1.f;
+    const std::array<float, 2> QueuePrios = {1.f, 1.f};
 
     std::vector<VkDeviceQueueCreateInfo> QueueCreateInfos;
 
     const VkDeviceQueueCreateInfo GraphicQueueInfo {
         .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         .pNext            = nullptr,
-        .flags            = 0x00,
         .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first,
         .queueCount       = 1,
-        .pQueuePriorities = &QueuePrio,
+        .pQueuePriorities = &QueuePrios[0],
     };
 
     QueueCreateInfos.emplace_back(GraphicQueueInfo);
 
+    // Independent Present and graphic queues.
     if(GraphicAndPresentQueueFamilyIndex->first != GraphicAndPresentQueueFamilyIndex->second)
     {
         const VkDeviceQueueCreateInfo PresentQueueInfo {
             .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext            = nullptr,
-            .flags            = 0x00,
             .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second,
             .queueCount       = 1,
-            .pQueuePriorities = &QueuePrio,
+            .pQueuePriorities = &QueuePrios[2],
         };
 
         QueueCreateInfos.emplace_back(PresentQueueInfo);
-    }
-    else // Present and graphic queue are the same.
-    {
-        QueueCreateInfos[0].queueCount = 2;
     }
 
     const VkDeviceCreateInfo LogicDeviceCreateInfo {
@@ -351,9 +346,18 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
     OutDevice->m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
 
     vkCreateDevice(PhysDev, &LogicDeviceCreateInfo, nullptr, &OutDevice->m_LogicalDevice);
-
+ 
     vkGetDeviceQueue(OutDevice->m_LogicalDevice, OutDevice->m_GraphicQueueFamilyIndex, 0, &OutDevice->m_GraphicQueue);
-    vkGetDeviceQueue(OutDevice->m_LogicalDevice, OutDevice->m_PresentQueueFamilyIndex, 0, &OutDevice->m_PresentQueue);
+
+    // Independent Present and graphic queues.
+    if(GraphicAndPresentQueueFamilyIndex->first != GraphicAndPresentQueueFamilyIndex->second)
+    {
+        vkGetDeviceQueue(OutDevice->m_LogicalDevice, OutDevice->m_PresentQueueFamilyIndex, 0, &OutDevice->m_PresentQueue);
+    }
+    else
+    {
+        OutDevice->m_PresentQueue = OutDevice->m_GraphicQueue;
+    }
 
     return OutDevice;
 }

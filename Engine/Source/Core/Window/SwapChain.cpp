@@ -1,11 +1,10 @@
 #include "sthpch.h"
 
 #include "Core/Window/SwapChain.h"
-
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Utils/VulkanUtils.h"
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 namespace South
 {

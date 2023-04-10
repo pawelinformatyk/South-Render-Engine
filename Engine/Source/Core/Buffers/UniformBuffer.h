@@ -8,7 +8,6 @@ namespace South
 
 struct UniformBufferObject
 {
-    alignas(16) glm::mat4 m_Model = glm::mat4(1.f);
     alignas(16) glm::mat4 m_View  = glm::mat4(1.f);
     alignas(16) glm::mat4 m_Proj  = glm::mat4(1.f);
 };

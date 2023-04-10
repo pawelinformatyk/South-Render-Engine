@@ -64,7 +64,7 @@ private:
     VkImageView        m_SceneTextureImageView   = nullptr;
     VertexIndexBuffer* m_SceneBuffer             = nullptr;
 
-    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos {};
+    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
@@ -136,8 +136,6 @@ private:
     void CreateCommandBuffers();
 
     void CreateSyncObjects();
-
-    void UpdateCamera(uint32_t currentImage);
 };
 
 } // namespace South
