@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandPool.h"
+#include "Core/Window/Window.h"
 #include "vulkan/vulkan_core.h"
 
 struct GLFWwindow;
@@ -8,7 +9,6 @@ struct GLFWwindow;
 namespace South
 {
 
-class SwapChain;
 class GraphicCard;
 class LogicalDeviceAndQueues;
 
@@ -21,33 +21,36 @@ public:
         GLFWwindow& GlfwWindow;
     };
 
-    explicit RendererContext(const CreateInfo& Info);
-    ~RendererContext();
+    static RendererContext& Get();
+
+    RendererContext(RendererContext const&) = delete;
+    void operator=(RendererContext const&)  = delete;
+
+    void Init(const CreateInfo& Info);
+    void Deinit();
 
     VkInstance                    GetVulkanInstance() const;
     VkSurfaceKHR                  GetSurface() const;
     VkCommandPool                 GetCommandPool() const;
-    VkQueue                       GetGraphicQueue() const;
-    uint32_t                      GetGraphicQueueFamilyIndex() const;
-    VkDevice                      GetLogicalDevice() const;
-    VkPhysicalDevice              GetPhysicalDevice();
     const GraphicCard&            GetGraphicCard() const;
     const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
     SwapChain&                    GetSwapChain() const;
-
-    void RecreateSwapChain(int InWidth, int InHeight);
+    VkRenderPass                  GetRenderPass() const;
 
 private:
+    RendererContext() = default;
+
     void CreateInstance();
     void CreateSurface(GLFWwindow& InGlfWwindow);
     void CreateDevices();
 
-    VkInstance                              m_VulkanInstance = nullptr;
-    VkSurfaceKHR                            m_Surface        = nullptr;
-    std::unique_ptr<CommandPool>            m_CommandPool    = nullptr;
-    std::unique_ptr<GraphicCard>            m_Gpu            = nullptr;
-    std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice  = nullptr;
-    SwapChain*                              m_SwapChain      = nullptr;
+    VkInstance                              m_VulkanInstance      = nullptr;
+    VkSurfaceKHR                            m_Surface             = nullptr;
+    std::unique_ptr<CommandPool>            m_CommandPool         = nullptr;
+    std::unique_ptr<GraphicCard>            m_Gpu                 = nullptr;
+    std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice       = nullptr;
+    std::unique_ptr<SwapChain>              m_SwapChain           = nullptr;
+    VkRenderPass                            m_SwapChainRenderPass = nullptr;
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 

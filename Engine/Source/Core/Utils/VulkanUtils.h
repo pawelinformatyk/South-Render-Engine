@@ -13,6 +13,8 @@ std::string DeviceTypeToString(VkPhysicalDeviceType InType);
 
 VkImageView CreateImageView(VkDevice InDevice, VkImage InImage, VkFormat InFormat, VkImageAspectFlags InAspectFlags);
 
+VkSurfaceFormatKHR ChooseSwapSurfaceFormat(VkPhysicalDevice InPhysDevice, VkSurfaceKHR InSurface);
+
 } // namespace VulkanUtils
 
 } // namespace South

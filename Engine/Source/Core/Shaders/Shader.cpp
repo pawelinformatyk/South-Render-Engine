@@ -31,7 +31,7 @@ Shader::Shader(VkDevice Device, const std::string& inPathToCode, VkShaderStageFl
 
 Shader::~Shader()
 {
-    VkDevice LogDev = Renderer::GetContext().GetLogicalDevice();
+    VkDevice LogDev = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
     vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
 }
 

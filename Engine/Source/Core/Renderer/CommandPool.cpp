@@ -2,6 +2,7 @@
 
 #include "CommandPool.h"
 
+#include "Core/Devices/GraphicCard.h"
 #include "Renderer.h"
 
 namespace South
@@ -27,7 +28,7 @@ CommandPool* CommandPool::Create(const VkDevice InLogicalDevice, const CreateInf
 
 void CommandPool::Destroy(CommandPool& InCmdPool)
 {
-    vkDestroyCommandPool(Renderer::GetContext().GetLogicalDevice(), InCmdPool.m_VulkanPool, nullptr);
+    vkDestroyCommandPool(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), InCmdPool.m_VulkanPool, nullptr);
     InCmdPool.m_VulkanPool = nullptr;
 }
 

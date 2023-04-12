@@ -232,11 +232,11 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
 
     for(auto& CameraUbo : m_CameraUbos)
     {
-        CameraUbo->SetData(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
+        CameraUbo->SetData(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
     }
     
-    const LogicalDeviceAndQueues& LogicalDevice  = Renderer::GetContext().GetDeviceAndQueues();
-    VkInstance                    VulkanInstance = Renderer::GetContext().GetVulkanInstance();
+    const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
+    VkInstance                    VulkanInstance = RendererContext::Get().GetVulkanInstance();
 
     LoadExampleScene();
 
@@ -254,7 +254,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     // // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
     ImGui_ImplVulkan_InitInfo InitInfo = {
         .Instance        = VulkanInstance,
-        .PhysicalDevice  = Renderer::GetContext().GetPhysicalDevice(),
+        .PhysicalDevice  = RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
         .Device          = LogicalDevice.GetLogicalDevice(),
         .QueueFamily     = LogicalDevice.GetGraphicQueueFamilyIndex(),
         .Queue           = LogicalDevice.GetGraphicQueue(),
@@ -267,7 +267,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, Renderer::GetContext().GetSwapChain().GetRenderPass());
+    ImGui_ImplVulkan_Init(&InitInfo, RendererContext::Get().GetRenderPass());
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -278,7 +278,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
 
-    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), Renderer::GetContext().GetCommandPool(), 0);
+    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), RendererContext::Get().GetCommandPool(), 0);
 
     VkCommandBufferBeginInfo BeginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -321,8 +321,6 @@ Editor::~Editor()
     // ImGui_ImplVulkan_Shutdown();
     // ImGui_ImplGlfw_Shutdown();
     // ImGui::DestroyContext();
-    //
-    // CleanupSwapChain();
     //
     // const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
     //
@@ -369,8 +367,8 @@ void Editor::OnEvent(const Event& InEvent)
 {
     if(const auto* SizeEvent = dynamic_cast<const WindowSizeEvent*>(&InEvent))
     {
-        // #TODO: This should be handled in a Window.
-        Renderer::GetContext().RecreateSwapChain(SizeEvent->m_Height, SizeEvent->m_Width);
+        // #TODO: This should be handled in a Window maybe
+        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
     }
 }
 
@@ -383,14 +381,14 @@ void Editor::Tick(double InFrameTime_Sec)
 
 void Editor::BeginFrame()
 {
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     // Wait for the previous frame to finish
     vkWaitForFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
     vkResetFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
     vkAcquireNextImageKHR(Device,
-                          Renderer::GetContext().GetSwapChain().GetVulkanSwapChain(),
+                          RendererContext::Get().GetSwapChain().GetVulkanSwapChain(),
                           UINT64_MAX,
                           m_ImageAvailableSemaphores[m_CurrentFrameIndex],
                           nullptr,
@@ -484,8 +482,8 @@ void Editor::BeginGui()
     const VkRenderPassBeginInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext           = nullptr,
-        .renderPass      = Renderer::GetContext().GetSwapChain().GetRenderPass(),
-        .framebuffer     = Renderer::GetContext().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
+        .renderPass      = RendererContext::Get().GetRenderPass(),
+        .framebuffer     = RendererContext::Get().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
         .renderArea      = VkRect2D({0, 0}, m_ViewportExtent),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
@@ -636,12 +634,12 @@ void Editor::Present()
         .signalSemaphoreCount = 1,
         .pSignalSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
     };
-    vkQueueSubmit(Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
+    vkQueueSubmit(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
 
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
-    VkSwapchainKHR Swapchain = Renderer::GetContext().GetSwapChain().GetVulkanSwapChain();
+    VkSwapchainKHR Swapchain = RendererContext::Get().GetSwapChain().GetVulkanSwapChain();
 
     const VkPresentInfoKHR PresentInfo {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -653,7 +651,7 @@ void Editor::Present()
         .pImageIndices      = &m_CurrentImageIndex,
         .pResults           = nullptr,
     };
-    vkQueuePresentKHR(Renderer::GetContext().GetDeviceAndQueues().GetPresentQueue(), &PresentInfo);
+    vkQueuePresentKHR(RendererContext::Get().GetDeviceAndQueues().GetPresentQueue(), &PresentInfo);
 
     m_LastViewportTexture = m_ViewportTextures[m_CurrentFrameIndex];
 
@@ -685,8 +683,8 @@ void Editor::LoadExampleScene()
         {
             const Vertex ShapeVertex = {
                 .Pos       = {Attrib.vertices[3 * Index.vertex_index + 0],
-                        Attrib.vertices[3 * Index.vertex_index + 1],
-                        Attrib.vertices[3 * Index.vertex_index + 2]},
+                              Attrib.vertices[3 * Index.vertex_index + 1],
+                              Attrib.vertices[3 * Index.vertex_index + 2]},
                 .TexCoords = {Attrib.texcoords[2 * Index.texcoord_index + 0], 1.0f - Attrib.texcoords[2 * Index.texcoord_index + 1]},
             };
 
@@ -695,7 +693,7 @@ void Editor::LoadExampleScene()
         }
     }
 
-    const LogicalDeviceAndQueues& LogicalDevice = Renderer::GetContext().GetDeviceAndQueues();
+    const LogicalDeviceAndQueues& LogicalDevice = RendererContext::Get().GetDeviceAndQueues();
 
     m_SceneBuffer = VertexIndexBuffer::Create(
         LogicalDevice.GetLogicalDevice(),
@@ -707,7 +705,7 @@ void Editor::LoadExampleScene()
 
 void Editor::CreateViewportImages()
 {
-    const uint32_t FramebuffersCount = Renderer::GetContext().GetSwapChain().GetFramebuffersCount();
+    const uint32_t FramebuffersCount = RendererContext::Get().GetSwapChain().GetFramebuffersCount();
 
 
     m_ViewportImages.resize(FramebuffersCount);
@@ -716,8 +714,8 @@ void Editor::CreateViewportImages()
 
     for(uint32_t i = 0; i < m_ViewportImages.size(); i++)
     {
-        Private::CreateImage(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
-                             Renderer::GetContext().GetPhysicalDevice(),
+        Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                             RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                              m_ViewportExtent.width,
                              m_ViewportExtent.height,
                              m_ViewportImageFormat,
@@ -792,7 +790,7 @@ void Editor::CreateViewportRenderPass()
         .dependencyCount = 1,
         .pDependencies   = &Dependency,
     };
-    vkCreateRenderPass(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_ViewportRenderPass);
+    vkCreateRenderPass(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_ViewportRenderPass);
 }
 
 void Editor::CreateDescriptorSetLayout()
@@ -817,7 +815,7 @@ void Editor::CreateDescriptorSetLayout()
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutInfo.pBindings    = bindings.data();
 
-    if(vkCreateDescriptorSetLayout(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
+    if(vkCreateDescriptorSetLayout(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                                    &layoutInfo,
                                    nullptr,
                                    &m_DescriptorSetLayout) != VK_SUCCESS)
@@ -828,7 +826,7 @@ void Editor::CreateDescriptorSetLayout()
 
 void Editor::CreateViewportGraphicsPipeline()
 {
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
         ShadersLibrary::AddShader(Device, "VulkanTutorial_V", "Resources/Shaders/VulkanTutorial.vert", VK_SHADER_STAGE_VERTEX_BIT)
@@ -967,7 +965,7 @@ void Editor::CreateViewportFramebuffers()
             .height          = m_ViewportExtent.height,
             .layers          = 1,
         };
-        vkCreateFramebuffer(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
+        vkCreateFramebuffer(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                             &FramebufferInfo,
                             nullptr,
                             &m_ViewportFramebuffers[i]);
@@ -978,8 +976,8 @@ void Editor::CreateViewportDepthResources()
 {
     const VkFormat DepthFormat = FindDepthFormat();
 
-    Private::CreateImage(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
-                         Renderer::GetContext().GetPhysicalDevice(),
+    Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                          m_ViewportExtent.width,
                          m_ViewportExtent.height,
                          DepthFormat,
@@ -996,7 +994,7 @@ VkFormat Editor::FindSupportedFormat(const std::vector<VkFormat>& candidates, Vk
     for(VkFormat format : candidates)
     {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(Renderer::GetContext().GetPhysicalDevice(), format, &props);
+        vkGetPhysicalDeviceFormatProperties(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), format, &props);
 
         if(tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
         {
@@ -1042,7 +1040,7 @@ void Editor::CreateTextureImage()
                  stagingBuffer,
                  stagingBufferMemory);
 
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     void* data;
     vkMapMemory(Device, stagingBufferMemory, 0, imageSize, 0, &data);
@@ -1051,8 +1049,8 @@ void Editor::CreateTextureImage()
 
     stbi_image_free(pixels);
 
-    Private::CreateImage(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
-                         Renderer::GetContext().GetPhysicalDevice(),
+    Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                          texWidth,
                          texHeight,
                          VK_FORMAT_R8G8B8A8_SRGB,
@@ -1081,7 +1079,7 @@ void Editor::CreateTextureImageView()
 void Editor::CreateTextureSampler()
 {
     VkPhysicalDeviceProperties properties {};
-    vkGetPhysicalDeviceProperties(Renderer::GetContext().GetPhysicalDevice(), &properties);
+    vkGetPhysicalDeviceProperties(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), &properties);
 
     VkSamplerCreateInfo samplerInfo {};
     samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -1098,7 +1096,7 @@ void Editor::CreateTextureSampler()
     samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-    if(vkCreateSampler(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler) !=
+    if(vkCreateSampler(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler) !=
        VK_SUCCESS)
     {
         throw std::runtime_error("failed to create texture sampler!");
@@ -1124,7 +1122,7 @@ VkImageView Editor::CreateImageView(VkImage image, VkFormat format, VkImageAspec
                 .layerCount     = 1,
             },
     };
-    vkCreateImageView(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &ViewInfo, nullptr, &OutImageView);
+    vkCreateImageView(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &ViewInfo, nullptr, &OutImageView);
 
     return OutImageView;
 }
@@ -1199,7 +1197,7 @@ void Editor::CreateCameraUbos()
 {
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        m_CameraUbos[i] = UniformBuffer::Create(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice());
+        m_CameraUbos[i] = UniformBuffer::Create(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
     }
 }
 
@@ -1225,7 +1223,7 @@ void Editor::CreateDescriptorPool()
         .poolSizeCount = static_cast<uint32_t>(PoolSizes.size()),
         .pPoolSizes    = PoolSizes.data(),
     };
-    vkCreateDescriptorPool(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
+    vkCreateDescriptorPool(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
 }
 
 void Editor::CreateDescriptorSets()
@@ -1238,7 +1236,7 @@ void Editor::CreateDescriptorSets()
     allocInfo.pSetLayouts        = layouts.data();
 
     m_DescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if(vkAllocateDescriptorSets(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, m_DescriptorSets.data()) !=
+    if(vkAllocateDescriptorSets(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, m_DescriptorSets.data()) !=
        VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate descriptor sets!");
@@ -1274,7 +1272,7 @@ void Editor::CreateDescriptorSets()
         descriptorWrites[1].descriptorCount = 1;
         descriptorWrites[1].pImageInfo      = &imageInfo;
 
-        vkUpdateDescriptorSets(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
+        vkUpdateDescriptorSets(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                                static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(),
                                0,
@@ -1294,7 +1292,7 @@ void Editor::CreateBuffer(VkDeviceSize          size,
     bufferInfo.usage       = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     if(vkCreateBuffer(Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
     {
@@ -1308,7 +1306,7 @@ void Editor::CreateBuffer(VkDeviceSize          size,
     allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex =
-        Private::FindMemoryType(Renderer::GetContext().GetPhysicalDevice(), memRequirements.memoryTypeBits, properties);
+        Private::FindMemoryType(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), memRequirements.memoryTypeBits, properties);
 
     if(vkAllocateMemory(Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
     {
@@ -1324,11 +1322,11 @@ VkCommandBuffer Editor::BeginSingleTimeCommands()
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = Renderer::GetContext().GetCommandPool(),
+        .commandPool        = RendererContext::Get().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
-    vkAllocateCommandBuffers(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, &OutCommandBuffer);
+    vkAllocateCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, &OutCommandBuffer);
 
     const VkCommandBufferBeginInfo CmdBufferBeginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -1348,11 +1346,11 @@ void Editor::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers    = &commandBuffer;
 
-    vkQueueSubmit(Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(Renderer::GetContext().GetDeviceAndQueues().GetGraphicQueue());
+    vkQueueSubmit(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue());
 
-    vkFreeCommandBuffers(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(),
-                         Renderer::GetContext().GetCommandPool(),
+    vkFreeCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         RendererContext::Get().GetCommandPool(),
                          1,
                          &commandBuffer);
 }
@@ -1374,11 +1372,11 @@ void Editor::CreateCommandBuffers()
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = Renderer::GetContext().GetCommandPool(),
+        .commandPool        = RendererContext::Get().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size()),
     };
-    vkAllocateCommandBuffers(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, m_CommandBuffers.data());
+    vkAllocateCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, m_CommandBuffers.data());
 }
 
 void Editor::CreateSyncObjects()
@@ -1398,7 +1396,7 @@ void Editor::CreateSyncObjects()
         .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
 
-    const VkDevice Device = Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {

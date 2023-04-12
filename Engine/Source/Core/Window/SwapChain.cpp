@@ -2,6 +2,7 @@
 
 #include "Core/Window/SwapChain.h"
 #include "Core/Devices/GraphicCard.h"
+#include "Core/Renderer/Renderer.h"
 #include "Core/Utils/VulkanUtils.h"
 
 #include "GLFW/glfw3.h"
@@ -9,82 +10,29 @@
 namespace South
 {
 
-namespace Private
+SwapChain* SwapChain::Create(const CreateInfo& InInfo)
 {
+    auto* OutSwapChain = new SwapChain();
 
-VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& InAvailableFormats)
-{
-    const std::array RequestSurfaceImageFormat = {VK_FORMAT_B8G8R8A8_UNORM,
-                                                  VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_FORMAT_B8G8R8_UNORM,
-                                                  VK_FORMAT_R8G8B8_UNORM};
+    OutSwapChain->CreateSwapchain(InInfo);
 
-    constexpr VkColorSpaceKHR RequestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-
-    // First check if only one format, VK_FORMAT_UNDEFINED, is available, which
-    // would imply that any format is available
-    if(InAvailableFormats.size() == 1)
-    {
-        if(InAvailableFormats[0].format == VK_FORMAT_UNDEFINED)
-        {
-            VkSurfaceFormatKHR ret;
-            ret.format     = RequestSurfaceImageFormat[0];
-            ret.colorSpace = RequestSurfaceColorSpace;
-            return ret;
-        }
-        else
-        {
-            // No point in searching another format
-            return InAvailableFormats[0];
-        }
-    }
-    else
-    {
-        // Request several formats, the first found will be used
-        for(const VkFormat RequestFormat : RequestSurfaceImageFormat)
-        {
-            for(const VkSurfaceFormatKHR AvailableFormat : InAvailableFormats)
-            {
-                if(AvailableFormat.format == RequestFormat && AvailableFormat.colorSpace == RequestSurfaceColorSpace)
-                {
-                    return AvailableFormat;
-                }
-            }
-        }
-
-        // If none of the requested image formats could be found, use the first
-        // available
-        return InAvailableFormats[0];
-    }
+    return OutSwapChain;
 }
 
-} // namespace Private
-
-SwapChain::SwapChain(const CreateInfo& InInfo)
+void SwapChain::CreateSwapchain(const CreateInfo& InInfo)
 {
+    const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
+    const GraphicCard&            Gpu            = RendererContext::Get().GetGraphicCard();
+    const VkPhysicalDevice        PhysicalDevice = Gpu.GetPhysicalDevice();
+
     m_PresentMode = InInfo.PresentMode;
     m_Size        = InInfo.Size;
 
     VkSurfaceCapabilitiesKHR SurfaceCapabilities;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(InInfo.PhysDevice, InInfo.Surface, &SurfaceCapabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice, InInfo.Surface, &SurfaceCapabilities);
 
-    uint32_t SurfaceFormatsCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(InInfo.PhysDevice, InInfo.Surface, &SurfaceFormatsCount, nullptr);
-
-    std::vector<VkSurfaceFormatKHR> SurfaceFormats;
-    SurfaceFormats.resize(SurfaceFormatsCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(InInfo.PhysDevice, InInfo.Surface, &SurfaceFormatsCount, SurfaceFormats.data());
-
-    uint32_t PresentModesCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(InInfo.PhysDevice, InInfo.Surface, &PresentModesCount, nullptr);
-
-    std::vector<VkPresentModeKHR> PresentModes;
-    PresentModes.resize(PresentModesCount);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(InInfo.PhysDevice, InInfo.Surface, &PresentModesCount, PresentModes.data());
-
-    const VkSurfaceFormatKHR SurfaceFormat = Private::ChooseSwapSurfaceFormat(SurfaceFormats);
-    m_ImageFormat                          = SurfaceFormat.format;
-    m_ImageColorSpace                      = SurfaceFormat.colorSpace;
+    m_ImageFormat     = InInfo.SurfaceFormat.format;
+    m_ImageColorSpace = InInfo.SurfaceFormat.colorSpace;
 
     uint32_t ImagesCount = SurfaceCapabilities.minImageCount + 1;
     if(SurfaceCapabilities.maxImageCount > 0 && ImagesCount > SurfaceCapabilities.maxImageCount)
@@ -92,7 +40,7 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
         ImagesCount = SurfaceCapabilities.maxImageCount;
     }
 
-    std::array queueFamilyIndices = {InInfo.LogicalDevice.GetGraphicQueueFamilyIndex(), InInfo.LogicalDevice.GetPresentQueueFamilyIndex()};
+    std::array queueFamilyIndices = {LogicalDevice.GetGraphicQueueFamilyIndex(), LogicalDevice.GetPresentQueueFamilyIndex()};
 
     const VkSwapchainCreateInfoKHR VulkanSwapChainInfo {
         .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -113,7 +61,7 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
         .clipped               = true,
     };
 
-    const VkDevice Device = InInfo.LogicalDevice.GetLogicalDevice();
+    const VkDevice Device = LogicalDevice.GetLogicalDevice();
 
     vkCreateSwapchainKHR(Device, &VulkanSwapChainInfo, nullptr, &m_VulkanSwapChain);
 
@@ -121,67 +69,22 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
     m_Images.resize(ImagesCount);
     vkGetSwapchainImagesKHR(Device, m_VulkanSwapChain, &ImagesCount, m_Images.data());
 
-    m_ImageViews.reserve(m_ImageViews.size());
+    m_ImagesViews.reserve(m_ImagesViews.size());
     for(const VkImage& Image : m_Images)
     {
-        m_ImageViews.emplace_back(VulkanUtils::CreateImageView(Device, Image, m_ImageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
+        m_ImagesViews.emplace_back(VulkanUtils::CreateImageView(Device, Image, m_ImageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
     }
 
-    const VkAttachmentDescription ColorAttachment {
-        .format         = m_ImageFormat,
-        .samples        = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    };
+    m_Framebuffers.resize(m_ImagesViews.size());
 
-    const VkAttachmentReference ColorAttachmentRef {
-        .attachment = 0,
-        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    };
-
-    const VkSubpassDescription Subpass {
-        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount    = 1,
-        .pColorAttachments       = &ColorAttachmentRef,
-        .pDepthStencilAttachment = nullptr,
-    };
-
-    const VkSubpassDependency Dependency {
-        .srcSubpass    = VK_SUBPASS_EXTERNAL,
-        .dstSubpass    = 0,
-        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    };
-
-    const std::array Attachments = {ColorAttachment};
-
-    const VkRenderPassCreateInfo RenderPassInfo {
-        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = static_cast<uint32_t>(Attachments.size()),
-        .pAttachments    = Attachments.data(),
-        .subpassCount    = 1,
-        .pSubpasses      = &Subpass,
-        .dependencyCount = 1,
-        .pDependencies   = &Dependency,
-    };
-    vkCreateRenderPass(Device, &RenderPassInfo, nullptr, &m_RenderPass);
-
-    m_Framebuffers.resize(m_ImageViews.size());
-
-    for(size_t i = 0; i < m_ImageViews.size(); i++)
+    for(size_t i = 0; i < m_ImagesViews.size(); i++)
     {
         const VkFramebufferCreateInfo FramebufferInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext           = nullptr,
-            .renderPass      = m_RenderPass,
+            .renderPass      = RendererContext::Get().GetRenderPass(),
             .attachmentCount = 1,
-            .pAttachments    = &m_ImageViews[i],
+            .pAttachments    = &m_ImagesViews[i],
             .width           = m_Size.width,
             .height          = m_Size.height,
             .layers          = 1,
@@ -190,18 +93,46 @@ SwapChain::SwapChain(const CreateInfo& InInfo)
     }
 }
 
-SwapChain::~SwapChain()
+void SwapChain::Destroy(SwapChain& InSwapChain)
 {
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+
+    for(const VkImageView& ImageView : InSwapChain.m_ImagesViews)
+    {
+        vkDestroyImageView(Device, ImageView, nullptr);
+    }
+    InSwapChain.m_ImagesViews.clear();
+
+    for(const VkFramebuffer& Buffer : InSwapChain.m_Framebuffers)
+    {
+        vkDestroyFramebuffer(Device, Buffer, nullptr);
+    }
+    InSwapChain.m_Framebuffers.clear();
+
+    vkDestroySwapchainKHR(Device, InSwapChain.m_VulkanSwapChain, nullptr);
+
+    InSwapChain.m_VulkanSwapChain = nullptr;
 }
+
+void SwapChain::RecreateSwapChain(const uint32_t InWidth, const uint32_t InHeight)
+{
+    // #TODO: Change without waiting
+    vkDeviceWaitIdle(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
+
+    Destroy(*this);
+
+    CreateSwapchain(CreateInfo {
+        .Surface       = RendererContext::Get().GetSurface(),
+        .SurfaceFormat = {m_ImageFormat, m_ImageColorSpace},
+        .Size          = {InWidth, InHeight},
+        .PresentMode   = m_PresentMode,
+    });
+}
+
 
 VkSwapchainKHR SwapChain::GetVulkanSwapChain() const
 {
     return m_VulkanSwapChain;
-}
-
-VkRenderPass SwapChain::GetRenderPass() const
-{
-    return m_RenderPass;
 }
 
 VkFramebuffer SwapChain::GetFramebuffer(uint32_t InIndex) const

@@ -10,14 +10,16 @@ namespace South
 
 void Renderer::Init(const RendererContext::CreateInfo& Info)
 {
-    s_Context = new RendererContext(Info);
+    RendererContext& Context = RendererContext::Get();
+    Context.Init(Info);
 
     STH_INFO("Renderer Initialized");
 }
 
 void Renderer::Deinit()
 {
-    delete s_Context;
+    RendererContext& Context = RendererContext::Get();
+    Context.Deinit();
 
     STH_INFO("Renderer Deinitialized");
 }

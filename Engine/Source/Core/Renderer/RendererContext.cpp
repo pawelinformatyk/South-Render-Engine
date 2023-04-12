@@ -4,6 +4,7 @@
 #include "Core/Renderer/RendererContext.h"
 
 #include "CommandPool.h"
+#include "Core/Utils/VulkanUtils.h"
 #include "Core/Window/SwapChain.h"
 
 #include <GLFW/glfw3.h>
@@ -11,7 +12,14 @@
 namespace South
 {
 
-RendererContext::RendererContext(const CreateInfo& Info)
+RendererContext& RendererContext::Get()
+{
+    static RendererContext s_Context;
+
+    return s_Context;
+}
+
+void RendererContext::Init(const CreateInfo& Info)
 {
     CreateInstance();
 
@@ -30,19 +38,73 @@ RendererContext::RendererContext(const CreateInfo& Info)
     CreateSurface(Info.GlfwWindow);
     CreateDevices();
 
-    m_SwapChain = new SwapChain(SwapChain::CreateInfo {.LogicalDevice = *m_LogicalDevice,
-                                                       .PhysDevice    = m_Gpu->GetPhysicalDevice(),
-                                                       .Surface       = m_Surface,
-                                                       .Size          = VkExtent2D {1280, 720},
-                                                       .PresentMode   = VK_PRESENT_MODE_FIFO_KHR});
+    const VkSurfaceFormatKHR SwapChainSurfaceFormat = VulkanUtils::ChooseSwapSurfaceFormat(m_Gpu->GetPhysicalDevice(), m_Surface);
+
+    const VkAttachmentDescription ColorAttachment {
+        .format         = SwapChainSurfaceFormat.format,
+        .samples        = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    };
+
+    const VkAttachmentReference ColorAttachmentRef {
+        .attachment = 0,
+        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
+
+    const VkSubpassDescription Subpass {
+        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .colorAttachmentCount    = 1,
+        .pColorAttachments       = &ColorAttachmentRef,
+        .pDepthStencilAttachment = nullptr,
+    };
+
+    const VkSubpassDependency Dependency {
+        .srcSubpass    = VK_SUBPASS_EXTERNAL,
+        .dstSubpass    = 0,
+        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = 0,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    };
+
+    const std::array Attachments = {ColorAttachment};
+
+    const VkRenderPassCreateInfo RenderPassInfo {
+        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = static_cast<uint32_t>(Attachments.size()),
+        .pAttachments    = Attachments.data(),
+        .subpassCount    = 1,
+        .pSubpasses      = &Subpass,
+        .dependencyCount = 1,
+        .pDependencies   = &Dependency,
+    };
+    vkCreateRenderPass(m_LogicalDevice->GetLogicalDevice(), &RenderPassInfo, nullptr, &m_SwapChainRenderPass);
+
+    m_SwapChain = std::unique_ptr<SwapChain>(SwapChain::Create(SwapChain::CreateInfo {
+        .Surface       = m_Surface,
+        .SurfaceFormat = SwapChainSurfaceFormat,
+        .Size          = VkExtent2D {1280, 720},
+        .PresentMode   = VK_PRESENT_MODE_FIFO_KHR,
+    }));
 
     m_CommandPool = std::unique_ptr<CommandPool>(
         CommandPool::Create(m_LogicalDevice->GetLogicalDevice(),
                             {VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_LogicalDevice->GetGraphicQueueFamilyIndex()}));
 }
 
-RendererContext::~RendererContext()
+void RendererContext::Deinit()
 {
+    vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
+
+    vkDestroyRenderPass(m_LogicalDevice->GetLogicalDevice(), m_SwapChainRenderPass, nullptr);
+    m_SwapChainRenderPass = nullptr;
+
+    SwapChain::Destroy(*m_SwapChain);
     CommandPool::Destroy(*m_CommandPool);
     LogicalDeviceAndQueues::Destroy(*m_LogicalDevice);
 
@@ -68,27 +130,6 @@ VkSurfaceKHR RendererContext::GetSurface() const
 VkCommandPool RendererContext::GetCommandPool() const
 {
     return m_CommandPool->GetPool();
-    ;
-}
-
-VkQueue RendererContext::GetGraphicQueue() const
-{
-    return m_LogicalDevice->GetGraphicQueue();
-}
-
-uint32_t RendererContext::GetGraphicQueueFamilyIndex() const
-{
-    return m_LogicalDevice->GetGraphicQueueFamilyIndex();
-}
-
-VkDevice RendererContext::GetLogicalDevice() const
-{
-    return m_LogicalDevice->GetLogicalDevice();
-}
-
-VkPhysicalDevice RendererContext::GetPhysicalDevice()
-{
-    return m_Gpu->GetPhysicalDevice();
 }
 
 const GraphicCard& RendererContext::GetGraphicCard() const
@@ -106,16 +147,9 @@ SwapChain& RendererContext::GetSwapChain() const
     return *m_SwapChain;
 }
 
-void RendererContext::RecreateSwapChain(int InWidth, int InHeight)
+VkRenderPass RendererContext::GetRenderPass() const
 {
-    // #TODO: Change without waiting
-    // vkDeviceWaitIdle(Renderer::GetContext().GetDeviceAndQueues().GetLogicalDevice());
-    //
-    // CleanupSwapChain();
-    //
-    // CreateSwapchain(InWidth, InHeight);
-    // CreateSwapchainImageViews();
-    // CreateSwapchainFramebuffers();
+    return m_SwapChainRenderPass;
 }
 
 void RendererContext::CreateInstance()

@@ -36,14 +36,6 @@ public:
 
     // Q submit etc.
     static void Present();
-
-    static RendererContext& GetContext()
-    {
-        return *s_Context;
-    }
-
-private:
-    inline static RendererContext* s_Context = nullptr;
 };
 
 } // namespace South
