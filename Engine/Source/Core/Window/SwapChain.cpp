@@ -145,4 +145,9 @@ uint32_t SwapChain::GetFramebuffersCount() const
     return static_cast<uint32_t>(m_Framebuffers.size());
 }
 
+VkExtent2D SwapChain::GetSize() const
+{
+    return m_Size;
+}
+
 } // namespace South

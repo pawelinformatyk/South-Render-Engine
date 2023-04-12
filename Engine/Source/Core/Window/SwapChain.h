@@ -47,6 +47,7 @@ public:
     VkSwapchainKHR GetVulkanSwapChain() const;
     VkFramebuffer  GetFramebuffer(uint32_t InIndex) const;
     uint32_t       GetFramebuffersCount() const;
+    VkExtent2D     GetSize() const;
 
 private:
     void CreateSwapchain(const CreateInfo& InInfo);

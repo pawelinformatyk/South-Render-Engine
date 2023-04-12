@@ -484,7 +484,7 @@ void Editor::BeginGui()
         .pNext           = nullptr,
         .renderPass      = RendererContext::Get().GetRenderPass(),
         .framebuffer     = RendererContext::Get().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
-        .renderArea      = VkRect2D({0, 0}, m_ViewportExtent),
+        .renderArea      = VkRect2D({0, 0}, RendererContext::Get().GetSwapChain().GetSize()),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
     };
