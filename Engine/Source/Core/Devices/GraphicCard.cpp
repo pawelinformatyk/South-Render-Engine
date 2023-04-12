@@ -323,7 +323,7 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
             .pNext            = nullptr,
             .queueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second,
             .queueCount       = 1,
-            .pQueuePriorities = &QueuePrios[2],
+            .pQueuePriorities = &QueuePrios[1],
         };
 
         QueueCreateInfos.emplace_back(PresentQueueInfo);
@@ -346,7 +346,7 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
     OutDevice->m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
 
     vkCreateDevice(PhysDev, &LogicDeviceCreateInfo, nullptr, &OutDevice->m_LogicalDevice);
- 
+
     vkGetDeviceQueue(OutDevice->m_LogicalDevice, OutDevice->m_GraphicQueueFamilyIndex, 0, &OutDevice->m_GraphicQueue);
 
     // Independent Present and graphic queues.
