@@ -1,6 +1,9 @@
 #pragma once
 
-#include "CommandPool.h"
+#include "Core/Devices/GraphicCard.h"
+#include "Core/Renderer/CommandPool.h"
+#include "Core/Renderer/RenderPass.h"
+#include "Core/Window/SwapChain.h"
 #include "Core/Window/Window.h"
 #include "vulkan/vulkan_core.h"
 
@@ -8,9 +11,6 @@ struct GLFWwindow;
 
 namespace South
 {
-
-class GraphicCard;
-class LogicalDeviceAndQueues;
 
 // Class holding all "global" vulkan related variables.
 class RendererContext
@@ -35,7 +35,7 @@ public:
     const GraphicCard&            GetGraphicCard() const;
     const LogicalDeviceAndQueues& GetDeviceAndQueues() const;
     SwapChain&                    GetSwapChain() const;
-    VkRenderPass                  GetRenderPass() const;
+    RenderPass&                   GetRenderPass() const;
 
 private:
     RendererContext() = default;
@@ -50,7 +50,7 @@ private:
     std::unique_ptr<GraphicCard>            m_Gpu                 = nullptr;
     std::unique_ptr<LogicalDeviceAndQueues> m_LogicalDevice       = nullptr;
     std::unique_ptr<SwapChain>              m_SwapChain           = nullptr;
-    VkRenderPass                            m_SwapChainRenderPass = nullptr;
+    std::unique_ptr<RenderPass>             m_SwapChainRenderPass = nullptr;
 
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 

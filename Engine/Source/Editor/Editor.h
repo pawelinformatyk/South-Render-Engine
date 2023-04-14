@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Example/VulkanExampleApp.h"
 #include "imconfig.h"
 
 #include <vulkan/vulkan_core.h>
@@ -11,7 +10,7 @@ struct GLFWwindow;
 
 namespace South
 {
-
+class Event;
 class EditorViewport;
 class Camera;
 class UniformBuffer;

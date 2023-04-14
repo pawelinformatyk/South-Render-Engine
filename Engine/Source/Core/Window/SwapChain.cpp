@@ -1,9 +1,9 @@
 #include "sthpch.h"
 
-#include "Core/Window/SwapChain.h"
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Utils/VulkanUtils.h"
+#include "Core/Window/SwapChain.h"
 
 #include "GLFW/glfw3.h"
 
@@ -82,7 +82,7 @@ void SwapChain::CreateSwapchain(const CreateInfo& InInfo)
         const VkFramebufferCreateInfo FramebufferInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext           = nullptr,
-            .renderPass      = RendererContext::Get().GetRenderPass(),
+            .renderPass      = RendererContext::Get().GetRenderPass().GetVulkanPass(),
             .attachmentCount = 1,
             .pAttachments    = &m_ImagesViews[i],
             .width           = m_Size.width,

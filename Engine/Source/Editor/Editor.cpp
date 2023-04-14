@@ -23,6 +23,7 @@
 #include "Core/Window/SwapChain.h"
 #include "EditorViewport.h"
 #include "Event.h"
+#include "Example/VulkanExampleApp.h"
 #include "Mesh.h"
 
 namespace South
@@ -267,7 +268,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportEx
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, RendererContext::Get().GetRenderPass());
+    ImGui_ImplVulkan_Init(&InitInfo, RendererContext::Get().GetRenderPass().GetVulkanPass());
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -477,7 +478,7 @@ void Editor::BeginGui()
     const VkRenderPassBeginInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext           = nullptr,
-        .renderPass      = RendererContext::Get().GetRenderPass(),
+        .renderPass      = RendererContext::Get().GetRenderPass().GetVulkanPass(),
         .framebuffer     = RendererContext::Get().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
         .renderArea      = VkRect2D({0, 0}, RendererContext::Get().GetSwapChain().GetSize()),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),

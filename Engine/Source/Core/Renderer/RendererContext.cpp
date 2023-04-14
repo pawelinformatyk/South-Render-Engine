@@ -1,11 +1,8 @@
 #include "sthpch.h"
 
-#include "Core/Devices/GraphicCard.h"
 #include "Core/Renderer/RendererContext.h"
 
-#include "CommandPool.h"
 #include "Core/Utils/VulkanUtils.h"
-#include "Core/Window/SwapChain.h"
 
 #include <GLFW/glfw3.h>
 
@@ -40,50 +37,9 @@ void RendererContext::Init(const CreateInfo& Info)
 
     const VkSurfaceFormatKHR SwapChainSurfaceFormat = VulkanUtils::ChooseSwapSurfaceFormat(m_Gpu->GetPhysicalDevice(), m_Surface);
 
-    const VkAttachmentDescription ColorAttachment {
-        .format         = SwapChainSurfaceFormat.format,
-        .samples        = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    };
-
-    const VkAttachmentReference ColorAttachmentRef {
-        .attachment = 0,
-        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    };
-
-    const VkSubpassDescription Subpass {
-        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount    = 1,
-        .pColorAttachments       = &ColorAttachmentRef,
-        .pDepthStencilAttachment = nullptr,
-    };
-
-    const VkSubpassDependency Dependency {
-        .srcSubpass    = VK_SUBPASS_EXTERNAL,
-        .dstSubpass    = 0,
-        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    };
-
-    const std::array Attachments = {ColorAttachment};
-
-    const VkRenderPassCreateInfo RenderPassInfo {
-        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = static_cast<uint32_t>(Attachments.size()),
-        .pAttachments    = Attachments.data(),
-        .subpassCount    = 1,
-        .pSubpasses      = &Subpass,
-        .dependencyCount = 1,
-        .pDependencies   = &Dependency,
-    };
-    vkCreateRenderPass(m_LogicalDevice->GetLogicalDevice(), &RenderPassInfo, nullptr, &m_SwapChainRenderPass);
+    m_SwapChainRenderPass = std::unique_ptr<RenderPass>(RenderPass::Create(RenderPass::CreateInfo {
+        .Format = SwapChainSurfaceFormat.format,
+    }));
 
     m_SwapChain = std::unique_ptr<SwapChain>(SwapChain::Create(SwapChain::CreateInfo {
         .Surface       = m_Surface,
@@ -101,9 +57,7 @@ void RendererContext::Deinit()
 {
     vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
 
-    vkDestroyRenderPass(m_LogicalDevice->GetLogicalDevice(), m_SwapChainRenderPass, nullptr);
-    m_SwapChainRenderPass = nullptr;
-
+    RenderPass::Destroy(*m_SwapChainRenderPass);
     SwapChain::Destroy(*m_SwapChain);
     CommandPool::Destroy(*m_CommandPool);
     LogicalDeviceAndQueues::Destroy(*m_LogicalDevice);
@@ -147,9 +101,9 @@ SwapChain& RendererContext::GetSwapChain() const
     return *m_SwapChain;
 }
 
-VkRenderPass RendererContext::GetRenderPass() const
+RenderPass& RendererContext::GetRenderPass() const
 {
-    return m_SwapChainRenderPass;
+    return *m_SwapChainRenderPass;
 }
 
 void RendererContext::CreateInstance()

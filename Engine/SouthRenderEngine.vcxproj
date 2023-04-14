@@ -98,6 +98,7 @@
     <ClCompile Include="Source\Core\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\Core\FileSystem\FileSystem.cpp" />
     <ClCompile Include="Source\Core\Log\Logger.cpp" />
+    <ClCompile Include="Source\Core\Renderer\RenderPass.cpp" />
     <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
     <ClCompile Include="Source\Core\Utils\VulkanUtils.cpp" />
     <ClCompile Include="Source\Core\Window\SwapChain.cpp" />
@@ -130,6 +131,7 @@
     <ClInclude Include="Source\Core\Renderer\Renderer.h" />
     <ClInclude Include="Source\Core\FileSystem\FileSystem.h" />
     <ClInclude Include="Source\Core\Log\Logger.h" />
+    <ClInclude Include="Source\Core\Renderer\RenderPass.h" />
     <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
     <ClInclude Include="Source\Core\Utils\VulkanUtils.h" />
     <ClInclude Include="Source\Core\Window\SwapChain.h" />
