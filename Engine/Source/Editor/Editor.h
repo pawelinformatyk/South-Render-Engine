@@ -45,8 +45,6 @@ private:
 
     EditorViewport* m_MainViewport = nullptr;
 
-    GLFWwindow* m_Window = nullptr;
-
     std::vector<VkCommandBuffer> m_CommandBuffers;
     VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
 

@@ -190,7 +190,7 @@ const std::vector<Vertex> g_Vertices = {{glm::vec3(-0.5f, -0.5f, 0.0f), {1.0f, 0
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
-Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&InWindow), m_ViewportExtent(InViewportExtent)
+Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
 {
     m_MainViewport = new EditorViewport();
 
@@ -234,7 +234,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Window(&In
     {
         CameraUbo->SetData(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
     }
-    
+
     const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
     VkInstance                    VulkanInstance = RendererContext::Get().GetVulkanInstance();
 
@@ -365,11 +365,6 @@ Editor::~Editor()
 
 void Editor::OnEvent(const Event& InEvent)
 {
-    if(const auto* SizeEvent = dynamic_cast<const WindowSizeEvent*>(&InEvent))
-    {
-        // #TODO: This should be handled in a Window maybe
-        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
-    }
 }
 
 void Editor::Tick(double InFrameTime_Sec)
@@ -466,7 +461,7 @@ void Editor::Render()
                        0,
                        sizeof(glm::mat4),
                        &Model);
-    
+
     Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_SceneBuffer);
 
     // End

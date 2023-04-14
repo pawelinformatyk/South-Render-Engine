@@ -3,6 +3,7 @@
 #include "VulkanExampleApp.h"
 
 #include "Core/Renderer/Renderer.h"
+#include "Core/Window/SwapChain.h"
 #include "Core/Window/Window.h"
 #include "Editor/Editor.h"
 #include "GLFW/glfw3.h"
@@ -92,6 +93,12 @@ void Application::OnEvent(const Event& InEvent)
 
     // #TODO: Layers: window -> viewport, window -> some gui layer idk
     m_Editor->OnEvent(InEvent);
+
+    if(const auto* SizeEvent = dynamic_cast<const WindowSizeEvent*>(&InEvent))
+    {
+        // #TODO: This should be handled in a Window maybe
+        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
+    }
 
     if(InEvent.IsA<WindowCloseEvent>())
     {
