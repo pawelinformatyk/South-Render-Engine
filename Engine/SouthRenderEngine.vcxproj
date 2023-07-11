@@ -112,6 +112,8 @@
     <ClCompile Include="Source\Core\Window\Window.cpp" />
     <ClCompile Include="Source\Example\VulkanExampleApp.cpp" />
     <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Math\Vector.cpp" />
+    <ClCompile Include="Source\Math\VectorTest.cpp" />
     <ClCompile Include="Source\sthpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">sthpch.h</PrecompiledHeaderFile>
@@ -145,6 +147,8 @@
     <ClInclude Include="Source\Core\Window\Window.h" />
     <ClInclude Include="Source\Example\stb_image.h" />
     <ClInclude Include="Source\Example\VulkanExampleApp.h" />
+    <ClInclude Include="Source\Math\Vector.h" />
+    <ClInclude Include="Source\Math\VectorTest.h" />
     <ClInclude Include="Source\sthpch.h" />
     <ClInclude Include="Source\Core\Shaders\Shader.h" />
   </ItemGroup>

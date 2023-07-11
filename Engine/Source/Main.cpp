@@ -1,12 +1,15 @@
 #include "sthpch.h"
 
 #include "Example/VulkanExampleApp.h"
+#include "Math/VectorTest.h"
 
 int main(int argc, char** argv)
 {
     South::Logger::Init();
 
     STH_INFO("Application Start");
+
+    South::Test();
 
     auto* App = new South::Application;
 
