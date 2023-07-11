@@ -108,7 +108,7 @@ RenderPass& RendererContext::GetRenderPass() const
 
 void RendererContext::CreateInstance()
 {
-    const VkApplicationInfo AppInfo {
+    constexpr VkApplicationInfo AppInfo {
         .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext              = nullptr,
         .pApplicationName   = "South",

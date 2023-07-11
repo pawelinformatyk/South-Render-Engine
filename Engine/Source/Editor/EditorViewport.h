@@ -11,6 +11,8 @@ class EditorViewport
 public:
     void Tick();
 
+    void RenderGrid();
+
 private:
     Camera m_Camera;
 };

@@ -61,6 +61,8 @@ private:
     VkImageView        m_SceneTextureImageView   = nullptr;
     VertexIndexBuffer* m_SceneBuffer             = nullptr;
 
+    VertexIndexBuffer* m_GridBuffer = nullptr;
+
     std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             m_DescriptorPool = nullptr;
@@ -78,9 +80,10 @@ private:
     VkDeviceMemory m_ViewportDepthImageMemory = nullptr;
     VkImageView    m_ViewportDepthImageView   = nullptr;
 
-    VkRenderPass     m_ViewportRenderPass       = nullptr;
-    VkPipelineLayout m_ViewportPipelineLayout   = nullptr;
-    VkPipeline       m_ViewportGraphicsPipeline = nullptr;
+    VkRenderPass     m_ViewportRenderPass           = nullptr;
+    VkPipelineLayout m_ViewportPipelineLayout       = nullptr;
+    VkPipeline       m_ViewportGraphicsPipelineMesh = nullptr;
+    VkPipeline       m_ViewportGraphicsPipelineGrid = nullptr;
 
     std::vector<ImTextureID> m_ViewportTextures;
     ImTextureID              m_LastViewportTexture = nullptr;
@@ -88,6 +91,7 @@ private:
     void CreateViewportImages();
     void CreateViewportRenderPass();
     void CreateViewportGraphicsPipeline();
+    void CreateViewportGraphicsPipeline2();
     void CreateViewportFramebuffers();
 
     void CreateDescriptorSetLayout();
