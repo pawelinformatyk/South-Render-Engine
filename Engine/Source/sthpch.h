@@ -23,5 +23,3 @@
 #include "glm.hpp"
 
 #include "Math/Vector.h"
-
-using Vector = South::TVector<double>;

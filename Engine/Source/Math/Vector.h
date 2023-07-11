@@ -4,7 +4,7 @@ namespace South
 {
 
 template<typename T>
-struct TVector final
+struct TVector
 {
     T X;
     T Y;
@@ -15,8 +15,8 @@ struct TVector final
 
     T GetSize() const;
 
-    T DistanceTo(const TVector& Other) const;
-    T DistanceSquaredTo(const TVector& Other) const;
+    T GetDistanceTo(const TVector& Other) const;
+    T GetDistanceSquaredTo(const TVector& Other) const;
 
     void Normalize();
 
@@ -24,6 +24,9 @@ struct TVector final
 
     void operator+(const TVector& Other) const;
 };
+
+using Vector  = TVector<double>;
+using VectorF = TVector<float>;
 
 template<typename T>
 TVector<T>::TVector() : X(0), Y(0), Z(0)
@@ -42,13 +45,13 @@ T TVector<T>::GetSize() const
 }
 
 template<typename T>
-T TVector<T>::DistanceTo(const TVector& Other) const
+T TVector<T>::GetDistanceTo(const TVector& Other) const
 {
-    return std::sqrt(DistanceSquaredTo(Other));
+    return std::sqrt(GetDistanceSquaredTo(Other));
 }
 
 template<typename T>
-T TVector<T>::DistanceSquaredTo(const TVector& Other) const
+T TVector<T>::GetDistanceSquaredTo(const TVector& Other) const
 {
     return (X - Other.X) * (X - Other.X) + (Y - Other.Y) * (Y - Other.Y) + (Z - Other.Z) * (Z - Other.Z);
 }

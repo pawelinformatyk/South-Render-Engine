@@ -181,10 +181,10 @@ const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 constexpr float g_GridSize = 1.f;
 
-const std::vector<Vertex> g_Vertices = {{glm::vec3(-g_GridSize, -g_GridSize, 0.0f), {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                        {{g_GridSize, -g_GridSize, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                        {{g_GridSize, g_GridSize, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                        {{-g_GridSize, g_GridSize, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+const std::vector<Vertex> g_Vertices = {{VectorF {-g_GridSize, -g_GridSize, 0.0f}, VectorF {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                                        {VectorF {g_GridSize, -g_GridSize, 0.0f}, VectorF {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                                        {VectorF {g_GridSize, g_GridSize, 0.0f}, VectorF {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                                        {VectorF {-g_GridSize, g_GridSize, 0.0f}, VectorF {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
 
