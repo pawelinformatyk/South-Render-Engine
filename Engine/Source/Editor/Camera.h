@@ -9,10 +9,10 @@ class Camera
 {
 public:
     Camera() = default;
-    Camera(glm::vec3 pos, glm::vec3 target, float fov, float aspect, float near, float inFar);
+    Camera(const VectorFlt& Pos, const VectorFlt& Target, float Fov, float Aspect, float Near, float Far);
 
-    void SetView(glm::vec3 pos, glm::vec3 target);
-    void SetProjection(float fov, float aspect, float near, float inFar);
+    void SetView(const VectorFlt& Pos, const VectorFlt& Target);
+    void SetProjection(float Fov, float Aspect, float Near, float Far);
 
     const glm::mat4& GetView() const;
     const glm::mat4& GetProjection() const;
@@ -20,9 +20,9 @@ public:
 
     glm::quat GetOrientation() const;
 
-    glm::vec3 GetForwardVector() const;
-    glm::vec3 GetRightVector() const;
-    glm::vec3 GetUpVector() const;
+    VectorFlt GetForwardVector() const;
+    VectorFlt GetRightVector() const;
+    VectorFlt GetUpVector() const;
 
     void MoveForward(float Delta);
     void MoveRight(float Delta);
@@ -37,8 +37,8 @@ private:
 
     glm::mat4 m_View = glm::mat4(1.f);
 
-    glm::vec3 m_Position  = glm::vec3(0.f, 0.f, 0.f);
-    glm::vec3 m_Direction = glm::vec3(1.f, 0.f, 0.f);
+    VectorFlt m_Position  = VectorFlt::ZeroVector;
+    VectorFlt m_Direction = VectorFlt::ZeroVector;
 
     glm::mat4 m_Projection = glm::mat4(1.f);
 

@@ -181,10 +181,10 @@ const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 constexpr float g_GridSize = 1.f;
 
-const std::vector<Vertex> g_Vertices = {{VectorF {-g_GridSize, -g_GridSize, 0.0f}, VectorF {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                        {VectorF {g_GridSize, -g_GridSize, 0.0f}, VectorF {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                        {VectorF {g_GridSize, g_GridSize, 0.0f}, VectorF {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                        {VectorF {-g_GridSize, g_GridSize, 0.0f}, VectorF {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+const std::vector<Vertex> g_Vertices = {{VectorFlt {-g_GridSize, -g_GridSize, 0.0f}, VectorFlt {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                                        {VectorFlt {g_GridSize, -g_GridSize, 0.0f}, VectorFlt {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                                        {VectorFlt {g_GridSize, g_GridSize, 0.0f}, VectorFlt {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                                        {VectorFlt {-g_GridSize, g_GridSize, 0.0f}, VectorFlt {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
 
@@ -194,7 +194,7 @@ Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportEx
 
     CreateViewportImages();
 
-    g_EditorCam.SetView(glm::vec3(60.f, 50.f, 40.f), glm::vec3(0.0f, 0.0f, 0.0f));
+    g_EditorCam.SetView(VectorFlt(60.f, 50.f, 40.f), VectorFlt(0.0f, 0.0f, 0.0f));
     g_EditorCam.SetProjection(glm::radians(45.0f),
                               static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height),
                               0.01f,

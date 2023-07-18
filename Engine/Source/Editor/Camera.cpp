@@ -8,24 +8,24 @@
 namespace South
 {
 
-Camera::Camera(glm::vec3 inPos, glm::vec3 inTarget, float inFov, float inAspect, float inNear, float inFar) :
-    m_Fov(inFov), m_Aspect(inAspect), m_Near(inNear), m_Far(inFar)
+Camera::Camera(const VectorFlt& Pos, const VectorFlt& Target, const float Fov, const float Aspect, const float Near, const float Far) :
+    m_Fov(Fov), m_Aspect(Aspect), m_Near(Near), m_Far(Far)
 {
-    SetView(inPos, inTarget);
+    SetView(Pos, Target);
     SetProjection(m_Fov, m_Aspect, m_Near, m_Far);
 }
 
-void Camera::SetView(glm::vec3 inPos, glm::vec3 inTarget)
+void Camera::SetView(const VectorFlt& Pos, const VectorFlt& Target)
 {
-    m_View = glm::lookAt(inPos, inTarget, glm::vec3(0.f, 0.f, 1.f));
+    m_View = glm::lookAt(Convert(Pos), Convert(Target), Convert(VectorFlt::UpVector));
 }
 
-void Camera::SetProjection(float inFov, float inAspect, float inNear, float inFar)
+void Camera::SetProjection(const float Fov, const float Aspect, const float Near, const float Far)
 {
-    m_Fov    = inFov;
-    m_Aspect = inAspect;
-    m_Near   = inNear;
-    m_Far    = inFar;
+    m_Fov    = Fov;
+    m_Aspect = Aspect;
+    m_Near   = Near;
+    m_Far    = Far;
 
     m_Projection = glm::perspective(m_Fov, m_Aspect, m_Near, m_Far);
     m_Projection[1][1] *= -1;
@@ -48,52 +48,58 @@ glm::mat4 Camera::GetViewProjection() const
 
 glm::quat Camera::GetOrientation() const
 {
-    return glm::quat(glm::vec3(m_Pitch, m_Yaw, 0.f));
+    return glm::quat(Convert(VectorFlt(m_Pitch, m_Yaw, 0.f)));
 }
 
-glm::vec3 Camera::GetForwardVector() const
+VectorFlt Camera::GetForwardVector() const
 {
-    return glm::rotate(GetOrientation(), glm::vec3(1.f, 0.f, 0.f));
+    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::ForwardVector));
+
+    return {Vec.x, Vec.y, Vec.z};
 }
 
-glm::vec3 Camera::GetRightVector() const
+VectorFlt Camera::GetRightVector() const
 {
-    return glm::rotate(GetOrientation(), glm::vec3(0.f, 1.f, 0.f));
+    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::RightVector));
+
+    return {Vec.x, Vec.y, Vec.z};
 }
 
-glm::vec3 Camera::GetUpVector() const
+VectorFlt Camera::GetUpVector() const
 {
-    return glm::rotate(GetOrientation(), glm::vec3(0.f, 0.f, 1.0f));
+    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::UpVector));
+
+    return {Vec.x, Vec.y, Vec.z};
 }
 
-void Camera::MoveForward(float Delta)
+void Camera::MoveForward(const float Delta)
 {
-    const glm::vec3 Forward = m_MoveSpeed * Delta * GetForwardVector();
+    const VectorFlt Forward = m_MoveSpeed * Delta * GetForwardVector();
 
     m_Position += Forward;
 
     UpdateView();
 }
 
-void Camera::MoveRight(float Delta)
+void Camera::MoveRight(const float Delta)
 {
-    const glm::vec3 RightVector = m_MoveSpeed * Delta * GetRightVector();
+    const VectorFlt RightVector = m_MoveSpeed * Delta * GetRightVector();
 
     m_Position += RightVector;
 
     UpdateView();
 }
 
-void Camera::MoveUp(float Delta)
+void Camera::MoveUp(const float Delta)
 {
-    const glm::vec3 UpVector = m_MoveSpeed * Delta * GetUpVector();
+    const VectorFlt UpVector = m_MoveSpeed * Delta * GetUpVector();
 
     m_Position += UpVector;
 
     UpdateView();
 }
 
-void Camera::LookRight(float Delta)
+void Camera::LookRight(const float Delta)
 {
     m_Yaw += m_RotationSpeed * Delta;
 
@@ -101,7 +107,7 @@ void Camera::LookRight(float Delta)
     UpdateView();
 }
 
-void Camera::LookUp(float Delta)
+void Camera::LookUp(const float Delta)
 {
     m_Pitch += m_RotationSpeed * Delta;
 
@@ -111,14 +117,14 @@ void Camera::LookUp(float Delta)
 
 void Camera::UpdateView()
 {
-    m_View = glm::lookAt(m_Position, m_Direction, glm::vec3(0.f, 0.f, 1.f));
+    m_View = glm::lookAt(Convert(m_Position), Convert(m_Direction), Convert(VectorFlt::UpVector));
 }
 
 void Camera::UpdateDirection()
 {
-    m_Direction.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-    m_Direction.y = sin(glm::radians(m_Pitch));
-    m_Direction.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    m_Direction.X = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    m_Direction.Y = sin(glm::radians(m_Pitch));
+    m_Direction.Z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 }
 
 } // namespace South

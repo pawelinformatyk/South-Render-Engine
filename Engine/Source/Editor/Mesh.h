@@ -12,8 +12,8 @@ class SVulkanVertexIndexBuffer;
 
 struct Vertex
 {
-    VectorF   Pos;
-    VectorF   Normal;
+    VectorFlt Pos;
+    VectorFlt Normal;
     glm::vec2 TexCoords;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
