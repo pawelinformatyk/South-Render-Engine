@@ -13,7 +13,10 @@
 namespace South
 {
 
-Shader::Shader(VkDevice Device, const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile /*= true*/) :
+Shader::Shader(const VkDevice              Device,
+               const std::string&          inPathToCode,
+               const VkShaderStageFlagBits InStages,
+               const bool                  bCompile /*= true*/) :
     m_PathToCode(inPathToCode)
 {
     m_ShaderInfo = {
@@ -31,11 +34,11 @@ Shader::Shader(VkDevice Device, const std::string& inPathToCode, VkShaderStageFl
 
 Shader::~Shader()
 {
-    VkDevice LogDev = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice LogDev = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
     vkDestroyShaderModule(LogDev, m_ShaderInfo.module, nullptr);
 }
 
-void Shader::Compile(VkDevice Device)
+void Shader::Compile(const VkDevice Device)
 {
     const std::ifstream Stream(m_PathToCode);
     std::stringstream   StrStream;
@@ -43,8 +46,8 @@ void Shader::Compile(VkDevice Device)
 
     const std::string GlslCode = StrStream.str();
 
-    shaderc::Compiler&      Compiler        = ShadersLibrary::GetCompiler();
-    shaderc::CompileOptions CompilerOptions = ShadersLibrary::GetCompilerOptions();
+    const shaderc::Compiler&       Compiler        = ShadersLibrary::GetCompiler();
+    const shaderc::CompileOptions& CompilerOptions = ShadersLibrary::GetCompilerOptions();
 
     const auto ShaderKind = GetShadercShaderKind(m_ShaderInfo.stage);
 
@@ -58,9 +61,7 @@ void Shader::Compile(VkDevice Device)
     const std::vector<uint32_t> SpirvCode(Result.cbegin(), Result.cend());
     // #TODO : Cache spirv in some directory.
 
-    VkShaderModule Module = CreateShaderModule(Device, SpirvCode);
-
-    m_ShaderInfo.module = Module;
+    m_ShaderInfo.module = CreateShaderModule(Device, SpirvCode);
 };
 
 const VkPipelineShaderStageCreateInfo& Shader::GetInfo() const
@@ -68,11 +69,11 @@ const VkPipelineShaderStageCreateInfo& Shader::GetInfo() const
     return m_ShaderInfo;
 }
 
-VkShaderModule Shader::CreateShaderModule(VkDevice Device, const std::vector<uint32_t>& glslCode)
+VkShaderModule Shader::CreateShaderModule(const VkDevice Device, const std::vector<uint32_t>& glslCode)
 {
     VkShaderModule Module;
 
-    VkShaderModuleCreateInfo CreateInfo {
+    const VkShaderModuleCreateInfo CreateInfo {
         .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext    = nullptr,
         .codeSize = glslCode.size() * sizeof(uint32_t),
@@ -84,7 +85,7 @@ VkShaderModule Shader::CreateShaderModule(VkDevice Device, const std::vector<uin
     return Module;
 }
 
-shaderc_shader_kind Shader::GetShadercShaderKind(VkShaderStageFlagBits InStages)
+shaderc_shader_kind Shader::GetShadercShaderKind(const VkShaderStageFlagBits InStages)
 {
     switch(InStages)
     {

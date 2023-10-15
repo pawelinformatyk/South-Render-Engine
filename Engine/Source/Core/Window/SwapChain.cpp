@@ -135,7 +135,7 @@ VkSwapchainKHR SwapChain::GetVulkanSwapChain() const
     return m_VulkanSwapChain;
 }
 
-VkFramebuffer SwapChain::GetFramebuffer(uint32_t InIndex) const
+VkFramebuffer SwapChain::GetFramebuffer(const uint32_t InIndex) const
 {
     return m_Framebuffers[InIndex];
 }

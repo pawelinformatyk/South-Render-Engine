@@ -1,228 +1,230 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{00a8eea6-ffe1-41b5-8eeb-4742eafa3a41}</ProjectGuid>
-    <RootNamespace>SouthRenderEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">  </ImportGroup>
-  <ImportGroup Label="Shared">  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;$(SolutionDir)ExternalLibraries\TinyObjectLoader;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;$(SolutionDir)ExternalLibraries\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combinedd.lib";"spdlogd.lib";%(AdditionalDependencies)</AdditionalDependencies>
-      <EntryPointSymbol>
-      </EntryPointSymbol>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);GLM_FORCE_DEPTH_ZERO_TO_ONE</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\VulkanSDK\Include;$(SolutionDir)ExternalLibraries\GLFW\Include;$(SolutionDir)ExternalLibraries\ImGui\;$(SolutionDir)ExternalLibraries\glm\;$(ProjectDir)Source;$(SolutionDir)ExternalLibraries\spdlog\Include;$(SolutionDir)ExternalLibraries\ImGui\backends;$(SolutionDir)ExternalLibraries\TinyObjectLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Dev\VulkanSDK\Lib;$(SolutionDir)ExternalLibraries\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"vulkan-1.lib";"shaderc_combined.lib";"spdlog.lib";%(AdditionalDependencies)</AdditionalDependencies>
-      <EntryPointSymbol>
-      </EntryPointSymbol>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Source\Core\Buffers\Buffer.cpp" />
-    <ClCompile Include="Source\Core\Buffers\UniformBuffer.cpp" />
-    <ClCompile Include="Source\Core\Buffers\VertexIndexBuffer.cpp" />
-    <ClCompile Include="Source\Core\Devices\GraphicCard.cpp" />
-    <ClCompile Include="Source\Core\Renderer\CommandPool.cpp" />
-    <ClCompile Include="Source\Core\Renderer\RendererContext.cpp" />
-    <ClCompile Include="Source\Core\Renderer\Renderer.cpp" />
-    <ClCompile Include="Source\Core\FileSystem\FileSystem.cpp" />
-    <ClCompile Include="Source\Core\Log\Logger.cpp" />
-    <ClCompile Include="Source\Core\Renderer\RenderPass.cpp" />
-    <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp" />
-    <ClCompile Include="Source\Core\Utils\VulkanUtils.cpp" />
-    <ClCompile Include="Source\Core\Window\SwapChain.cpp" />
-    <ClCompile Include="Source\Editor\Camera.cpp" />
-    <ClCompile Include="Source\Editor\Editor.cpp" />
-    <ClCompile Include="Source\Editor\EditorViewport.cpp" />
-    <ClCompile Include="Source\Editor\Event.cpp" />
-    <ClCompile Include="Source\Editor\Scene.cpp" />
-    <ClCompile Include="Source\Editor\Mesh.cpp" />
-    <ClCompile Include="Source\Core\Tutorial.cpp" />
-    <ClCompile Include="Source\Core\Window\Window.cpp" />
-    <ClCompile Include="Source\Example\VulkanExampleApp.cpp" />
-    <ClCompile Include="Source\Main.cpp" />
-    <ClCompile Include="Source\Math\Vector.cpp" />
-    <ClCompile Include="Source\Math\VectorTest.cpp" />
-    <ClCompile Include="Source\sthpch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">sthpch.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">sthpch.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Source\Core\Shaders\Shader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Source\Core\Buffers\Buffer.h" />
-    <ClInclude Include="Source\Core\Buffers\UniformBuffer.h" />
-    <ClInclude Include="Source\Core\Buffers\VertexIndexBuffer.h" />
-    <ClInclude Include="Source\Core\Devices\GraphicCard.h" />
-    <ClInclude Include="Source\Core\Events\EventsInterface.h" />
-    <ClInclude Include="Source\Core\Renderer\CommandPool.h" />
-    <ClInclude Include="Source\Core\Renderer\RendererContext.h" />
-    <ClInclude Include="Source\Core\Renderer\Renderer.h" />
-    <ClInclude Include="Source\Core\FileSystem\FileSystem.h" />
-    <ClInclude Include="Source\Core\Log\Logger.h" />
-    <ClInclude Include="Source\Core\Renderer\RenderPass.h" />
-    <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h" />
-    <ClInclude Include="Source\Core\Utils\VulkanUtils.h" />
-    <ClInclude Include="Source\Core\Window\SwapChain.h" />
-    <ClInclude Include="Source\Editor\Camera.h" />
-    <ClInclude Include="Source\Editor\Editor.h" />
-    <ClInclude Include="Source\Editor\EditorViewport.h" />
-    <ClInclude Include="Source\Editor\Event.h" />
-    <ClInclude Include="Source\Editor\Mesh.h" />
-    <ClInclude Include="Source\Core\Tutorial.h" />
-    <ClInclude Include="Source\Editor\Scene.h" />
-    <ClInclude Include="Source\Core\Window\Window.h" />
-    <ClInclude Include="Source\Example\stb_image.h" />
-    <ClInclude Include="Source\Example\VulkanExampleApp.h" />
-    <ClInclude Include="Source\Math\Vector.h" />
-    <ClInclude Include="Source\Math\VectorTest.h" />
-    <ClInclude Include="Source\sthpch.h" />
-    <ClInclude Include="Source\Core\Shaders\Shader.h" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ExternalLibraries\GLFW\GLFW.vcxproj">
-      <Project>{39749603-7894-4ce0-aaf5-4db2cd42584d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ExternalLibraries\ImGui\ImGui.vcxproj">
-      <Project>{790e703f-e2d8-4549-9de9-58b64c48d8f7}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Fonts\Cousine-Regular.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Fonts\DroidSans.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Fonts\Karla-Regular.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Fonts\ProggyClean.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Fonts\ProggyTiny.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Fonts\Roboto-Medium.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Models\jetengine100.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Models\JunkShip.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Models\second_5k.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Models\VikingRoom.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Base.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Base.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Depth.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Depth.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Random.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\Random.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\VulkanTutorial.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Shaders\VulkanTutorial.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Textures\JunkShipTexture.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Textures\texture.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <ItemGroup Label="ProjectConfigurations">
+        <ProjectConfiguration Include="Debug|x64">
+            <Configuration>Debug</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|x64">
+            <Configuration>Release</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+    </ItemGroup>
+    <PropertyGroup Label="Globals">
+        <VCProjectVersion>16.0</VCProjectVersion>
+        <Keyword>Win32Proj</Keyword>
+        <ProjectGuid>{00a8eea6-ffe1-41b5-8eeb-4742eafa3a41}</ProjectGuid>
+        <RootNamespace>SouthRenderEngine</RootNamespace>
+        <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    </PropertyGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+        <ConfigurationType>Application</ConfigurationType>
+        <UseDebugLibraries>true</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <CharacterSet>Unicode</CharacterSet>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+        <ConfigurationType>Application</ConfigurationType>
+        <UseDebugLibraries>false</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <WholeProgramOptimization>true</WholeProgramOptimization>
+        <CharacterSet>Unicode</CharacterSet>
+    </PropertyGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
+    <ImportGroup Label="ExtensionSettings"></ImportGroup>
+    <ImportGroup Label="Shared"></ImportGroup>
+    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"/>
+    </ImportGroup>
+    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"/>
+    </ImportGroup>
+    <PropertyGroup Label="UserMacros"/>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <IncludePath>$(IncludePath)</IncludePath>
+    </PropertyGroup>
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>_DEBUG;_CONSOLE;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty\GLFW\Include;$(ProjectDir)ThirdParty\ImGui\;$(ProjectDir)ThirdParty\glm\;$(ProjectDir)Source;$(ProjectDir)ThirdParty\spdlog\Include;$(ProjectDir)ThirdParty\TinyObjectLoader;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+            <LanguageStandard>stdcpp20</LanguageStandard>
+            <PrecompiledHeader>Use</PrecompiledHeader>
+            <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
+        </ClCompile>
+        <Link>
+            <SubSystem>Console</SubSystem>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\Vulkan\Lib;$(ProjectDir)ThirdParty\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <AdditionalDependencies>"vulkan-1.lib";"shaderc_combinedd.lib";"spdlogd.lib";%(AdditionalDependencies)</AdditionalDependencies>
+            <EntryPointSymbol>
+            </EntryPointSymbol>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <FunctionLevelLinking>true</FunctionLevelLinking>
+            <IntrinsicFunctions>true</IntrinsicFunctions>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_RADIANS;%(PreprocessorDefinitions);GLM_FORCE_DEPTH_ZERO_TO_ONE</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty\GLFW\Include;$(ProjectDir)ThirdParty\ImGui\;$(ProjectDir)ThirdParty\glm\;$(ProjectDir)Source;$(ProjectDir)ThirdParty\spdlog\Include;$(ProjectDir)ThirdParty\TinyObjectLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <LanguageStandard>stdcpp20</LanguageStandard>
+            <PrecompiledHeader>Use</PrecompiledHeader>
+            <PrecompiledHeaderFile>sthpch.h</PrecompiledHeaderFile>
+        </ClCompile>
+        <Link>
+            <SubSystem>Console</SubSystem>
+            <EnableCOMDATFolding>true</EnableCOMDATFolding>
+            <OptimizeReferences>true</OptimizeReferences>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\Vulkan\Lib;$(ProjectDir)ThirdParty\spdlog\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <AdditionalDependencies>"vulkan-1.lib";"shaderc_combined.lib";"spdlog.lib";%(AdditionalDependencies)</AdditionalDependencies>
+            <EntryPointSymbol>
+            </EntryPointSymbol>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemGroup>
+        <ClCompile Include="Source\Core\Buffers\Buffer.cpp"/>
+        <ClCompile Include="Source\Core\Buffers\UniformBuffer.cpp"/>
+        <ClCompile Include="Source\Core\Buffers\VertexIndexBuffer.cpp"/>
+        <ClCompile Include="Source\Core\Devices\GraphicCard.cpp"/>
+        <ClCompile Include="Source\Core\Renderer\CommandPool.cpp"/>
+        <ClCompile Include="Source\Core\Renderer\RendererContext.cpp"/>
+        <ClCompile Include="Source\Core\Renderer\Renderer.cpp"/>
+        <ClCompile Include="Source\Core\FileSystem\FileSystem.cpp"/>
+        <ClCompile Include="Source\Core\Log\Logger.cpp"/>
+        <ClCompile Include="Source\Core\Renderer\RenderPass.cpp"/>
+        <ClCompile Include="Source\Core\Shaders\ShadersLibrary.cpp"/>
+        <ClCompile Include="Source\Core\Utils\VulkanUtils.cpp"/>
+        <ClCompile Include="Source\Core\Window\SwapChain.cpp"/>
+        <ClCompile Include="Source\Editor\Camera.cpp"/>
+        <ClCompile Include="Source\Editor\Editor.cpp"/>
+        <ClCompile Include="Source\Editor\EditorViewport.cpp"/>
+        <ClCompile Include="Source\Editor\Event.cpp"/>
+        <ClCompile Include="Source\Editor\Scene.cpp"/>
+        <ClCompile Include="Source\Editor\Mesh.cpp"/>
+        <ClCompile Include="Source\Core\Tutorial.cpp"/>
+        <ClCompile Include="Source\Core\Window\Window.cpp"/>
+        <ClCompile Include="Source\Example\VulkanExampleApp.cpp"/>
+        <ClCompile Include="Source\Main.cpp"/>
+        <ClCompile Include="Source\Math\Vector.cpp"/>
+        <ClCompile Include="Source\Math\VectorTest.cpp"/>
+        <ClCompile Include="Source\sthpch.cpp">
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+            <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">sthpch.h</PrecompiledHeaderFile>
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+            <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">sthpch.h</PrecompiledHeaderFile>
+        </ClCompile>
+        <ClCompile Include="Source\Core\Shaders\Shader.cpp"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ClInclude Include="Source\Core\Buffers\Buffer.h"/>
+        <ClInclude Include="Source\Core\Buffers\UniformBuffer.h"/>
+        <ClInclude Include="Source\Core\Buffers\VertexIndexBuffer.h"/>
+        <ClInclude Include="Source\Core\Devices\GraphicCard.h"/>
+        <ClInclude Include="Source\Core\Events\EventsInterface.h"/>
+        <ClInclude Include="Source\Core\Renderer\CommandPool.h"/>
+        <ClInclude Include="Source\Core\Renderer\RendererContext.h"/>
+        <ClInclude Include="Source\Core\Renderer\Renderer.h"/>
+        <ClInclude Include="Source\Core\FileSystem\FileSystem.h"/>
+        <ClInclude Include="Source\Core\Log\Logger.h"/>
+        <ClInclude Include="Source\Core\Renderer\RenderPass.h"/>
+        <ClInclude Include="Source\Core\Shaders\ShadersLibrary.h"/>
+        <ClInclude Include="Source\Core\Utils\VulkanUtils.h"/>
+        <ClInclude Include="Source\Core\Window\SwapChain.h"/>
+        <ClInclude Include="Source\Editor\Camera.h"/>
+        <ClInclude Include="Source\Editor\Editor.h"/>
+        <ClInclude Include="Source\Editor\EditorViewport.h"/>
+        <ClInclude Include="Source\Editor\Event.h"/>
+        <ClInclude Include="Source\Editor\Mesh.h"/>
+        <ClInclude Include="Source\Core\Tutorial.h"/>
+        <ClInclude Include="Source\Editor\Scene.h"/>
+        <ClInclude Include="Source\Core\Window\Window.h"/>
+        <ClInclude Include="Source\Example\stb_image.h"/>
+        <ClInclude Include="Source\Example\VulkanExampleApp.h"/>
+        <ClInclude Include="Source\Math\Vector.h"/>
+        <ClInclude Include="Source\Math\VectorTest.h"/>
+        <ClInclude Include="Source\sthpch.h"/>
+        <ClInclude Include="Source\Core\Shaders\Shader.h"/>
+    </ItemGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+    <ImportGroup Label="ExtensionTargets">
+    </ImportGroup>
+    <ItemGroup>
+        <Content Include="Resources\Fonts\Cousine-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Fonts\DroidSans.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Fonts\Karla-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Fonts\ProggyClean.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Fonts\ProggyTiny.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Fonts\Roboto-Medium.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Models\jetengine100.obj">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Models\JunkShip.obj">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Models\second_5k.obj">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Models\VikingRoom.obj">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Textures\JunkShipTexture.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Textures\texture.jpg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\Base.frag">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\base.vert">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\Depth.frag">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\Depth.vert">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\Random.frag">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\Random.vert">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\VulkanTutorial.frag">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Shaders\VulkanTutorial.vert">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="ThirdParty\GLFW\GLFW.vcxproj">
+            <Project>{39749603-7894-4ce0-aaf5-4db2cd42584d}</Project>
+            <Name>GLFW</Name>
+        </ProjectReference>
+        <ProjectReference Include="ThirdParty\ImGui\imgui.vcxproj">
+            <Project>{790e703f-e2d8-4549-9de9-58b64c48d8f7}</Project>
+            <Name>imgui</Name>
+        </ProjectReference>
+    </ItemGroup>
 </Project>

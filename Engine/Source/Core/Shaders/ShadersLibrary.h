@@ -17,10 +17,12 @@ public:
     static void Init();
     static void Deinit();
 
+
+    static Shader* AddShader(VkDevice Device, const std::string& Name, VkShaderStageFlagBits Stage, bool bCompile = true);
     static Shader* AddShader(VkDevice              Device,
                              const std::string&    Name,
                              const std::string&    PathToCode,
-                             VkShaderStageFlagBits Stages,
+                             VkShaderStageFlagBits Stage,
                              bool                  bCompile = true);
     static Shader* GetShader(const std::string& Name);
 
@@ -31,11 +33,13 @@ public:
 
     static const char* GetShaderStageToString(VkShaderStageFlagBits Stage);
 
-private:
-    static shaderc::Compiler       s_Compiler;
-    static shaderc::CompileOptions s_CompilerOptions;
+    static inline std::string s_ShadersDirectory = "Shaders/";
 
-    static std::unordered_map<std::string, Shader*> s_Shaders;
+private:
+    static inline shaderc::Compiler       s_Compiler;
+    static inline shaderc::CompileOptions s_CompilerOptions;
+
+    static inline std::unordered_map<std::string, Shader*> s_Shaders;
 };
 
 } // namespace South

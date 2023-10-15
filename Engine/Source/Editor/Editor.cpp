@@ -11,10 +11,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
-
 #include "Core/Buffers/UniformBuffer.h"
 #include "Core/Buffers/VertexIndexBuffer.h"
 #include "Core/Devices/GraphicCard.h"
@@ -25,6 +21,9 @@
 #include "Event.h"
 #include "Example/VulkanExampleApp.h"
 #include "Mesh.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
+#include "imgui.h"
 
 namespace South
 {
@@ -132,16 +131,16 @@ uint32_t FindMemoryType(const VkPhysicalDevice InPhysicalDevice, const uint32_t 
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void CreateImage(const VkDevice         InDevice,
-                 const VkPhysicalDevice InPhysicalDevice,
-                 const uint32_t         InWidth,
-                 const uint32_t         InHeight,
-                 VkFormat               InFormat,
-                 VkImageTiling          InTiling,
-                 VkImageUsageFlags      InUsage,
-                 VkMemoryPropertyFlags  InProperties,
-                 VkImage&               OutImage,
-                 VkDeviceMemory&        OutImageMemory)
+void CreateImage(const VkDevice              InDevice,
+                 const VkPhysicalDevice      InPhysicalDevice,
+                 const uint32_t              InWidth,
+                 const uint32_t              InHeight,
+                 const VkFormat              InFormat,
+                 const VkImageTiling         InTiling,
+                 const VkImageUsageFlags     InUsage,
+                 const VkMemoryPropertyFlags InProperties,
+                 VkImage&                    OutImage,
+                 VkDeviceMemory&             OutImageMemory)
 {
     const VkImageCreateInfo ImageInfo {
         .sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -188,7 +187,7 @@ const std::vector<Vertex> g_Vertices = {{VectorFlt {-g_GridSize, -g_GridSize, 0.
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
 
-Editor::Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
+Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
 {
     m_MainViewport = new EditorViewport();
 
@@ -366,7 +365,7 @@ void Editor::OnEvent(const Event& InEvent)
 {
 }
 
-void Editor::Tick(double InFrameTime_Sec)
+void Editor::Tick(const double InFrameTime_Sec)
 {
     m_LastFrame_Sec = InFrameTime_Sec;
 
@@ -835,12 +834,10 @@ void Editor::CreateViewportGraphicsPipeline()
     const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_V", "Resources/Shaders/VulkanTutorial.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            ->GetInfo();
+        ShadersLibrary::AddShader(Device, "VulkanTutorial", VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial_F", "Resources/Shaders/VulkanTutorial.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
-            ->GetInfo();
+        ShadersLibrary::AddShader(Device, "VulkanTutorial", VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
@@ -955,10 +952,10 @@ void Editor::CreateViewportGraphicsPipeline2()
     const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "Random_V", "Resources/Shaders/Random.vert", VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
+        ShadersLibrary::AddShader(Device, "Random", VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "Random_F", "Resources/Shaders/Random.frag", VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
+        ShadersLibrary::AddShader(Device, "Random", VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
@@ -1107,7 +1104,8 @@ void Editor::CreateViewportDepthResources()
     m_ViewportDepthImageView = CreateImageView(m_ViewportDepthImage, DepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-VkFormat Editor::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat
+    Editor::FindSupportedFormat(const std::vector<VkFormat>& candidates, const VkImageTiling tiling, const VkFormatFeatureFlags features)
 {
     for(VkFormat format : candidates)
     {
@@ -1134,7 +1132,7 @@ VkFormat Editor::FindDepthFormat()
                                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-bool Editor::HasStencilComponent(VkFormat format)
+bool Editor::HasStencilComponent(const VkFormat format)
 {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
@@ -1221,7 +1219,7 @@ void Editor::CreateTextureSampler()
     }
 }
 
-VkImageView Editor::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
+VkImageView Editor::CreateImageView(const VkImage image, const VkFormat format, const VkImageAspectFlags aspectFlags)
 {
     VkImageView OutImageView;
 
@@ -1245,7 +1243,7 @@ VkImageView Editor::CreateImageView(VkImage image, VkFormat format, VkImageAspec
     return OutImageView;
 }
 
-void Editor::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+void Editor::TransitionImageLayout(const VkImage image, VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -1291,7 +1289,7 @@ void Editor::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout
     EndSingleTimeCommands(commandBuffer);
 }
 
-void Editor::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+void Editor::CopyBufferToImage(const VkBuffer buffer, const VkImage image, const uint32_t width, const uint32_t height)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -1398,11 +1396,11 @@ void Editor::CreateDescriptorSets()
     }
 }
 
-void Editor::CreateBuffer(VkDeviceSize          size,
-                          VkBufferUsageFlags    usage,
-                          VkMemoryPropertyFlags properties,
-                          VkBuffer&             buffer,
-                          VkDeviceMemory&       bufferMemory)
+void Editor::CreateBuffer(const VkDeviceSize          size,
+                          const VkBufferUsageFlags    usage,
+                          const VkMemoryPropertyFlags properties,
+                          VkBuffer&                   buffer,
+                          VkDeviceMemory&             bufferMemory)
 {
     VkBufferCreateInfo bufferInfo {};
     bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1455,7 +1453,7 @@ VkCommandBuffer Editor::BeginSingleTimeCommands()
     return OutCommandBuffer;
 }
 
-void Editor::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+void Editor::EndSingleTimeCommands(const VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
 
@@ -1473,7 +1471,7 @@ void Editor::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
                          &commandBuffer);
 }
 
-void Editor::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+void Editor::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 

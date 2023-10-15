@@ -244,7 +244,7 @@ std::optional<std::pair<uint32_t, uint32_t>> FindGraphicAndPresentQueueFamilyInd
 
 } // namespace Private
 
-GraphicCard* GraphicCard::Create(VkInstance InVulkanInstance, const CreateInfo& InCreateInfo)
+GraphicCard* GraphicCard::Create(const VkInstance InVulkanInstance, const CreateInfo& InCreateInfo)
 {
     const VkPhysicalDevice FoundDevice =
         Private::FindPhysicalDevice(InVulkanInstance, InCreateInfo.RequiredExtensions, InCreateInfo.RequiredFeatures);
@@ -289,7 +289,7 @@ std::string_view GraphicCard::GetTypeName() const
     return m_TypeName;
 }
 
-LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu, VkSurfaceKHR InSurface)
+LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu, const VkSurfaceKHR InSurface)
 {
     const VkPhysicalDevice PhysDev = InGpu.GetPhysicalDevice();
 

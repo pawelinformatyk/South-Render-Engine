@@ -1,10 +1,8 @@
 #include "sthpch.h"
 
 #include "Core/Renderer/RendererContext.h"
-
 #include "Core/Utils/VulkanUtils.h"
-
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 namespace South
 {
@@ -170,7 +168,7 @@ std::vector<const char*> RendererContext::GetRequiredInstanceExtensions() const
 
 void RendererContext::CreateMessenger()
 {
-    const VkDebugUtilsMessengerCreateInfoEXT CreateInfo {
+    constexpr VkDebugUtilsMessengerCreateInfoEXT CreateInfo {
         .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
         .pNext           = nullptr,
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -206,10 +204,10 @@ void RendererContext::DestroyMessenger()
     }
 }
 
-VkBool32 RendererContext::ValidationMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      InMessageSeverity,
-                                                    VkDebugUtilsMessageTypeFlagsEXT             InMessageType,
-                                                    const VkDebugUtilsMessengerCallbackDataEXT* InCallbackData,
-                                                    void*                                       InUserData)
+VkBool32 RendererContext::ValidationMessageCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
+                                                    VkDebugUtilsMessageTypeFlagsEXT              InMessageType,
+                                                    const VkDebugUtilsMessengerCallbackDataEXT*  InCallbackData,
+                                                    void*                                        InUserData)
 {
     if(InCallbackData)
     {

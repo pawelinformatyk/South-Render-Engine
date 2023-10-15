@@ -40,7 +40,7 @@ std::string MouseClickEvent::ToString() const
     return "MouseClickEvent";
 }
 
-MouseMoveEvent::MouseMoveEvent(double InX, double InY) : m_MousePosX(InX), m_MousePosY(InY)
+MouseMoveEvent::MouseMoveEvent(const double InX, const double InY) : m_MousePosX(InX), m_MousePosY(InY)
 {
 }
 
@@ -58,7 +58,7 @@ std::string WindowMoveEvent::ToString() const
     return "WindowMoveEvent";
 }
 
-WindowSizeEvent::WindowSizeEvent(int InWidth, int InHeight) : m_Width(InWidth), m_Height(InHeight)
+WindowSizeEvent::WindowSizeEvent(const int InWidth, const int InHeight) : m_Width(InWidth), m_Height(InHeight)
 {
 }
 

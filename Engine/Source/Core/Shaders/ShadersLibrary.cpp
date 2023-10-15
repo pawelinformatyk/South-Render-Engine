@@ -5,9 +5,23 @@
 namespace South
 {
 
-shaderc::Compiler                        ShadersLibrary::s_Compiler;
-shaderc::CompileOptions                  ShadersLibrary::s_CompilerOptions;
-std::unordered_map<std::string, Shader*> ShadersLibrary::s_Shaders;
+namespace Private
+{
+
+std::string GetShaderFileExtension(const VkShaderStageFlagBits Stage)
+{
+    switch(Stage)
+    {
+        case VK_SHADER_STAGE_VERTEX_BIT:
+            return ".vert";
+        case VK_SHADER_STAGE_FRAGMENT_BIT:
+            return ".frag";
+        default:
+            return ".IDC";
+    }
+}
+
+} // namespace Private
 
 void ShadersLibrary::Init()
 {
@@ -29,13 +43,20 @@ void ShadersLibrary::Deinit()
     STH_INFO("ShadersLibrary : Deinitialized");
 }
 
-Shader* ShadersLibrary::AddShader(VkDevice              Device,
-                                  const std::string&    Name,
-                                  const std::string&    PathToCode,
-                                  VkShaderStageFlagBits Stages,
-                                  bool                  bCompile /*= true*/)
+Shader* ShadersLibrary::AddShader(const VkDevice Device, const std::string& Name, const VkShaderStageFlagBits Stage, const bool bCompile)
 {
-    auto* NewShader = new Shader(Device, PathToCode, Stages, bCompile);
+    const std::string Path = s_ShadersDirectory + Name + Private::GetShaderFileExtension(Stage);
+
+    return AddShader(Device, Name, Path, Stage, bCompile);
+}
+
+Shader* ShadersLibrary::AddShader(const VkDevice              Device,
+                                  const std::string&          Name,
+                                  const std::string&          PathToCode,
+                                  const VkShaderStageFlagBits Stage,
+                                  const bool                  bCompile /*= true*/)
+{
+    auto* NewShader = new Shader(Device, PathToCode, Stage, bCompile);
     if(!NewShader)
     {
         return nullptr;
@@ -43,7 +64,7 @@ Shader* ShadersLibrary::AddShader(VkDevice              Device,
 
     s_Shaders.emplace(Name, NewShader);
 
-    STH_INFO("ShadersLibrary : {:s}-shader {:s} added.", GetShaderStageToString(Stages), Name);
+    STH_INFO("ShadersLibrary : {:s}-shader {:s} added.", GetShaderStageToString(Stage), Name);
 
     return NewShader;
 }
@@ -68,7 +89,7 @@ shaderc::CompileOptions& ShadersLibrary::GetCompilerOptions()
     return s_CompilerOptions;
 }
 
-const char* ShadersLibrary::GetShaderStageToString(VkShaderStageFlagBits Stage)
+const char* ShadersLibrary::GetShaderStageToString(const VkShaderStageFlagBits Stage)
 {
     switch(Stage)
     {

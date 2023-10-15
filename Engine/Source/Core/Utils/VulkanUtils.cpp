@@ -24,7 +24,10 @@ std::string VulkanUtils::DeviceTypeToString(const VkPhysicalDeviceType InType)
     return {};
 }
 
-VkImageView VulkanUtils::CreateImageView(const VkDevice InDevice, VkImage InImage, VkFormat InFormat, VkImageAspectFlags InAspectFlags)
+VkImageView VulkanUtils::CreateImageView(const VkDevice           InDevice,
+                                         const VkImage            InImage,
+                                         const VkFormat           InFormat,
+                                         const VkImageAspectFlags InAspectFlags)
 {
     VkImageView OutImageView;
 

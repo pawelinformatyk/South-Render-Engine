@@ -39,7 +39,7 @@ UniformBuffer* UniformBuffer::Create(const VkDevice InLogicalDev)
     return Ub;
 }
 
-void UniformBuffer::SetData(VkDevice InLogicalDev, const void* InData)
+void UniformBuffer::SetData(const VkDevice InLogicalDev, const void* InData)
 {
     void* BufferData = nullptr;
 
