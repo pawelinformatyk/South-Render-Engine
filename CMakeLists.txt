@@ -21,8 +21,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Core/Events/EventsInterface.h
         Engine/Source/Core/FileSystem/FileSystem.cpp
         Engine/Source/Core/FileSystem/FileSystem.h
-        Engine/Source/Core/Log/Logger.cpp
-        Engine/Source/Core/Log/Logger.h
+        Engine/Source/Core/Logger/Logger.cpp
+        Engine/Source/Core/Logger/Logger.h
         Engine/Source/Core/Math/Vector.cpp
         Engine/Source/Core/Math/Vector.h
         Engine/Source/Core/Mesh/Mesh.cpp
