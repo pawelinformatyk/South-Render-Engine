@@ -1,7 +1,0 @@
-#!/bin/sh
-if command -v git-clang-format >/dev/null 2>&1 ; then
-	if git clang-format --diff --quiet | grep . ; then 
-		echo "Clang-Format check failed" 
-		exit 1
-	fi
-fi
