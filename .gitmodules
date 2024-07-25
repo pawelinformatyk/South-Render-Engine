@@ -1,0 +1,16 @@
+[submodule "Engine/ThirdParty/glm"]
+	path = Engine/ThirdParty/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Engine/ThirdParty/Glfw"]
+	path = Engine/ThirdParty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Engine/ThirdParty/spdlog"]
+	path = Engine/ThirdParty/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "Engine/ThirdParty/ImGui"]
+	path = Engine/ThirdParty/ImGui
+	url = git@github.com:pawelinformatyk/ImGui.git
+	branch = south-render-engine
+[submodule "Engine/ThirdParty/shaderc"]
+	path = Engine/ThirdParty/shaderc
+	url = git@github.com:pawelinformatyk/shaderc.git
