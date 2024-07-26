@@ -818,11 +818,12 @@ void Editor::CreateViewportGraphicsPipeline()
 {
     const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial", VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
+    const char* ShaderName = "BlinnPhong";
 
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo =
+        ShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
     VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, "VulkanTutorial", VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
+        ShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 

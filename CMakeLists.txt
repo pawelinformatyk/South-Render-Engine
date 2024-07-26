@@ -119,11 +119,13 @@ target_link_libraries(SouthRenderEngine PRIVATE spdlog)
 # DEFINES
 target_compile_definitions(SouthRenderEngine PRIVATE TINYOBJLOADER_IMPLEMENTATION)
 
-# Shaders
+# Shaders 
+# #TODO: Should be always copied
 add_custom_command(TARGET SouthRenderEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/Engine/Shaders/ $<TARGET_FILE_DIR:SouthRenderEngine>/Engine/Shaders)
 
+# Models, fonts etc
 add_custom_command(TARGET SouthRenderEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/Engine/Resources/ $<TARGET_FILE_DIR:SouthRenderEngine>/Engine/Resources)

@@ -53,8 +53,11 @@ void Shader::Compile(const VkDevice Device)
 
     const shaderc::SpvCompilationResult Result = Compiler.CompileGlslToSpv(CodeAsString, ShaderKind, m_PathToCode.data(), CompilerOptions);
 
+
     if(Result.GetCompilationStatus() != shaderc_compilation_status_success)
     {
+        STH_ERR(Result.GetErrorMessage());
+
         return;
     }
 
