@@ -33,6 +33,8 @@ struct TVector
 
     TVector operator+(const TVector& Rhs) const;
     TVector operator+(T XYZ) const;
+    TVector operator-(const TVector& Rhs) const;
+    TVector operator-(T XYZ) const;
     TVector operator*(const TVector& Rhs) const;
     TVector operator*(T XYZ) const;
 
@@ -109,13 +111,25 @@ T TVector<T>::GetNormalized() const
 template<typename T>
 TVector<T> TVector<T>::operator+(const TVector<T>& Rhs) const
 {
-    return {X + Rhs.Y, Y + Rhs.Y, Z + Rhs.Z};
+    return {X + Rhs.X, Y + Rhs.Y, Z + Rhs.Z};
 }
 
 template<typename T>
 TVector<T> TVector<T>::operator+(const T XYZ) const
 {
     return {X + XYZ, Y + XYZ, Z + XYZ};
+}
+
+template<typename T>
+TVector<T> TVector<T>::operator-(const TVector<T>& Rhs) const
+{
+    return {X - Rhs.Y, Y - Rhs.Y, Z - Rhs.Z};
+}
+
+template<typename T>
+TVector<T> TVector<T>::operator-(const T XYZ) const
+{
+    return {X - XYZ, Y - XYZ, Z - XYZ};
 }
 
 template<typename T>
@@ -176,4 +190,4 @@ const TVector<T> TVector<T>::RightVector(0, 1, 0);
 template<typename T>
 const TVector<T> TVector<T>::UpVector(0, 0, 1);
 
-}
+} // namespace South

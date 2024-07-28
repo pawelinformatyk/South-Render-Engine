@@ -55,10 +55,10 @@ private:
     VkSampler m_TextureSampler = nullptr;
 
     // Scene:
-    VkImage            m_SceneTextureImage       = nullptr;
-    VkDeviceMemory     m_SceneTextureImageMemory = nullptr;
-    VkImageView        m_SceneTextureImageView   = nullptr;
-    VertexIndexBuffer* m_SceneBuffer             = nullptr;
+    VkImage                         m_SceneTextureImage       = nullptr;
+    VkDeviceMemory                  m_SceneTextureImageMemory = nullptr;
+    VkImageView                     m_SceneTextureImageView   = nullptr;
+    std::vector<VertexIndexBuffer*> m_MeshesBuffers;
 
     VertexIndexBuffer* m_GridBuffer = nullptr;
 

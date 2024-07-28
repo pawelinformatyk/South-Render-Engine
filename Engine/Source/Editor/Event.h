@@ -72,18 +72,45 @@ public:
     virtual std::string ToString() const override;
 };
 
-class KeyClickEvent final : public Event
+class ClickEvent : public Event
 {
 public:
-    KeyClickEvent(int InKey, int InScancode, int InAction, int InMods);
+    ClickEvent(int InKey, int InAction, int InMods) : Key(InKey), Action(InAction), InMods(InMods)
+    {
+    }
 
-    virtual std::string ToString() const override;
+    int GetKey() const;
+    int GetAction() const;
+    int GetInMods() const;
+
+protected:
+    int InMods = 0;
+    int Action = 0;
+    int Key    = 0;
 };
 
-class MouseClickEvent final : public Event
+class KeyboardClickEvent final : public ClickEvent
 {
 public:
-    MouseClickEvent(int InButton, int InAction, int InMods);
+    KeyboardClickEvent(int inKey, int inAction, int inMods, int InKey, int InScancode, int InAction, int InMods) :
+        ClickEvent(inKey, inAction, inMods), Scancode(InScancode)
+    {
+    }
+
+    virtual std::string ToString() const override;
+
+    int GetScancode() const;
+
+private:
+    int Scancode = 0;
+};
+
+class MouseClickEvent final : public ClickEvent
+{
+public:
+    MouseClickEvent(int InKey, int InAction, int InMods) : ClickEvent(InKey, InAction, InMods)
+    {
+    }
 
     virtual std::string ToString() const override;
 };

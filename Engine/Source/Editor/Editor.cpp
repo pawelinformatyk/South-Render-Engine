@@ -210,16 +210,6 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     CreateCommandBuffers();
     CreateSyncObjects();
 
-    const UniformBufferObject Ubo {
-        .m_View = g_EditorCam.GetView(),
-        .m_Proj = g_EditorCam.GetProjection(),
-    };
-
-    for(auto& CameraUbo : m_CameraUbos)
-    {
-        CameraUbo->SetData(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
-    }
-
     const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
     VkInstance                    VulkanInstance = RendererContext::Get().GetVulkanInstance();
 
@@ -298,56 +288,95 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
 
 Editor::~Editor()
 {
-    //    // #TODO: What is this?
-    //    vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
-    //
-    //    //    ImGui_ImplVulkan_Shutdown();
-    //    //    ImGui_ImplGlfw_Shutdown();
-    //    //    ImGui::DestroyContext();
-    //
-    //    const VkDevice Device = m_LogicalDevice->GetLogicalDevice();
-    //
-    //    vkDestroyImageView(Device, m_ViewportDepthImageView, nullptr);
-    //    vkDestroyImage(Device, m_ViewportDepthImage, nullptr);
-    //    vkFreeMemory(Device, m_ViewportDepthImageMemory, nullptr);
-    //
-    //    vkDestroyPipeline(Device, m_ViewportGraphicsPipeline, nullptr);
-    //    vkDestroyPipelineLayout(Device, m_ViewportPipelineLayout, nullptr);
-    //    vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
-    //
-    //    // vkDestroyPipeline(Device, m_SwapchainGraphicsPipeline, nullptr);
-    //    // vkDestroyPipelineLayout(Device, m_SwapchainPipelineLayout, nullptr);
-    //    vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
-    //
-    //    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    //    {
-    //        UniformBuffer::Destroy(Device, m_CameraUbos[i]);
-    //    }
-    //
-    //    vkDestroyDescriptorPool(Device, m_DescriptorPool, nullptr);
-    //
-    //    vkDestroySampler(Device, m_TextureSampler, nullptr);
-    //    vkDestroyImageView(Device, m_TextureImageView, nullptr);
-    //
-    //    vkDestroyImage(Device, m_TextureImage, nullptr);
-    //    vkFreeMemory(Device, m_TextureImageMemory, nullptr);
-    //
-    //    vkDestroyDescriptorSetLayout(Device, m_DescriptorSetLayout, nullptr);
-    //
-    //    VertexIndexBuffer::Destroy(Device, m_QuadBuffer);
-    //
-    //    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    //    {
-    //        vkDestroySemaphore(Device, m_RenderFinishedSemaphores[i], nullptr);
-    //        vkDestroySemaphore(Device, m_ImageAvailableSemaphores[i], nullptr);
-    //        vkDestroyFence(Device, m_InFlightFences[i], nullptr);
-    //    }
-    //
-    //    vkDestroyCommandPool(Device, m_CommandPool, nullptr);
+    // #TODO: It's null
+    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    if(!Device)
+    {
+        return;
+    }
+
+    // #TODO: What is this?
+    vkDeviceWaitIdle(Device);
+
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    vkDestroyImageView(Device, m_ViewportDepthImageView, nullptr);
+    vkDestroyImage(Device, m_ViewportDepthImage, nullptr);
+    vkFreeMemory(Device, m_ViewportDepthImageMemory, nullptr);
+
+    vkDestroyPipeline(Device, m_ViewportGraphicsPipelineGrid, nullptr);
+    vkDestroyPipeline(Device, m_ViewportGraphicsPipelineMesh, nullptr);
+    vkDestroyPipelineLayout(Device, m_ViewportPipelineLayout, nullptr);
+    vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
+
+    vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
+
+    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        UniformBuffer::Destroy(Device, m_CameraUbos[i]);
+    }
+
+    vkDestroyDescriptorPool(Device, m_DescriptorPool, nullptr);
+
+    vkDestroySampler(Device, m_TextureSampler, nullptr);
+
+    vkFreeMemory(Device, m_SceneTextureImageMemory, nullptr);
+
+    vkDestroyDescriptorSetLayout(Device, m_DescriptorSetLayout, nullptr);
+
+    //    VertexIndexBuffer::Destroy(Device, m_MeshesBuffers);
+    VertexIndexBuffer::Destroy(Device, m_GridBuffer);
+
+    for(size_t Idx = 0; Idx < MAX_FRAMES_IN_FLIGHT; Idx++)
+    {
+        vkDestroySemaphore(Device, m_RenderFinishedSemaphores[Idx], nullptr);
+        vkDestroySemaphore(Device, m_ImageAvailableSemaphores[Idx], nullptr);
+        vkDestroyFence(Device, m_InFlightFences[Idx], nullptr);
+    }
 }
 
 void Editor::OnEvent(const Event& InEvent)
 {
+    if(auto* KeyEvent = dynamic_cast<const KeyboardClickEvent*>(&InEvent))
+    {
+        if(KeyEvent->GetKey() == GLFW_KEY_W)
+        {
+            g_EditorCam.MoveForward(1);
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_S)
+        {
+            g_EditorCam.MoveForward(-1);
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_A)
+        {
+            g_EditorCam.MoveRight(-1);
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_D)
+        {
+            g_EditorCam.MoveRight(1);
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_Q)
+        {
+            g_EditorCam.MoveUp(1);
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_E)
+        {
+            g_EditorCam.MoveUp(-1);
+        }
+    }
+    else if(auto* MouseClick = dynamic_cast<const MouseClickEvent*>(&InEvent))
+    {
+        if(MouseClick->GetKey() == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+        }
+    }
+    else if(auto* MouseMove = dynamic_cast<const MouseMoveEvent*>(&InEvent))
+    {
+        g_EditorCam.LookRight(-1);
+        g_EditorCam.LookUp(-1);
+    }
 }
 
 void Editor::Tick(const double InFrameTime_Sec)
@@ -391,6 +420,16 @@ void Editor::EndFrame()
 void Editor::Render()
 {
     // Begin
+
+    const UniformBufferObject Ubo {
+        .m_View = g_EditorCam.GetView(),
+        .m_Proj = g_EditorCam.GetProjection(),
+    };
+
+    for(auto& CameraUbo : m_CameraUbos)
+    {
+        CameraUbo->SetData(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
+    }
 
     std::array<VkClearValue, 2> ClearColor {};
     ClearColor[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -450,7 +489,15 @@ void Editor::Render()
 
     vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipelineMesh);
 
-    Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *m_SceneBuffer);
+    for(const auto* Mesh : m_MeshesBuffers)
+    {
+        if(!Mesh)
+        {
+            continue;
+        }
+
+        Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *Mesh);
+    }
 
     // End
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
@@ -578,7 +625,7 @@ void Editor::RenderGui()
         }
         ImGui::End();
 
-        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
+        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
         {
             const ImVec2 ViewportSize(static_cast<float>(m_ViewportExtent.width), static_cast<float>(m_ViewportExtent.height));
 
@@ -679,12 +726,12 @@ void Editor::LoadExampleScene()
 
     const LogicalDeviceAndQueues& LogicalDevice = RendererContext::Get().GetDeviceAndQueues();
 
-    m_SceneBuffer = VertexIndexBuffer::Create(
+    m_MeshesBuffers.emplace_back(VertexIndexBuffer::Create(
         LogicalDevice.GetLogicalDevice(),
         m_CommandBuffers[0],
         LogicalDevice.GetGraphicQueue(),
         {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
-        {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())});
+        {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())}));
 
     m_GridBuffer = VertexIndexBuffer::Create(
         LogicalDevice.GetLogicalDevice(),
@@ -818,7 +865,7 @@ void Editor::CreateViewportGraphicsPipeline()
 {
     const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
-    const char* ShaderName = "BlinnPhong";
+    const char* ShaderName = "GrayMesh";
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
         ShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();

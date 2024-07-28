@@ -12,6 +12,9 @@ Camera::Camera(const VectorFlt& Pos, const VectorFlt& Target, const float Fov, c
 
 void Camera::SetView(const VectorFlt& Pos, const VectorFlt& Target)
 {
+    m_Position  = Pos;
+    m_Direction = (Pos - Target);
+    m_Direction.Normalize();
     m_View = glm::lookAt(Convert(Pos), Convert(Target), Convert(VectorFlt::UpVector));
 }
 

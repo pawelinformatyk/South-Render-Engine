@@ -97,6 +97,7 @@ void Application::OnEvent(const Event& InEvent)
     //        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
     //    }
 
+
     if(InEvent.IsA<WindowCloseEvent>())
     {
         Close();
@@ -111,6 +112,13 @@ void Application::OnEvent(const Event& InEvent)
     {
         Maximize();
     }
+
+    if(auto* KeyEvent = dynamic_cast<const KeyboardClickEvent*>(&InEvent); KeyEvent && KeyEvent->GetKey() == GLFW_KEY_ESCAPE)
+    {
+        Close();
+    }
+
+    m_Editor->OnEvent(InEvent);
 }
 
 void Application::Close()

@@ -28,9 +28,9 @@ std::string WindowMaximizeEvent::ToString() const
     return "WindowMaximizeEvent";
 }
 
-std::string KeyClickEvent::ToString() const
+std::string KeyboardClickEvent::ToString() const
 {
-    return "KeyClickEvent";
+    return "KeyboardClickEvent";
 }
 
 std::string MouseClickEvent::ToString() const
@@ -76,12 +76,24 @@ WindowMaximizeEvent::WindowMaximizeEvent()
 {
 }
 
-KeyClickEvent::KeyClickEvent(int InKey, int InScancode, int InAction, int InMods)
+int ClickEvent::GetKey() const
 {
+    return Key;
 }
 
-MouseClickEvent::MouseClickEvent(int InButton, int InAction, int InMods)
+int ClickEvent::GetAction() const
 {
+    return Action;
+}
+
+int ClickEvent::GetInMods() const
+{
+    return InMods;
+}
+
+int KeyboardClickEvent::GetScancode() const
+{
+    return Scancode;
 }
 
 

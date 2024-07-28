@@ -80,7 +80,7 @@ Window::Window(const CreateInfo& InInfo)
                        {
                            const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                           Callback(KeyClickEvent(InKey, InScancode, InAction, InMods));
+                           Callback(KeyboardClickEvent(0, 0, 0, InKey, InScancode, InAction, InMods));
                        });
 
     glfwSetMouseButtonCallback(m_glfwWindow,
