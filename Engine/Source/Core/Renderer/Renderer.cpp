@@ -22,14 +22,6 @@ void Renderer::Deinit()
     STH_INFO("Renderer Deinitialized");
 }
 
-void Renderer::BeginFrame()
-{
-}
-
-void Renderer::EndFrame()
-{
-}
-
 void Renderer::RenderQuad(const VkCommandBuffer InCommandBuffer, const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform)
 {
     //    const PushConstant Ps {

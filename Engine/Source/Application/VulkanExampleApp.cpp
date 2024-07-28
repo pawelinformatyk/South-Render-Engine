@@ -58,7 +58,7 @@ void Application::Run()
 
         std::chrono::time_point FrameStartTime = std::chrono::high_resolution_clock::now();
 
-        Renderer::BeginFrame();
+        // #TODO: Move to to tick or sth
         m_Editor->BeginFrame();
         {
             // #TODO: Move before BeginFrame?
@@ -71,7 +71,6 @@ void Application::Run()
             m_Editor->EndGui();
         }
         m_Editor->EndFrame();
-        Renderer::EndFrame();
 
         m_Editor->Present();
 

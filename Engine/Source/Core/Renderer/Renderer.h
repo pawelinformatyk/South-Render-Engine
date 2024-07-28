@@ -17,9 +17,6 @@ public:
     static void Init(const RendererContext::CreateInfo& Info);
     static void Deinit();
 
-    static void BeginFrame();
-    static void EndFrame();
-
     // static void Submit(std::function<void()>&);
 
     static void RenderQuad(VkCommandBuffer InCommandBuffer, VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform);

@@ -31,6 +31,8 @@ struct TVector
 
     T GetNormalized() const;
 
+    static TVector Rand(const T RangeBegin, const T RangeEnd);
+
     TVector operator+(const TVector& Rhs) const;
     TVector operator+(T XYZ) const;
     TVector operator-(const TVector& Rhs) const;
@@ -48,6 +50,7 @@ struct TVector
     static const TVector RightVector;
     static const TVector UpVector;
 };
+
 
 using Vector    = TVector<double>;
 using VectorFlt = TVector<float>;
@@ -104,6 +107,19 @@ T TVector<T>::GetNormalized() const
     Vec.Normalize();
 
     return Vec;
+}
+
+template<typename T>
+TVector<T> TVector<T>::Rand(const T RangeBegin, const T RangeEnd)
+{
+    const T RangeLength = std::abs(RangeEnd - RangeBegin);
+
+    // #TODO: Random utils
+    const T X = std::rand() / RAND_MAX * RangeLength - RangeBegin;
+    const T Y = std::rand() / RAND_MAX * RangeLength - RangeBegin;
+    const T Z = std::rand() / RAND_MAX * RangeLength - RangeBegin;
+
+    return {X, Y, Z};
 }
 
 // ~Begin Operators

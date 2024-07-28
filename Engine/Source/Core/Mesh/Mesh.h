@@ -1,41 +1,68 @@
 #pragma once
 
 #include "vulkan/vulkan_core.h"
+#include <Core/Buffers/VertexIndexBuffer.h>
 
 namespace South
 {
 
-class VertexIndexBuffer;
-class VertexBuffer;
-class SVulkanVertexIndexBuffer;
 
 struct Vertex
 {
     VectorFlt Pos;
     VectorFlt Normal;
     glm::vec2 TexCoords;
+    VectorFlt Color;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
-    static const std::array<VkVertexInputAttributeDescription, 3>& GetAttributesDescriptions();
+    static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
 
 private:
     static VkVertexInputBindingDescription                  m_BindingDesc;
-    static std::array<VkVertexInputAttributeDescription, 3> m_AttributesDescs;
+    static std::array<VkVertexInputAttributeDescription, 4> m_AttributesDescs;
 };
 
-// #TODO : One/two/three... meshes - one/two buffer
-class StaticMesh
+class Mesh
 {
 public:
-    StaticMesh(const std::vector<Vertex>& inVertices, const std::vector<uint32_t>& inIndices);
+    Mesh();
 
-private:
-    std::vector<Vertex>   m_Vertices;
-    std::vector<uint16_t> m_Indices;
+    std::vector<Vertex>   Vertices;
+    std::vector<uint16_t> Indices;
 
-    // VertexIndexBuffer* indexBuffer;
-    // VertexBuffer* verticesBuffer;
-    SVulkanVertexIndexBuffer* m_VI_Buffer;
+    std::unique_ptr<VertexIndexBuffer> Buffer;
+};
+
+// Examples:
+
+class PlaneMesh : public Mesh
+{
+public:
+    PlaneMesh();
+};
+
+class CubeMesh : public Mesh
+{
+public:
+    CubeMesh();
+};
+
+class SphereMesh : public Mesh
+{
+public:
+    SphereMesh(int SegmentsCount);
+};
+
+class TriangleMesh : public Mesh
+{
+public:
+    TriangleMesh();
+};
+
+class CircleMesh : public Mesh
+{
+public:
+    CircleMesh();
 };
 
 } // namespace South

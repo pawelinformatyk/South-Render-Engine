@@ -66,6 +66,10 @@ add_executable(SouthRenderEngine
         Engine/ThirdParty/ImGui/imstb_truetype.h
         Engine/ThirdParty/ImGui/backends/imgui_impl_glfw.cpp
         Engine/ThirdParty/ImGui/backends/imgui_impl_vulkan.cpp
+        Engine/Source/Core/ScenePipeline/ScenePipeline.cpp
+        Engine/Source/Core/ScenePipeline/ScenePipeline.h
+        Engine/Source/Scene/SceneObject.cpp
+        Engine/Source/Scene/SceneObject.h
 )
 
 target_precompile_headers(SouthRenderEngine PRIVATE Engine/Source/sthpch.h)
