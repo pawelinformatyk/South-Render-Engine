@@ -14,6 +14,7 @@ struct TVector
 
     TVector();
     TVector(T XYZ);
+    TVector(T X, T Y);
     TVector(T X, T Y, T Z);
 
     template<typename CastType>
@@ -63,6 +64,11 @@ TVector<T>::TVector() : X(0), Y(0), Z(0)
 
 template<typename T>
 TVector<T>::TVector(const T X, const T Y, const T Z) : X(X), Y(Y), Z(Z)
+{
+}
+
+template<typename T>
+TVector<T>::TVector(const T X, const T Y) : X(X), Y(Y), Z(0)
 {
 }
 
@@ -139,7 +145,7 @@ TVector<T> TVector<T>::operator+(const T XYZ) const
 template<typename T>
 TVector<T> TVector<T>::operator-(const TVector<T>& Rhs) const
 {
-    return {X - Rhs.Y, Y - Rhs.Y, Z - Rhs.Z};
+    return {X - Rhs.X, Y - Rhs.Y, Z - Rhs.Z};
 }
 
 template<typename T>

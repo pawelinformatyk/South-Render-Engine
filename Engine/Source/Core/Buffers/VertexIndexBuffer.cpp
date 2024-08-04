@@ -1,4 +1,5 @@
 #include "Core/Buffers/VertexIndexBuffer.h"
+#include <Core/Renderer/RendererContext.h>
 
 namespace South
 {
@@ -129,4 +130,5 @@ uint32_t VertexIndexBuffer::GetIndicesSize() const
 {
     return m_IndicesSize;
 }
+
 } // namespace South

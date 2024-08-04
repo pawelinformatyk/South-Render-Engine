@@ -1,4 +1,5 @@
 #include "Event.h"
+#include <GLFW/glfw3.h>
 
 namespace South
 {
@@ -28,9 +29,15 @@ std::string WindowMaximizeEvent::ToString() const
     return "WindowMaximizeEvent";
 }
 
+std::string ClickEvent::ToString() const
+{
+    //    return glfwGetKeyName(Key, 0);
+    return "";
+}
+
 std::string KeyboardClickEvent::ToString() const
 {
-    return "KeyboardClickEvent";
+    return "KeyboardClickEvent " + ClickEvent::ToString();
 }
 
 std::string MouseClickEvent::ToString() const

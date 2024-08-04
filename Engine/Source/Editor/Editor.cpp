@@ -11,6 +11,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
+#include <Application/VulkanExampleApp.h>
 
 namespace South
 {
@@ -180,12 +181,6 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
 
     CreateViewportImages();
 
-    g_EditorCam.SetView(VectorFlt(60.f, 50.f, 40.f), VectorFlt(0.0f, 0.0f, 0.0f));
-    g_EditorCam.SetProjection(glm::radians(45.0f),
-                              static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height),
-                              0.01f,
-                              1000.0f);
-
     CreateViewportRenderPass();
 
     CreateDescriptorSetLayout();
@@ -272,7 +267,7 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
 
     vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex]);
 
-    vkQueueSubmit(LogicalDevice.GetGraphicQueue(), 1, &SubmitInfo, VK_NULL_HANDLE);
+    vkQueueSubmit(LogicalDevice.GetGraphicQueue(), 1, &SubmitInfo, nullptr);
 
     vkDeviceWaitIdle(LogicalDevice.GetLogicalDevice());
 
@@ -284,12 +279,15 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     {
         m_ViewportTextures[Index] = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_ViewportImagesViews[Index], VK_IMAGE_LAYOUT_GENERAL);
     }
+
+    g_EditorCam.Aspect = static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height);
+    g_EditorCam.UpdateProjection();
 }
 
 Editor::~Editor()
 {
     // #TODO: It's null
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
     if(!Device)
     {
         return;
@@ -313,11 +311,6 @@ Editor::~Editor()
 
     vkDestroyRenderPass(Device, m_ViewportRenderPass, nullptr);
 
-    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        UniformBuffer::Destroy(Device, m_CameraUbos[i]);
-    }
-
     vkDestroyDescriptorPool(Device, m_DescriptorPool, nullptr);
 
     vkDestroySampler(Device, m_TextureSampler, nullptr);
@@ -325,9 +318,6 @@ Editor::~Editor()
     vkFreeMemory(Device, m_SceneTextureImageMemory, nullptr);
 
     vkDestroyDescriptorSetLayout(Device, m_DescriptorSetLayout, nullptr);
-
-    //    VertexIndexBuffer::Destroy(Device, m_MeshesBuffers);
-    VertexIndexBuffer::Destroy(Device, m_GridBuffer);
 
     for(size_t Idx = 0; Idx < MAX_FRAMES_IN_FLIGHT; Idx++)
     {
@@ -343,45 +333,81 @@ void Editor::OnEvent(const Event& InEvent)
     {
         if(KeyEvent->GetKey() == GLFW_KEY_W)
         {
-            g_EditorCam.MoveForward(1);
+            bMoveCameraForward = KeyEvent->GetAction() == GLFW_PRESS;
         }
         else if(KeyEvent->GetKey() == GLFW_KEY_S)
         {
-            g_EditorCam.MoveForward(-1);
+            bMoveCameraBackward = KeyEvent->GetAction() == GLFW_PRESS;
         }
         else if(KeyEvent->GetKey() == GLFW_KEY_A)
         {
-            g_EditorCam.MoveRight(-1);
+            bMoveCameraLeft = KeyEvent->GetAction() == GLFW_PRESS;
         }
         else if(KeyEvent->GetKey() == GLFW_KEY_D)
         {
-            g_EditorCam.MoveRight(1);
-        }
-        else if(KeyEvent->GetKey() == GLFW_KEY_Q)
-        {
-            g_EditorCam.MoveUp(1);
+            bMoveCameraRight = KeyEvent->GetAction() == GLFW_PRESS;
         }
         else if(KeyEvent->GetKey() == GLFW_KEY_E)
         {
-            g_EditorCam.MoveUp(-1);
+            bMoveCameraUp = KeyEvent->GetAction() == GLFW_PRESS;
+        }
+        else if(KeyEvent->GetKey() == GLFW_KEY_Q)
+        {
+            bMoveCameraDown = KeyEvent->GetAction() == GLFW_PRESS;
         }
     }
     else if(auto* MouseClick = dynamic_cast<const MouseClickEvent*>(&InEvent))
     {
         if(MouseClick->GetKey() == GLFW_MOUSE_BUTTON_RIGHT)
         {
+            bCameraCanRotate = MouseClick->GetAction() == GLFW_PRESS;
         }
     }
     else if(auto* MouseMove = dynamic_cast<const MouseMoveEvent*>(&InEvent))
     {
-        g_EditorCam.LookRight(-1);
-        g_EditorCam.LookUp(-1);
+        PreviousMouseMove = CurrentMouseMove;
+        CurrentMouseMove  = Vector(MouseMove->m_MousePosX, MouseMove->m_MousePosY);
     }
 }
 
 void Editor::Tick(const double InFrameTime_Sec)
 {
     m_LastFrame_Sec = InFrameTime_Sec;
+
+    if(bMoveCameraForward)
+    {
+        g_EditorCam.MoveForward(1);
+    }
+    if(bMoveCameraBackward)
+    {
+        g_EditorCam.MoveForward(-1);
+    }
+    if(bMoveCameraRight)
+    {
+        g_EditorCam.MoveRight(1);
+    }
+    if(bMoveCameraLeft)
+    {
+        g_EditorCam.MoveRight(-1);
+    }
+    if(bMoveCameraUp)
+    {
+        g_EditorCam.MoveUp(1);
+    }
+    if(bMoveCameraDown)
+    {
+        g_EditorCam.MoveUp(-1);
+    }
+    if(bCameraCanRotate)
+    {
+        const Vector CameraMoveDiff = (PreviousMouseMove - CurrentMouseMove);
+
+        g_EditorCam.LookRight(CameraMoveDiff.Y);
+        g_EditorCam.LookUp(CameraMoveDiff.X);
+
+        STH_INFO("Yaw" + std::to_string(g_EditorCam.Yaw));
+        STH_INFO("Pitch" + std::to_string(g_EditorCam.Pitch));
+    }
 
     m_MainViewport->Tick();
 }
@@ -422,8 +448,8 @@ void Editor::Render()
     // Begin
 
     const UniformBufferObject Ubo {
-        .m_View = g_EditorCam.GetView(),
-        .m_Proj = g_EditorCam.GetProjection(),
+        .m_View = g_EditorCam.View,
+        .m_Proj = g_EditorCam.Projection,
     };
 
     for(auto& CameraUbo : m_CameraUbos)
@@ -445,7 +471,6 @@ void Editor::Render()
         .pClearValues    = ClearColor.data(),
     };
     vkCmdBeginRenderPass(m_CommandBuffers[m_CurrentFrameIndex], &RenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
 
     VkViewport viewport {};
     viewport.x        = 0.0f;
@@ -474,7 +499,8 @@ void Editor::Render()
     const auto  CurrTime  = std::chrono::high_resolution_clock::now();
     const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
 
-    auto Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f));
+    //    auto Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f));
+    auto Model = glm::mat4(1.f);
 
     vkCmdPushConstants(m_CommandBuffers[m_CurrentFrameIndex],
                        m_ViewportPipelineLayout,
@@ -973,9 +999,9 @@ void Editor::CreateViewportGraphicsPipeline()
     pipelineInfo.layout              = m_ViewportPipelineLayout;
     pipelineInfo.renderPass          = m_ViewportRenderPass;
     pipelineInfo.subpass             = 0;
-    pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
+    pipelineInfo.basePipelineHandle  = nullptr;
 
-    vkCreateGraphicsPipelines(Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_ViewportGraphicsPipelineMesh);
+    vkCreateGraphicsPipelines(Device, nullptr, 1, &pipelineInfo, nullptr, &m_ViewportGraphicsPipelineMesh);
 }
 
 void Editor::CreateViewportGraphicsPipeline2()
@@ -1089,7 +1115,7 @@ void Editor::CreateViewportGraphicsPipeline2()
     pipelineInfo.layout              = m_ViewportPipelineLayout;
     pipelineInfo.renderPass          = m_ViewportRenderPass;
     pipelineInfo.subpass             = 0;
-    pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
+    pipelineInfo.basePipelineHandle  = nullptr;
 
     vkCreateGraphicsPipelines(Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_ViewportGraphicsPipelineGrid);
 }

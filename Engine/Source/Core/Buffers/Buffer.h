@@ -10,6 +10,8 @@ class Buffer
 public:
     static void Destroy(VkDevice InlogicalDev, Buffer* InBuffer);
 
+    ~Buffer();
+
     VkBuffer       GetBuffer() const;
     VkDeviceMemory GetMemory() const;
 

@@ -80,7 +80,7 @@ Window::Window(const CreateInfo& InInfo)
                        {
                            const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                           Callback(KeyboardClickEvent(0, 0, 0, InKey, InScancode, InAction, InMods));
+                           Callback(KeyboardClickEvent(InKey, InScancode, InAction, InMods));
                        });
 
     glfwSetMouseButtonCallback(m_glfwWindow,
@@ -95,6 +95,9 @@ Window::Window(const CreateInfo& InInfo)
                              [](GLFWwindow* InWindow, const double InX, const double InY)
                              {
                                  const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+
+                                 double CurrentMouseMove1, CurrentMouseMove2;
+                                 glfwGetCursorPos(InWindow, &CurrentMouseMove1, &CurrentMouseMove2);
 
                                  Callback(MouseMoveEvent(InX, InY));
                              });

@@ -136,6 +136,16 @@ private:
     void CreateCommandBuffers();
 
     void CreateSyncObjects();
+
+    bool   bMoveCameraForward  = false;
+    bool   bMoveCameraBackward = false;
+    bool   bMoveCameraLeft     = false;
+    bool   bMoveCameraRight    = false;
+    bool   bMoveCameraUp       = false;
+    bool   bMoveCameraDown     = false;
+    bool   bCameraCanRotate    = false;
+    Vector CurrentMouseMove;
+    Vector PreviousMouseMove;
 };
 
 } // namespace South

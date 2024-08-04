@@ -83,6 +83,8 @@ public:
     int GetAction() const;
     int GetInMods() const;
 
+    virtual std::string ToString() const override;
+
 protected:
     int InMods = 0;
     int Action = 0;
@@ -92,8 +94,7 @@ protected:
 class KeyboardClickEvent final : public ClickEvent
 {
 public:
-    KeyboardClickEvent(int inKey, int inAction, int inMods, int InKey, int InScancode, int InAction, int InMods) :
-        ClickEvent(inKey, inAction, inMods), Scancode(InScancode)
+    KeyboardClickEvent(int InKey, int InScancode, int InAction, int InMods) : ClickEvent(InKey, InAction, InMods), Scancode(InScancode)
     {
     }
 

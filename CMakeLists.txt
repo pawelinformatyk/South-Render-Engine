@@ -70,6 +70,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Core/ScenePipeline/ScenePipeline.h
         Engine/Source/Scene/SceneObject.cpp
         Engine/Source/Scene/SceneObject.h
+        Engine/Source/Scene/ScenePipeline.cpp
+        Engine/Source/Scene/ScenePipeline.h
 )
 
 target_precompile_headers(SouthRenderEngine PRIVATE Engine/Source/sthpch.h)

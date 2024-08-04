@@ -82,41 +82,41 @@ SphereMesh::SphereMesh(int SegmentsCount)
     // #TODO: Reserve
     Vertices.reserve(4);
 
-    for(int X = 0; X <= SegmentsCount; ++X)
+    for(int IdxX = 0; IdxX <= SegmentsCount; ++IdxX)
     {
-        const float xSegment = (float)X / (float)SegmentsCount;
+        const float SegmentX = (float)IdxX / (float)SegmentsCount;
 
-        for(int Y = 0; Y <= SegmentsCount; ++Y)
+        for(int IdxY = 0; IdxY <= SegmentsCount; ++IdxY)
         {
-            const float ySegment = (float)Y / (float)SegmentsCount;
+            const float SegmentY = (float)IdxY / (float)SegmentsCount;
 
-            const VectorFlt Loc = VectorFlt(std::cos(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI),
-                                            std::cos(ySegment * M_PI),
-                                            std::sin(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI));
+            const VectorFlt Loc = VectorFlt(std::cos(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI),
+                                            std::cos(SegmentY * M_PI),
+                                            std::sin(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI));
 
-            Vertices.emplace_back(Loc, Loc, glm::vec2(xSegment, ySegment), Color);
+            Vertices.emplace_back(Loc, Loc, glm::vec2(SegmentX, SegmentY), Color);
         }
     }
 
     // #TODO: uint16_t
 
     bool bOddRow = false;
-    for(unsigned int Y = 0; Y < SegmentsCount; ++Y)
+    for(unsigned int IdxY = 0; IdxY < SegmentsCount; ++IdxY)
     {
         if(!bOddRow) // even rows: y == 0, y == 2; and so on
         {
-            for(unsigned int X = 0; X <= SegmentsCount; ++X)
+            for(unsigned int IdxX = 0; IdxX <= SegmentsCount; ++IdxX)
             {
-                Indices.push_back(Y * (SegmentsCount + 1) + X);
-                Indices.push_back((Y + 1) * (SegmentsCount + 1) + X);
+                Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
+                Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
             }
         }
         else
         {
-            for(int X = SegmentsCount; X >= 0; --X)
+            for(int IdxX = SegmentsCount; IdxX >= 0; --IdxX)
             {
-                Indices.push_back((Y + 1) * (SegmentsCount + 1) + X);
-                Indices.push_back(Y * (SegmentsCount + 1) + X);
+                Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
+                Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
             }
         }
         bOddRow = !bOddRow;

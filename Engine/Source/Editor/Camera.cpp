@@ -3,50 +3,22 @@
 namespace South
 {
 
-Camera::Camera(const VectorFlt& Pos, const VectorFlt& Target, const float Fov, const float Aspect, const float Near, const float Far) :
-    m_Fov(Fov), m_Aspect(Aspect), m_Near(Near), m_Far(Far)
+Camera::Camera()
 {
-    SetView(Pos, Target);
-    SetProjection(m_Fov, m_Aspect, m_Near, m_Far);
-}
-
-void Camera::SetView(const VectorFlt& Pos, const VectorFlt& Target)
-{
-    m_Position  = Pos;
-    m_Direction = (Pos - Target);
-    m_Direction.Normalize();
-    m_View = glm::lookAt(Convert(Pos), Convert(Target), Convert(VectorFlt::UpVector));
-}
-
-void Camera::SetProjection(const float Fov, const float Aspect, const float Near, const float Far)
-{
-    m_Fov    = Fov;
-    m_Aspect = Aspect;
-    m_Near   = Near;
-    m_Far    = Far;
-
-    m_Projection = glm::perspective(m_Fov, m_Aspect, m_Near, m_Far);
-    m_Projection[1][1] *= -1;
-}
-
-const glm::mat4& Camera::GetView() const
-{
-    return m_View;
-}
-
-const glm::mat4& Camera::GetProjection() const
-{
-    return m_Projection;
+    UpdateProjection();
+    UpdateView();
 }
 
 glm::mat4 Camera::GetViewProjection() const
 {
-    return m_View * m_Projection;
+    return View * Projection;
 }
 
 glm::quat Camera::GetOrientation() const
 {
-    return glm::quat(Convert(VectorFlt(m_Pitch, m_Yaw, 0.f)));
+    return glm::quat {glm::normalize(glm::vec3(cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)),
+                                               sin(glm::radians(Pitch)),
+                                               sin(glm::radians(Yaw)) * cos(glm::radians(Pitch))))};
 }
 
 VectorFlt Camera::GetForwardVector() const
@@ -72,57 +44,66 @@ VectorFlt Camera::GetUpVector() const
 
 void Camera::MoveForward(const float Delta)
 {
-    const VectorFlt Forward = m_MoveSpeed * Delta * GetForwardVector();
+    const VectorFlt DeltaDir = MoveSpeed * Delta * GetForwardVector();
 
-    m_Position += Forward;
+    Location += DeltaDir;
 
     UpdateView();
 }
 
 void Camera::MoveRight(const float Delta)
 {
-    const VectorFlt RightVector = m_MoveSpeed * Delta * GetRightVector();
+    const VectorFlt DeltaDir = MoveSpeed * Delta * GetRightVector();
 
-    m_Position += RightVector;
+    Location += DeltaDir;
 
     UpdateView();
 }
 
 void Camera::MoveUp(const float Delta)
 {
-    const VectorFlt UpVector = m_MoveSpeed * Delta * GetUpVector();
+    const VectorFlt DeltaDir = MoveSpeed * Delta * GetUpVector();
 
-    m_Position += UpVector;
+    Location += DeltaDir;
 
     UpdateView();
 }
 
 void Camera::LookRight(const float Delta)
 {
-    m_Yaw += m_RotationSpeed * Delta;
+    const auto PrevYaw = Yaw;
+    Yaw += RotationSpeed * Delta;
 
-    UpdateDirection();
-    UpdateView();
+    // UpdateView is expensive.
+    if(PrevYaw != Yaw)
+    {
+        UpdateView();
+    }
 }
 
 void Camera::LookUp(const float Delta)
 {
-    m_Pitch += m_RotationSpeed * Delta;
+    const auto PrevPitch = Pitch;
+    Pitch += RotationSpeed * Delta;
 
-    UpdateDirection();
-    UpdateView();
+    // UpdateView is expensive.
+    if(PrevPitch != Pitch)
+    {
+        UpdateView();
+    }
+}
+
+void Camera::UpdateProjection()
+{
+    Projection = glm::perspective(Fov, Aspect, Near, Far);
+    Projection[1][1] *= -1;
 }
 
 void Camera::UpdateView()
 {
-    m_View = glm::lookAt(Convert(m_Position), Convert(m_Direction), Convert(VectorFlt::UpVector));
-}
+    const VectorFlt Target = Location + GetForwardVector();
 
-void Camera::UpdateDirection()
-{
-    m_Direction.X = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-    m_Direction.Y = sin(glm::radians(m_Pitch));
-    m_Direction.Z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+    View = glm::lookAt(Convert(Location), Convert(Target), Convert(VectorFlt::UpVector));
 }
 
 } // namespace South

@@ -29,6 +29,7 @@ Application::Application()
         },
     });
 
+    // #TODO: Where to put it
     Renderer::Init(RendererContext::CreateInfo(*m_Window->ToGlfw()));
 
     m_Editor = std::make_unique<Editor>(VkExtent2D(1280, 720), *m_Window->ToGlfw());
@@ -85,7 +86,7 @@ void Application::ProcessEvents()
 
 void Application::OnEvent(const Event& InEvent)
 {
-    STH_INFO(InEvent.ToString());
+    //    STH_INFO(InEvent.ToString());
 
     // #TODO: Layers: window -> viewport, window -> some gui layer idk
     //    m_Editor->OnEvent(InEvent);
@@ -132,4 +133,5 @@ void Application::Minimize()
 void Application::Maximize()
 {
 }
+
 } // namespace South

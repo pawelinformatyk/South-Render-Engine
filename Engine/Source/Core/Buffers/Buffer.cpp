@@ -1,6 +1,11 @@
 #include "Buffer.h"
+#include <Core/Renderer/RendererContext.h>
 
-void South::Buffer::Destroy(const VkDevice InlogicalDev, Buffer* InBuffer)
+namespace South
+{
+
+
+void Buffer::Destroy(const VkDevice InlogicalDev, Buffer* InBuffer)
 {
     if(!InBuffer)
     {
@@ -13,12 +18,22 @@ void South::Buffer::Destroy(const VkDevice InlogicalDev, Buffer* InBuffer)
     delete InBuffer;
 }
 
-VkBuffer South::Buffer::GetBuffer() const
+VkBuffer Buffer::GetBuffer() const
 {
     return m_Buffer;
 }
 
-VkDeviceMemory South::Buffer::GetMemory() const
+VkDeviceMemory Buffer::GetMemory() const
 {
     return m_Memory;
 }
+
+Buffer::~Buffer()
+{
+    VkDevice LogicalDevice = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+
+    vkDestroyBuffer(LogicalDevice, m_Buffer, nullptr);
+    vkFreeMemory(LogicalDevice, m_Memory, nullptr);
+}
+
+} // namespace South
