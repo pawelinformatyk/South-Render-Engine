@@ -31,8 +31,30 @@ std::string WindowMaximizeEvent::ToString() const
 
 std::string ClickEvent::ToString() const
 {
-    //    return glfwGetKeyName(Key, 0);
-    return "";
+    std::string OutStr;
+
+    const char* KeyName = glfwGetKeyName(Key, 0);
+    if(!KeyName)
+    {
+        return OutStr;
+    }
+
+    OutStr = KeyName;
+
+    if(Action == GLFW_RELEASE)
+    {
+        OutStr += " Release";
+    }
+    else if(Action == GLFW_PRESS)
+    {
+        OutStr += " Press";
+    }
+    else if(Action == GLFW_REPEAT)
+    {
+        OutStr += " Repeat";
+    }
+
+    return OutStr;
 }
 
 std::string KeyboardClickEvent::ToString() const

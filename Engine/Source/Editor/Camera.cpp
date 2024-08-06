@@ -14,32 +14,21 @@ glm::mat4 Camera::GetViewProjection() const
     return View * Projection;
 }
 
-glm::quat Camera::GetOrientation() const
-{
-    return glm::quat {glm::normalize(glm::vec3(cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)),
-                                               sin(glm::radians(Pitch)),
-                                               sin(glm::radians(Yaw)) * cos(glm::radians(Pitch))))};
-}
-
 VectorFlt Camera::GetForwardVector() const
 {
-    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::ForwardVector));
-
-    return {Vec.x, Vec.y, Vec.z};
+    return Convert(glm::normalize(glm::vec3(cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)),
+                                            sin(glm::radians(Pitch)),
+                                            sin(glm::radians(Yaw)) * cos(glm::radians(Pitch)))));
 }
 
 VectorFlt Camera::GetRightVector() const
 {
-    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::RightVector));
-
-    return {Vec.x, Vec.y, Vec.z};
+    return Convert(glm::cross(Convert(GetForwardVector()), Convert(GetUpVector())));
 }
 
 VectorFlt Camera::GetUpVector() const
 {
-    const auto Vec = rotate(GetOrientation(), Convert(VectorFlt::UpVector));
-
-    return {Vec.x, Vec.y, Vec.z};
+    return VectorFlt::UpVector;
 }
 
 void Camera::MoveForward(const float Delta)
@@ -71,39 +60,33 @@ void Camera::MoveUp(const float Delta)
 
 void Camera::LookRight(const float Delta)
 {
-    const auto PrevYaw = Yaw;
     Yaw += RotationSpeed * Delta;
 
-    // UpdateView is expensive.
-    if(PrevYaw != Yaw)
-    {
-        UpdateView();
-    }
+    // #TODO: Prevent gimbal lock
+
+    UpdateView();
 }
 
 void Camera::LookUp(const float Delta)
 {
-    const auto PrevPitch = Pitch;
     Pitch += RotationSpeed * Delta;
 
-    // UpdateView is expensive.
-    if(PrevPitch != Pitch)
-    {
-        UpdateView();
-    }
+
+    UpdateView();
 }
 
 void Camera::UpdateProjection()
 {
     Projection = glm::perspective(Fov, Aspect, Near, Far);
+
+    // Flip so we don't get upside down image (glm is for OpenGL, where the Y coordinate of the clip coordinates is
+    // inverted).
     Projection[1][1] *= -1;
 }
 
 void Camera::UpdateView()
 {
-    const VectorFlt Target = Location + GetForwardVector();
-
-    View = glm::lookAt(Convert(Location), Convert(Target), Convert(VectorFlt::UpVector));
+    View = glm::lookAt(Convert(Location), Convert(Location + GetForwardVector()), Convert(GetUpVector()));
 }
 
 } // namespace South

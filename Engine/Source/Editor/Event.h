@@ -86,9 +86,9 @@ public:
     virtual std::string ToString() const override;
 
 protected:
-    int InMods = 0;
-    int Action = 0;
     int Key    = 0;
+    int Action = 0;
+    int InMods = 0;
 };
 
 class KeyboardClickEvent final : public ClickEvent

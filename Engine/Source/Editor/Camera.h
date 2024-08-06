@@ -11,8 +11,6 @@ public:
 
     glm::mat4 GetViewProjection() const;
 
-    glm::quat GetOrientation() const;
-
     VectorFlt GetForwardVector() const;
     VectorFlt GetRightVector() const;
     VectorFlt GetUpVector() const;
@@ -42,7 +40,7 @@ public:
     float Far    = 100000.f;
 
     float MoveSpeed     = 1.5f;
-    float RotationSpeed = 1.f;
+    float RotationSpeed = 0.1f;
 };
 
 } // namespace South

@@ -90,7 +90,6 @@ private:
     void CreateViewportImages();
     void CreateViewportRenderPass();
     void CreateViewportGraphicsPipeline();
-    void CreateViewportGraphicsPipeline2();
     void CreateViewportFramebuffers();
 
     void CreateDescriptorSetLayout();
@@ -144,7 +143,6 @@ private:
     bool   bMoveCameraUp       = false;
     bool   bMoveCameraDown     = false;
     bool   bCameraCanRotate    = false;
-    Vector CurrentMouseMove;
     Vector PreviousMouseMove;
 };
 

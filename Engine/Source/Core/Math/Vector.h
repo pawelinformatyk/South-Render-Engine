@@ -1,5 +1,8 @@
 #pragma once
 
+#include "vec3.hpp"
+#include <compare>
+
 namespace South
 {
 
@@ -34,15 +37,51 @@ struct TVector
 
     static TVector Rand(const T RangeBegin, const T RangeEnd);
 
-    TVector operator+(const TVector& Rhs) const;
-    TVector operator+(T XYZ) const;
-    TVector operator-(const TVector& Rhs) const;
-    TVector operator-(T XYZ) const;
-    TVector operator*(const TVector& Rhs) const;
-    TVector operator*(T XYZ) const;
+    TVector<T> operator+(const TVector<T>& Other) const
+    {
+        return {X + Other.X, Y + Other.Y, Z + Other.Z};
+    }
 
-    TVector& operator+=(const TVector& Vec);
-    TVector& operator*=(const TVector& Vec);
+    TVector<T> operator+(const T Other) const
+    {
+        return {X + Other, Y + Other, Z + Other};
+    }
+
+    TVector<T> operator-(const TVector<T>& Other) const
+    {
+        return {X - Other.X, Y - Other.Y, Z - Other.Z};
+    }
+
+    TVector<T> operator-(const T Other) const
+    {
+        return {X - Other, Y - Other, Z - Other};
+    }
+
+    TVector<T> operator*(const TVector<T>& Other) const
+    {
+        return {X * Other.Y, Y * Other.Y, Z * Other.Z};
+    }
+
+    TVector<T> operator*(const T Other) const
+    {
+        return {X * Other, Y * Other, Z * Other};
+    }
+
+    TVector& operator+=(const TVector& Other)
+    {
+        *this = (*this + Other);
+
+        return *this;
+    }
+
+    TVector& operator*=(const TVector& Other)
+    {
+        *this = (*this * Other);
+
+        return *this;
+    }
+
+    friend auto operator<=>(const TVector& Lhs, const TVector& Rhs) = default;
 
     // #TODO: Inline?
     static const TVector ZeroVector;
@@ -51,7 +90,6 @@ struct TVector
     static const TVector RightVector;
     static const TVector UpVector;
 };
-
 
 using Vector    = TVector<double>;
 using VectorFlt = TVector<float>;
@@ -130,69 +168,17 @@ TVector<T> TVector<T>::Rand(const T RangeBegin, const T RangeEnd)
 
 // ~Begin Operators
 
+// #TODO: T1 = float, T2 = double?
 template<typename T>
-TVector<T> TVector<T>::operator+(const TVector<T>& Rhs) const
+TVector<T> operator+(const T Lhs, const TVector<T>& Rhs)
 {
-    return {X + Rhs.X, Y + Rhs.Y, Z + Rhs.Z};
+    return Rhs + Lhs;
 }
 
 template<typename T>
-TVector<T> TVector<T>::operator+(const T XYZ) const
+TVector<T> operator*(const T Lhs, const TVector<T>& Rhs)
 {
-    return {X + XYZ, Y + XYZ, Z + XYZ};
-}
-
-template<typename T>
-TVector<T> TVector<T>::operator-(const TVector<T>& Rhs) const
-{
-    return {X - Rhs.X, Y - Rhs.Y, Z - Rhs.Z};
-}
-
-template<typename T>
-TVector<T> TVector<T>::operator-(const T XYZ) const
-{
-    return {X - XYZ, Y - XYZ, Z - XYZ};
-}
-
-template<typename T>
-TVector<T> operator+(const T XYZ, const TVector<T>& Vec)
-{
-    return Vec + XYZ;
-}
-
-template<typename T>
-TVector<T> TVector<T>::operator*(const TVector<T>& Rhs) const
-{
-    return {X * Rhs.Y, Y * Rhs.Y, Z * Rhs.Z};
-}
-
-template<typename T>
-TVector<T> TVector<T>::operator*(const T XYZ) const
-{
-    return {X * XYZ, Y * XYZ, Z * XYZ};
-}
-
-template<typename T>
-TVector<T> operator*(const T XYZ, const TVector<T>& Vec)
-{
-    return Vec * XYZ;
-}
-
-
-template<typename T>
-TVector<T>& TVector<T>::operator+=(const TVector<T>& Vec)
-{
-    *this = (*this + Vec);
-
-    return *this;
-}
-
-template<typename T>
-TVector<T>& TVector<T>::operator*=(const TVector<T>& Vec)
-{
-    this = (*this * Vec);
-
-    return *this;
+    return Rhs * Lhs;
 }
 
 // ~End Operators
@@ -211,5 +197,17 @@ const TVector<T> TVector<T>::RightVector(0, 1, 0);
 
 template<typename T>
 const TVector<T> TVector<T>::UpVector(0, 0, 1);
+
+// Conversion
+template<typename T>
+inline glm::vec3 Convert(const South::TVector<T>& Vector)
+{
+    return glm::vec3 {Vector.X, Vector.Z, Vector.Y};
+}
+
+inline South::VectorFlt Convert(const glm::vec3& Vector)
+{
+    return South::VectorFlt {Vector.x, Vector.z, Vector.y};
+}
 
 } // namespace South

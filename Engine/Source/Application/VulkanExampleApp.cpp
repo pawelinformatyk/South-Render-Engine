@@ -97,7 +97,6 @@ void Application::OnEvent(const Event& InEvent)
     //        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
     //    }
 
-
     if(InEvent.IsA<WindowCloseEvent>())
     {
         Close();
