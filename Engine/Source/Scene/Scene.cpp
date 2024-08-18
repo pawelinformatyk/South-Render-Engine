@@ -26,22 +26,23 @@ void SScene::LoadExample()
         std::vector<Vertex>   Vertices;
         std::vector<uint32_t> Indices;
 
-        SVectorFlt Color;
+        // #TODO: Colors are now fucked
+        SLinearColor Color;
         if(Shape.name == "ShipBrown")
         {
-            Color = SVectorFlt(0.64, 0.16, 0.16);
+            Color = SLinearColor(0.64, 0.16, 0.16);
         }
         else if(Shape.name == "ShipRed")
         {
-            Color = SVectorFlt(1, 0, 0);
+            Color = SLinearColor(1, 0, 0);
         }
         else if(Shape.name == "Ground")
         {
-            Color = SVectorFlt(0, 0, 0.4);
+            Color = SLinearColor(0, 0, 0.4);
         }
         else if(Shape.name == "Water")
         {
-            Color = SVectorFlt(0, 0, 1);
+            Color = SLinearColor(0, 0, 1);
         }
 
         for(const auto& Index : Shape.mesh.indices)
@@ -63,6 +64,20 @@ void SScene::LoadExample()
     }
 
     SceneObjects.emplace_back(std::move(SceneMeshObject));
+
+    {
+        auto SceneMeshObject2         = std::make_unique<SSceneMeshObject>();
+        SceneMeshObject2->DisplayName = "Plane";
+
+        // #TODO: Somehow it is flipped - frontFace idk
+        SceneMeshObject2->ToWorld = glm::scale(SceneMeshObject2->ToWorld, glm::vec3(100));
+        SceneMeshObject2->ToWorld = glm::rotate(SceneMeshObject2->ToWorld, glm::radians(180.f), Convert(SVectorFlt::RightVector));
+
+        // #TODO: Plane is gray but that's prob because of the lighting (camera loc) not so sure.
+        SceneMeshObject2->AddMesh(CreatePlaneMesh(SLinearColor(0, 1, 0)));
+
+        SceneObjects.emplace_back(std::move(SceneMeshObject2));
+    }
 }
 
 } // namespace South

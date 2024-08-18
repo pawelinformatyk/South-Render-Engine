@@ -35,47 +35,57 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::m_AttributesDescs = {
     VkVertexInputAttributeDescription {
         .location = 2,
         .binding  = 0,
-        .format   = VK_FORMAT_R32G32B32_SFLOAT,
+        .format   = VK_FORMAT_R32G32B32A32_SFLOAT,
         .offset   = offsetof(Vertex, Color),
     },
 };
 
-SPlaneMesh::SPlaneMesh(const SVectorFlt& Color)
+SMeshDescription CreatePlaneMesh(const SLinearColor& Color)
 {
+    SMeshDescription Out;
+
     const SVectorFlt Normal = SVectorFlt::UpVector;
 
-    Vertices.reserve(4);
-    Vertices.emplace_back(SVectorFlt(-0.5, 0, -0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, 0, -0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, 0, 0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, 0, 0.5), Normal, Color);
+    Out.Vertices.reserve(4);
+    Out.Vertices.emplace_back(SVectorFlt(-0.5, 0, -0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(0.5, 0, -0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(0.5, 0, 0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(-0.5, 0, 0.5), Normal, Color);
 
-    Indices = {0, 1, 2, 2, 3, 0};
+    Out.Indices = {0, 1, 2, 2, 3, 0};
+
+    return Out;
 }
 
-SCubeMesh::SCubeMesh(const SVectorFlt& Color)
+SMeshDescription CreateCubeMesh(const SLinearColor& Color)
 {
+    SMeshDescription Out;
+
     const SVectorFlt Normal = SVectorFlt::UpVector;
 
-    Vertices.reserve(8);
+    Out.Vertices.reserve(8);
     // #TODO: Cube
-    Vertices.emplace_back(SVectorFlt(-0.5, -0.5, -0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, -0.5, -0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, -0.5, 0.5), Normal, Color);
-    Vertices.emplace_back(SVectorFlt(0.5, -0.5, 0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(-0.5, -0.5, -0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(0.5, -0.5, -0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(0.5, -0.5, 0.5), Normal, Color);
+    Out.Vertices.emplace_back(SVectorFlt(-0.5, -0.5, 0.5), Normal, Color);
 
-    Vertices.emplace_back(Vertices[0].Location + Normal, Normal, Color);
-    Vertices.emplace_back(Vertices[1].Location + Normal, Normal, Color);
-    Vertices.emplace_back(Vertices[2].Location + Normal, Normal, Color);
-    Vertices.emplace_back(Vertices[3].Location + Normal, Normal, Color);
+    Out.Vertices.emplace_back(Out.Vertices[0].Location + Normal, Normal, Color);
+    Out.Vertices.emplace_back(Out.Vertices[1].Location + Normal, Normal, Color);
+    Out.Vertices.emplace_back(Out.Vertices[2].Location + Normal, Normal, Color);
+    Out.Vertices.emplace_back(Out.Vertices[3].Location + Normal, Normal, Color);
 
-    Indices = {0, 1, 2, 2, 3, 0};
+    Out.Indices = {0, 1, 2, 2, 3, 0};
+
+    return Out;
 }
 
-SSphereMesh::SSphereMesh(const SVectorFlt& Color, int SegmentsCount)
+SMeshDescription CreateSphereMesh(const SLinearColor& Color, int SegmentsCount)
 {
+    SMeshDescription Out;
+
     // #TODO: Reserve
-    Vertices.reserve(4);
+    Out.Vertices.reserve(4);
 
     for(int IdxX = 0; IdxX <= SegmentsCount; ++IdxX)
     {
@@ -89,7 +99,7 @@ SSphereMesh::SSphereMesh(const SVectorFlt& Color, int SegmentsCount)
                                               std::cos(SegmentY * M_PI),
                                               std::sin(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI));
 
-            Vertices.emplace_back(Loc, Loc.GetNormalized(), Color);
+            Out.Vertices.emplace_back(Loc, Loc.GetNormalized(), Color);
         }
     }
 
@@ -102,28 +112,32 @@ SSphereMesh::SSphereMesh(const SVectorFlt& Color, int SegmentsCount)
         {
             for(unsigned int IdxX = 0; IdxX <= SegmentsCount; ++IdxX)
             {
-                Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
-                Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
+                Out.Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
+                Out.Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
             }
         }
         else
         {
             for(int IdxX = SegmentsCount; IdxX >= 0; --IdxX)
             {
-                Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
-                Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
+                Out.Indices.push_back((IdxY + 1) * (SegmentsCount + 1) + IdxX);
+                Out.Indices.push_back(IdxY * (SegmentsCount + 1) + IdxX);
             }
         }
         bOddRow = !bOddRow;
     }
+
+    return Out;
 }
 
-STriangleMesh::STriangleMesh(const SVectorFlt& Color)
+SMeshDescription CreateTriangleMesh(const SLinearColor& Color)
 {
+    return {};
 }
 
-SCircleMesh::SCircleMesh(const SVectorFlt& Color)
+SMeshDescription CreateCircleMesh(const SLinearColor& Color)
 {
+    return {};
 }
 
 } // namespace South

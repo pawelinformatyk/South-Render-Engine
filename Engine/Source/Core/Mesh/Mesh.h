@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Buffers/VertexIndexBuffer.h"
+#include "Core/Math/LinearColor.h"
 #include "vulkan/vulkan_core.h"
 
 namespace South
@@ -8,9 +9,9 @@ namespace South
 
 struct Vertex
 {
-    SVectorFlt Location;
-    SVectorFlt Normal;
-    SVectorFlt Color;
+    SVectorFlt   Location;
+    SVectorFlt   Normal;
+    SLinearColor Color;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
     static const std::array<VkVertexInputAttributeDescription, 3>& GetAttributesDescriptions();
@@ -30,36 +31,18 @@ public:
     SVertexIndexBuffer* Buffer;
 };
 
+struct SMeshDescription
+{
+    std::vector<Vertex>   Vertices;
+    std::vector<uint32_t> Indices;
+};
+
 // Examples:
 
-class SPlaneMesh : public SMesh
-{
-public:
-    SPlaneMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
-};
-
-class SCubeMesh : public SMesh
-{
-public:
-    SCubeMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
-};
-
-class SSphereMesh : public SMesh
-{
-public:
-    SSphereMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1), int SegmentsCount = 16);
-};
-
-class STriangleMesh : public SMesh
-{
-public:
-    STriangleMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
-};
-
-class SCircleMesh : public SMesh
-{
-public:
-    SCircleMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
-};
+SMeshDescription CreatePlaneMesh(const SLinearColor& Color = SLinearColor::Rand());
+SMeshDescription CreateCubeMesh(const SLinearColor& Color = SLinearColor::Rand());
+SMeshDescription CreateSphereMesh(const SLinearColor& Color = SLinearColor::Rand(), int SegmentsCount = 16);
+SMeshDescription CreateTriangleMesh(const SLinearColor& Color = SLinearColor::Rand());
+SMeshDescription CreateCircleMesh(const SLinearColor& Color = SLinearColor::Rand());
 
 } // namespace South

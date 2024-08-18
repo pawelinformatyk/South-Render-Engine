@@ -518,16 +518,6 @@ void SEditor::Render()
                             0,
                             nullptr);
 
-    auto Model = glm::mat4(1.0f);
-
-    vkCmdPushConstants(m_CommandBuffers[m_CurrentFrameIndex],
-                       m_ViewportPipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT,
-                       0,
-                       sizeof(glm::mat4),
-                       &Model);
-
-    vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipelineMesh);
 
     for(const auto& SceneObject : Scene.SceneObjects)
     {
@@ -536,6 +526,16 @@ void SEditor::Render()
         {
             continue;
         }
+
+
+        vkCmdPushConstants(m_CommandBuffers[m_CurrentFrameIndex],
+                           m_ViewportPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT,
+                           0,
+                           sizeof(glm::mat4),
+                           &SceneObject->ToWorld);
+
+        vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipelineMesh);
 
         for(auto& Mesh : SceneMeshObject->Meshes)
         {

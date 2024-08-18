@@ -11,11 +11,11 @@ layout(push_constant, std430) uniform PC {
 
 layout(location = 0) in vec3 InLocation;
 layout(location = 1) in vec3 InNormal;
-layout(location = 2) in vec3 InColor;
+layout(location = 2) in vec4 InColor;
 
 layout(location = 0) out vec3 OutLoc_WS;
 layout(location = 1) out vec3 OutNormal_WS;
-layout(location = 2) out vec3 OutColor;
+layout(location = 2) out vec4 OutColor;
 
 void main()
 {

@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec3 InLoc_WS;
 layout(location = 1) in vec3 InNormal_WS;
-layout(location = 2) in vec3 InColor;
+layout(location = 2) in vec4 InColor;
 
 layout(location = 0) out vec4 OutColor;
 
@@ -23,7 +23,7 @@ void main()
 
     const float LightToVertDst = length(LightPosition_WS - InLoc_WS);
 
-    const vec3 DiffusePart  = vec3(1.45) * InColor * Diff;
+    const vec3 DiffusePart  = vec3(1.45) * InColor.xyz * Diff;
     const vec3 SpecularPart = vec3(0.8) * Spec;
 
     const vec3 Ambient = vec3(0.1);
@@ -31,5 +31,5 @@ void main()
     const vec3 Color = Ambient + DiffusePart + SpecularPart;
 
     // Output color of pixel. 
-    OutColor = vec4(Color, 1.0);
+    OutColor = vec4(InColor.xyz, 1.0);
 }

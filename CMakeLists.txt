@@ -73,6 +73,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Scene/ScenePipeline.h
         Engine/Source/Scene/Scene.cpp
         Engine/Source/Scene/Scene.h
+        Engine/Source/Core/Math/LinearColor.cpp
+        Engine/Source/Core/Math/LinearColor.h
 
 )
 
