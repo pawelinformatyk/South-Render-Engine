@@ -8,7 +8,7 @@ const VkVertexInputBindingDescription& Vertex::GetBindingDescription()
     return m_BindingDesc;
 }
 
-const std::array<VkVertexInputAttributeDescription, 4>& Vertex::GetAttributesDescriptions()
+const std::array<VkVertexInputAttributeDescription, 3>& Vertex::GetAttributesDescriptions()
 {
     return m_AttributesDescs;
 }
@@ -19,12 +19,12 @@ VkVertexInputBindingDescription Vertex::m_BindingDesc {
     .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
 };
 
-std::array<VkVertexInputAttributeDescription, 4> Vertex::m_AttributesDescs = {
+std::array<VkVertexInputAttributeDescription, 3> Vertex::m_AttributesDescs = {
     VkVertexInputAttributeDescription {
         .location = 0,
         .binding  = 0,
         .format   = VK_FORMAT_R32G32B32_SFLOAT,
-        .offset   = offsetof(Vertex, Pos),
+        .offset   = offsetof(Vertex, Location),
     },
     VkVertexInputAttributeDescription {
         .location = 1,
@@ -35,13 +35,7 @@ std::array<VkVertexInputAttributeDescription, 4> Vertex::m_AttributesDescs = {
     VkVertexInputAttributeDescription {
         .location = 2,
         .binding  = 0,
-        .format   = VK_FORMAT_R32G32_SFLOAT,
-        .offset   = offsetof(Vertex, TexCoords),
-    },
-    VkVertexInputAttributeDescription {
-        .location = 3,
-        .binding  = 0,
-        .format   = VK_FORMAT_R32G32_SFLOAT,
+        .format   = VK_FORMAT_R32G32B32_SFLOAT,
         .offset   = offsetof(Vertex, Color),
     },
 };
@@ -53,26 +47,36 @@ SMesh::SMesh()
 
 SPlaneMesh::SPlaneMesh()
 {
-    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
-    const SVectorFlt Normal(0, 0, 1);
+    const SVectorFlt Color  = SVectorFlt::Rand(0, 1);
+    const SVectorFlt Normal = SVectorFlt::UpVector;
 
     Vertices.reserve(4);
-    Vertices.emplace_back(SVectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
-    Vertices.emplace_back(SVectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
-    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
-    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
+    Vertices.emplace_back(SVectorFlt(-0.5, 0, -0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, 0, -0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, 0, 0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, 0, 0.5), Normal, Color);
+
+    Indices = {0, 1, 2, 2, 3, 0};
 }
 
 SCubeMesh::SCubeMesh()
 {
-    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
-    const SVectorFlt Normal(0, 0, 1);
+    const SVectorFlt Color  = SVectorFlt::Rand(0, 1);
+    const SVectorFlt Normal = SVectorFlt::UpVector;
 
     Vertices.reserve(8);
-    Vertices.emplace_back(SVectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
-    Vertices.emplace_back(SVectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
-    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
-    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
+    // #TODO: Cube
+    Vertices.emplace_back(SVectorFlt(-0.5, -0.5, -0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, -0.5, -0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, -0.5, 0.5), Normal, Color);
+    Vertices.emplace_back(SVectorFlt(0.5, -0.5, 0.5), Normal, Color);
+
+    Vertices.emplace_back(Vertices[0].Location + Normal, Normal, Color);
+    Vertices.emplace_back(Vertices[1].Location + Normal, Normal, Color);
+    Vertices.emplace_back(Vertices[2].Location + Normal, Normal, Color);
+    Vertices.emplace_back(Vertices[3].Location + Normal, Normal, Color);
+
+    Indices = {0, 1, 2, 2, 3, 0};
 }
 
 SSphereMesh::SSphereMesh(int SegmentsCount)
@@ -91,10 +95,10 @@ SSphereMesh::SSphereMesh(int SegmentsCount)
             const float SegmentY = (float)IdxY / (float)SegmentsCount;
 
             const SVectorFlt Loc = SVectorFlt(std::cos(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI),
-                                            std::cos(SegmentY * M_PI),
-                                            std::sin(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI));
+                                              std::cos(SegmentY * M_PI),
+                                              std::sin(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI));
 
-            Vertices.emplace_back(Loc, Loc, glm::vec2(SegmentX, SegmentY), Color);
+            Vertices.emplace_back(Loc, Loc.GetNormalized(), Color);
         }
     }
 

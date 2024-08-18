@@ -13,9 +13,9 @@ namespace South
 {
 
 SShader::SShader(const VkDevice              Device,
-               const std::string&          inPathToCode,
-               const VkShaderStageFlagBits InStages,
-               const bool                  bCompile /*= true*/) : m_PathToCode(inPathToCode)
+                 const std::string&          inPathToCode,
+                 const VkShaderStageFlagBits InStages,
+                 const bool                  bCompile /*= true*/) : m_PathToCode(inPathToCode)
 {
     m_ShaderInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -52,7 +52,6 @@ void SShader::Compile(const VkDevice Device)
     const auto ShaderKind = GetShadercShaderKind(m_ShaderInfo.stage);
 
     const shaderc::SpvCompilationResult Result = Compiler.CompileGlslToSpv(CodeAsString, ShaderKind, m_PathToCode.data(), CompilerOptions);
-
 
     if(Result.GetCompilationStatus() != shaderc_compilation_status_success)
     {

@@ -165,15 +165,6 @@ void CreateImage(const VkDevice              InDevice,
 
 const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-constexpr float g_GridSize = 1.f;
-
-const std::vector<Vertex> g_Vertices = {{SVectorFlt {-g_GridSize, -g_GridSize, 0.0f}, SVectorFlt {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                        {SVectorFlt {g_GridSize, -g_GridSize, 0.0f}, SVectorFlt {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                        {SVectorFlt {g_GridSize, g_GridSize, 0.0f}, SVectorFlt {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                        {SVectorFlt {-g_GridSize, g_GridSize, 0.0f}, SVectorFlt {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
-
-const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
-
 SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
 {
     Camera.Location = SVectorFlt {-55, 35, 27};
@@ -494,14 +485,7 @@ void SEditor::Render()
                             0,
                             nullptr);
 
-    static auto StartTime = std::chrono::high_resolution_clock::now();
-    const auto  CurrTime  = std::chrono::high_resolution_clock::now();
-    const float DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(CurrTime - StartTime).count();
-
-    const float Sin = glm::sin(DeltaTime);
-
     auto Model = glm::mat4(1.0f);
-    //    Model      = glm::translate(Model, Sin * glm::vec3(0, 50, 0));
 
     vkCmdPushConstants(m_CommandBuffers[m_CurrentFrameIndex],
                        m_ViewportPipelineLayout,
@@ -728,42 +712,54 @@ void SEditor::LoadExampleScene()
         return;
     }
 
-    std::vector<Vertex>   Vertices;
-    std::vector<uint32_t> Indices;
-
-    for(const auto& Shape : Shapes)
-    {
-        for(const auto& Index : Shape.mesh.indices)
-        {
-            const Vertex ShapeVertex = {
-                .Pos       = {Attrib.vertices[3 * Index.vertex_index + 0],
-                              // #TODO: For now so the boat is not rotated, make y to be z (in shader there is mat from
-                              // glm and vertices from our math lib)
-                              Attrib.vertices[3 * Index.vertex_index + 2],
-                              Attrib.vertices[3 * Index.vertex_index + 1]},
-                .TexCoords = {Attrib.texcoords[2 * Index.texcoord_index + 0], 1.0f - Attrib.texcoords[2 * Index.texcoord_index + 1]},
-            };
-
-            Vertices.emplace_back(ShapeVertex);
-            Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
-        }
-    }
 
     const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
 
-    m_MeshesBuffers.emplace_back(SVertexIndexBuffer::Create(
-        LogicalDevice.GetLogicalDevice(),
-        m_CommandBuffers[0],
-        LogicalDevice.GetGraphicQueue(),
-        {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
-        {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())}));
+    for(const auto& Shape : Shapes)
+    {
+        std::vector<Vertex>   Vertices;
+        std::vector<uint32_t> Indices;
 
-    m_GridBuffer = SVertexIndexBuffer::Create(
-        LogicalDevice.GetLogicalDevice(),
-        m_CommandBuffers[0],
-        LogicalDevice.GetGraphicQueue(),
-        {static_cast<const void*>(g_Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(g_Vertices.size())},
-        {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
+        SVectorFlt Color;
+        if(Shape.name == "ShipBrown")
+        {
+            Color = SVectorFlt(0.64, 0.16, 0.16);
+        }
+        else if(Shape.name == "ShipRed")
+        {
+            Color = SVectorFlt(1, 0, 0);
+        }
+        else if(Shape.name == "Ground")
+        {
+            Color = SVectorFlt(0, 0, 0.4);
+        }
+        else if(Shape.name == "Water")
+        {
+            Color = SVectorFlt(0, 0, 1);
+        }
+
+        for(const auto& Index : Shape.mesh.indices)
+        {
+            const SVectorFlt Location {Attrib.vertices[3 * Index.vertex_index + 1],
+                                       Attrib.vertices[3 * Index.vertex_index + 2],
+                                       Attrib.vertices[3 * Index.vertex_index + 0]};
+
+            const SVectorFlt Normal = SVectorFlt {Attrib.normals[3 * Index.normal_index + 1],
+                                                  Attrib.normals[3 * Index.normal_index + 2],
+                                                  Attrib.normals[3 * Index.normal_index + 0]}
+                                          .GetNormalized();
+
+            Vertices.emplace_back(Location, Normal, Color);
+            Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
+        }
+
+        m_MeshesBuffers.emplace_back(SVertexIndexBuffer::Create(
+            LogicalDevice.GetLogicalDevice(),
+            m_CommandBuffers[0],
+            LogicalDevice.GetGraphicQueue(),
+            {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
+            {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())}));
+    }
 }
 
 void SEditor::CreateViewportImages()
@@ -890,7 +886,7 @@ void SEditor::CreateViewportGraphicsPipeline()
 {
     const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
-    const char* ShaderName = "GrayMesh";
+    const char* ShaderName = "BlinnPhongColor";
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
         SShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
@@ -902,8 +898,8 @@ void SEditor::CreateViewportGraphicsPipeline()
     VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    auto bindingDescription    = Vertex::GetBindingDescription();
-    auto attributeDescriptions = Vertex::GetAttributesDescriptions();
+    const VkVertexInputBindingDescription&                  bindingDescription    = Vertex::GetBindingDescription();
+    const std::array<VkVertexInputAttributeDescription, 3>& attributeDescriptions = Vertex::GetAttributesDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount   = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());

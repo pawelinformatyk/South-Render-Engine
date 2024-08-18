@@ -61,8 +61,6 @@ private:
     VkImageView                      m_SceneTextureImageView   = nullptr;
     std::vector<SVertexIndexBuffer*> m_MeshesBuffers;
 
-    SVertexIndexBuffer* m_GridBuffer = nullptr;
-
     std::array<SUniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             m_DescriptorPool = nullptr;

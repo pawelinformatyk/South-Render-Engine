@@ -6,20 +6,18 @@
 namespace South
 {
 
-
 struct Vertex
 {
-    SVectorFlt Pos;
+    SVectorFlt Location;
     SVectorFlt Normal;
-    glm::vec2  TexCoords;
     SVectorFlt Color;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
-    static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
+    static const std::array<VkVertexInputAttributeDescription, 3>& GetAttributesDescriptions();
 
 private:
     static VkVertexInputBindingDescription                  m_BindingDesc;
-    static std::array<VkVertexInputAttributeDescription, 4> m_AttributesDescs;
+    static std::array<VkVertexInputAttributeDescription, 3> m_AttributesDescs;
 };
 
 class SMesh

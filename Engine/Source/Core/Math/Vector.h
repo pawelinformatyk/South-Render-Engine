@@ -11,11 +11,11 @@ struct TVector
 {
     static_assert(std::is_arithmetic_v<T>);
 
-    T X;
-    T Y;
-    T Z;
+    T X = 0;
+    T Y = 0;
+    T Z = 0;
 
-    TVector();
+    TVector() = default;
     TVector(T XYZ);
     TVector(T X, T Y);
     TVector(T X, T Y, T Z);
@@ -33,7 +33,7 @@ struct TVector
 
     void Normalize();
 
-    T GetNormalized() const;
+    TVector<T> GetNormalized() const;
 
     static TVector Rand(const T RangeBegin, const T RangeEnd);
 
@@ -67,6 +67,16 @@ struct TVector
         return {X * Other, Y * Other, Z * Other};
     }
 
+    TVector<T> operator/(const TVector<T>& Other) const
+    {
+        return {X / Other.Y, Y / Other.Y, Z / Other.Z};
+    }
+
+    TVector<T> operator/(const T Other) const
+    {
+        return {X / Other, Y / Other, Z / Other};
+    }
+
     TVector& operator+=(const TVector& Other)
     {
         *this = (*this + Other);
@@ -74,9 +84,23 @@ struct TVector
         return *this;
     }
 
+    TVector& operator-=(const TVector& Other)
+    {
+        *this = (*this - Other);
+
+        return *this;
+    }
+
     TVector& operator*=(const TVector& Other)
     {
         *this = (*this * Other);
+
+        return *this;
+    }
+
+    TVector& operator/=(const TVector& Other)
+    {
+        *this = (*this / Other);
 
         return *this;
     }
@@ -94,11 +118,6 @@ struct TVector
 using SVector    = TVector<double>;
 using SVectorFlt = TVector<float>;
 using SVectorInt = TVector<int>;
-
-template<typename T>
-TVector<T>::TVector() : X(0), Y(0), Z(0)
-{
-}
 
 template<typename T>
 TVector<T>::TVector(const T X, const T Y, const T Z) : X(X), Y(Y), Z(Z)
@@ -144,7 +163,7 @@ void TVector<T>::Normalize()
 }
 
 template<typename T>
-T TVector<T>::GetNormalized() const
+TVector<T> TVector<T>::GetNormalized() const
 {
     auto Vec = *this;
 
@@ -157,11 +176,12 @@ template<typename T>
 TVector<T> TVector<T>::Rand(const T RangeBegin, const T RangeEnd)
 {
     const T RangeLength = std::abs(RangeEnd - RangeBegin);
+    const T Div         = RAND_MAX * RangeLength;
 
     // #TODO: Random utils
-    const T X = std::rand() / RAND_MAX * RangeLength - RangeBegin;
-    const T Y = std::rand() / RAND_MAX * RangeLength - RangeBegin;
-    const T Z = std::rand() / RAND_MAX * RangeLength - RangeBegin;
+    const T X = std::rand() / Div - RangeBegin;
+    const T Y = std::rand() / Div - RangeBegin;
+    const T Z = std::rand() / Div - RangeBegin;
 
     return {X, Y, Z};
 }
@@ -176,9 +196,21 @@ TVector<T> operator+(const T Lhs, const TVector<T>& Rhs)
 }
 
 template<typename T>
+TVector<T> operator-(const T Lhs, const TVector<T>& Rhs)
+{
+    return Rhs - Lhs;
+}
+
+template<typename T>
 TVector<T> operator*(const T Lhs, const TVector<T>& Rhs)
 {
     return Rhs * Lhs;
+}
+
+template<typename T>
+TVector<T> operator/(const T Lhs, const TVector<T>& Rhs)
+{
+    return Rhs / Lhs;
 }
 
 // ~End Operators
