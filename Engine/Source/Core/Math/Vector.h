@@ -189,25 +189,27 @@ const TVector<T> TVector<T>::ZeroVector(0);
 template<typename T>
 const TVector<T> TVector<T>::OneVector(1);
 
-template<typename T>
-const TVector<T> TVector<T>::ForwardVector(1, 0, 0);
+// Left-handed system
 
 template<typename T>
-const TVector<T> TVector<T>::RightVector(0, 1, 0);
+const TVector<T> TVector<T>::ForwardVector(0, 0, 1);
 
 template<typename T>
-const TVector<T> TVector<T>::UpVector(0, 0, 1);
+const TVector<T> TVector<T>::RightVector(1, 0, 0);
+
+template<typename T>
+const TVector<T> TVector<T>::UpVector(0, 1, 0);
 
 // Conversion
 template<typename T>
 inline glm::vec3 Convert(const South::TVector<T>& Vector)
 {
-    return glm::vec3 {Vector.X, Vector.Z, Vector.Y};
+    return glm::vec3 {Vector.X, Vector.Y, -Vector.Z};
 }
 
 inline South::SVectorFlt Convert(const glm::vec3& Vector)
 {
-    return South::SVectorFlt {Vector.x, Vector.z, Vector.y};
+    return South::SVectorFlt {Vector.x, Vector.y, -Vector.z};
 }
 
 } // namespace South
