@@ -71,6 +71,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Scene/SceneObject.h
         Engine/Source/Scene/ScenePipeline.cpp
         Engine/Source/Scene/ScenePipeline.h
+        Engine/Source/Scene/Scene.cpp
+        Engine/Source/Scene/Scene.h
 
 )
 

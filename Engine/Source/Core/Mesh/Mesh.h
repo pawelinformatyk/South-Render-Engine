@@ -23,12 +23,11 @@ private:
 class SMesh
 {
 public:
-    SMesh();
-
     std::vector<Vertex>   Vertices;
-    std::vector<uint16_t> Indices;
+    std::vector<uint32_t> Indices;
 
-    std::unique_ptr<SVertexIndexBuffer> Buffer;
+    // #TODO: For now raw ptr till I figure out render/scene relation
+    SVertexIndexBuffer* Buffer;
 };
 
 // Examples:
@@ -36,31 +35,31 @@ public:
 class SPlaneMesh : public SMesh
 {
 public:
-    SPlaneMesh();
+    SPlaneMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
 };
 
 class SCubeMesh : public SMesh
 {
 public:
-    SCubeMesh();
+    SCubeMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
 };
 
 class SSphereMesh : public SMesh
 {
 public:
-    SSphereMesh(int SegmentsCount);
+    SSphereMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1), int SegmentsCount = 16);
 };
 
 class STriangleMesh : public SMesh
 {
 public:
-    STriangleMesh();
+    STriangleMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
 };
 
 class SCircleMesh : public SMesh
 {
 public:
-    SCircleMesh();
+    SCircleMesh(const SVectorFlt& Color = SVectorFlt::Rand(0, 1));
 };
 
 } // namespace South

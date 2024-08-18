@@ -2,6 +2,7 @@
 
 // #include "imconfig.h"
 #include "Camera.h"
+#include "Scene/Scene.h"
 #include "vulkan/vulkan_core.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -37,8 +38,6 @@ public:
 
     void Present();
 
-    void LoadExampleScene();
-
 private:
     double m_LastFrame_Sec = 0.;
 
@@ -56,10 +55,9 @@ private:
     VkSampler m_TextureSampler = nullptr;
 
     // Scene:
-    VkImage                          m_SceneTextureImage       = nullptr;
-    VkDeviceMemory                   m_SceneTextureImageMemory = nullptr;
-    VkImageView                      m_SceneTextureImageView   = nullptr;
-    std::vector<SVertexIndexBuffer*> m_MeshesBuffers;
+    VkImage        m_SceneTextureImage       = nullptr;
+    VkDeviceMemory m_SceneTextureImageMemory = nullptr;
+    VkImageView    m_SceneTextureImageView   = nullptr;
 
     std::array<SUniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
@@ -145,6 +143,8 @@ private:
     bool    bMoveCameraDown     = false;
     bool    bCameraCanRotate    = false;
     SVector PreviousMouseMove;
+
+    SScene Scene;
 };
 
 } // namespace South

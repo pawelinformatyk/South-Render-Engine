@@ -40,14 +40,8 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::m_AttributesDescs = {
     },
 };
 
-SMesh::SMesh()
+SPlaneMesh::SPlaneMesh(const SVectorFlt& Color)
 {
-    Buffer = std::make_unique<SVertexIndexBuffer>();
-}
-
-SPlaneMesh::SPlaneMesh()
-{
-    const SVectorFlt Color  = SVectorFlt::Rand(0, 1);
     const SVectorFlt Normal = SVectorFlt::UpVector;
 
     Vertices.reserve(4);
@@ -59,9 +53,8 @@ SPlaneMesh::SPlaneMesh()
     Indices = {0, 1, 2, 2, 3, 0};
 }
 
-SCubeMesh::SCubeMesh()
+SCubeMesh::SCubeMesh(const SVectorFlt& Color)
 {
-    const SVectorFlt Color  = SVectorFlt::Rand(0, 1);
     const SVectorFlt Normal = SVectorFlt::UpVector;
 
     Vertices.reserve(8);
@@ -79,10 +72,8 @@ SCubeMesh::SCubeMesh()
     Indices = {0, 1, 2, 2, 3, 0};
 }
 
-SSphereMesh::SSphereMesh(int SegmentsCount)
+SSphereMesh::SSphereMesh(const SVectorFlt& Color, int SegmentsCount)
 {
-    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
-
     // #TODO: Reserve
     Vertices.reserve(4);
 
@@ -127,11 +118,11 @@ SSphereMesh::SSphereMesh(int SegmentsCount)
     }
 }
 
-STriangleMesh::STriangleMesh()
+STriangleMesh::STriangleMesh(const SVectorFlt& Color)
 {
 }
 
-SCircleMesh::SCircleMesh()
+SCircleMesh::SCircleMesh(const SVectorFlt& Color)
 {
 }
 

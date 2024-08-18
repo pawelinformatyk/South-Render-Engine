@@ -3,7 +3,6 @@
 #include "Core/Buffers/VertexIndexBuffer.h"
 #include "Core/Devices/GraphicCard.h"
 #include "Core/Mesh/Mesh.h"
-#include "Core/Mesh/tiny_obj_loader.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Shaders/ShadersLibrary.h"
 #include "EditorViewport.h"
@@ -201,10 +200,42 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Vi
     CreateCommandBuffers();
     CreateSyncObjects();
 
-    const SLogicalDeviceAndQueues& LogicalDevice  = SRendererContext::Get().GetDeviceAndQueues();
-    VkInstance                     VulkanInstance = SRendererContext::Get().GetVulkanInstance();
+    const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
 
-    LoadExampleScene();
+    Scene.LoadExample();
+
+    // #TODO: When to create these buffers?
+    for(const auto& SceneObject : Scene.SceneObjects)
+    {
+        auto* SceneMeshObject = dynamic_cast<SSceneMeshObject*>(SceneObject.get());
+        if(!SceneMeshObject)
+        {
+            continue;
+        }
+
+        for(auto& Mesh : SceneMeshObject->Meshes)
+        {
+            if(!Mesh)
+            {
+                continue;
+            }
+
+            if(!Mesh->Buffer)
+            {
+                Mesh->Buffer = SVertexIndexBuffer::Create(LogicalDevice.GetLogicalDevice(),
+                                                          m_CommandBuffers[m_CurrentFrameIndex],
+                                                          LogicalDevice.GetGraphicQueue(),
+                                                          {static_cast<const void*>(Mesh->Vertices.data()),
+                                                           static_cast<uint32_t>(sizeof(Vertex)),
+                                                           static_cast<uint32_t>(Mesh->Vertices.size())},
+                                                          {static_cast<const void*>(Mesh->Indices.data()),
+                                                           static_cast<uint32_t>(sizeof(uint32_t)),
+                                                           static_cast<uint32_t>(Mesh->Indices.size())});
+            }
+        }
+    }
+
+    VkInstance VulkanInstance = SRendererContext::Get().GetVulkanInstance();
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -442,9 +473,11 @@ void SEditor::Render()
         .m_Proj = Camera.Projection,
     };
 
+    const SLogicalDeviceAndQueues& DeviceAndQueues = SRendererContext::Get().GetDeviceAndQueues();
+
     for(auto& CameraUbo : m_CameraUbos)
     {
-        CameraUbo->SetData(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
+        CameraUbo->SetData(DeviceAndQueues.GetLogicalDevice(), &Ubo);
     }
 
     std::array<VkClearValue, 2> ClearColor {};
@@ -496,14 +529,23 @@ void SEditor::Render()
 
     vkCmdBindPipeline(m_CommandBuffers[m_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_ViewportGraphicsPipelineMesh);
 
-    for(const auto* Mesh : m_MeshesBuffers)
+    for(const auto& SceneObject : Scene.SceneObjects)
     {
-        if(!Mesh)
+        auto* SceneMeshObject = dynamic_cast<SSceneMeshObject*>(SceneObject.get());
+        if(!SceneMeshObject)
         {
             continue;
         }
 
-        SRenderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *Mesh);
+        for(auto& Mesh : SceneMeshObject->Meshes)
+        {
+            if(!Mesh || !Mesh->Buffer)
+            {
+                continue;
+            }
+
+            SRenderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *Mesh->Buffer);
+        }
     }
 
     // End
@@ -694,72 +736,6 @@ void SEditor::Present()
     m_LastViewportTexture = m_ViewportTextures[m_CurrentFrameIndex];
 
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void SEditor::LoadExampleScene()
-{
-    std::random_device                    Dev;
-    std::mt19937                          Rng(Dev());
-    std::uniform_real_distribution<float> Dist(0.f, 1.f);
-
-    tinyobj::attrib_t             Attrib;
-    std::vector<tinyobj::shape_t> Shapes;
-
-    const std::string FileName = "Engine/Resources/Models/JunkShip.obj";
-
-    if(!tinyobj::LoadObj(&Attrib, &Shapes, nullptr, nullptr, nullptr, FileName.c_str()))
-    {
-        return;
-    }
-
-
-    const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
-
-    for(const auto& Shape : Shapes)
-    {
-        std::vector<Vertex>   Vertices;
-        std::vector<uint32_t> Indices;
-
-        SVectorFlt Color;
-        if(Shape.name == "ShipBrown")
-        {
-            Color = SVectorFlt(0.64, 0.16, 0.16);
-        }
-        else if(Shape.name == "ShipRed")
-        {
-            Color = SVectorFlt(1, 0, 0);
-        }
-        else if(Shape.name == "Ground")
-        {
-            Color = SVectorFlt(0, 0, 0.4);
-        }
-        else if(Shape.name == "Water")
-        {
-            Color = SVectorFlt(0, 0, 1);
-        }
-
-        for(const auto& Index : Shape.mesh.indices)
-        {
-            const SVectorFlt Location {Attrib.vertices[3 * Index.vertex_index + 1],
-                                       Attrib.vertices[3 * Index.vertex_index + 2],
-                                       Attrib.vertices[3 * Index.vertex_index + 0]};
-
-            const SVectorFlt Normal = SVectorFlt {Attrib.normals[3 * Index.normal_index + 1],
-                                                  Attrib.normals[3 * Index.normal_index + 2],
-                                                  Attrib.normals[3 * Index.normal_index + 0]}
-                                          .GetNormalized();
-
-            Vertices.emplace_back(Location, Normal, Color);
-            Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
-        }
-
-        m_MeshesBuffers.emplace_back(SVertexIndexBuffer::Create(
-            LogicalDevice.GetLogicalDevice(),
-            m_CommandBuffers[0],
-            LogicalDevice.GetGraphicQueue(),
-            {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
-            {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())}));
-    }
 }
 
 void SEditor::CreateViewportImages()
