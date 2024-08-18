@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Camera.h"
+#include "SCamera.h"
 
 namespace South
 {
-class Camera;
+class SCamera;
 
 class EditorViewport
 {
@@ -14,7 +14,7 @@ public:
     void RenderGrid();
 
 private:
-    Camera m_Camera;
+    SCamera m_Camera;
 };
 
 } // namespace South

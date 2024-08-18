@@ -1,6 +1,7 @@
 #pragma once
 
 // #include "imconfig.h"
+#include "SCamera.h"
 #include "vulkan/vulkan_core.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -9,16 +10,16 @@ struct GLFWwindow;
 
 namespace South
 {
+
 class Event;
 class EditorViewport;
-class Camera;
 class UniformBuffer;
 class VertexIndexBuffer;
 
 class Editor
 {
 public:
-    Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow);
+     Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow);
     ~Editor();
 
     void OnEvent(const Event& InEvent);
@@ -135,6 +136,8 @@ private:
     void CreateCommandBuffers();
 
     void CreateSyncObjects();
+
+    SCamera Camera;
 
     bool   bMoveCameraForward  = false;
     bool   bMoveCameraBackward = false;

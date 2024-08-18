@@ -46,8 +46,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Core/Window/SwapChain.h
         Engine/Source/Core/Window/Window.cpp
         Engine/Source/Core/Window/Window.h
-        Engine/Source/Editor/Camera.cpp
-        Engine/Source/Editor/Camera.h
+        Engine/Source/Editor/SCamera.cpp
+        Engine/Source/Editor/SCamera.h
         Engine/Source/Editor/Editor.cpp
         Engine/Source/Editor/EditorViewport.cpp
         Engine/Source/Editor/EditorViewport.h

@@ -1,19 +1,21 @@
 #pragma once
 
-
 namespace South
 {
 
-class Camera
+class SCamera
 {
 public:
-    Camera();
+    SCamera();
 
     glm::mat4 GetViewProjection() const;
 
     VectorFlt GetForwardVector() const;
     VectorFlt GetRightVector() const;
     VectorFlt GetUpVector() const;
+
+
+    std::string ToString() const;
 
     void MoveForward(float Delta);
     void MoveRight(float Delta);

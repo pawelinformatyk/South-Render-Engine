@@ -1,37 +1,43 @@
-#include "Camera.h"
+#include "SCamera.h"
 
 namespace South
 {
 
-Camera::Camera()
+SCamera::SCamera()
 {
     UpdateProjection();
     UpdateView();
 }
 
-glm::mat4 Camera::GetViewProjection() const
+glm::mat4 SCamera::GetViewProjection() const
 {
     return View * Projection;
 }
 
-VectorFlt Camera::GetForwardVector() const
+VectorFlt SCamera::GetForwardVector() const
 {
     return Convert(glm::normalize(glm::vec3(cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)),
                                             sin(glm::radians(Pitch)),
                                             sin(glm::radians(Yaw)) * cos(glm::radians(Pitch)))));
 }
 
-VectorFlt Camera::GetRightVector() const
+VectorFlt SCamera::GetRightVector() const
 {
     return Convert(glm::cross(Convert(GetForwardVector()), Convert(GetUpVector())));
 }
 
-VectorFlt Camera::GetUpVector() const
+VectorFlt SCamera::GetUpVector() const
 {
     return VectorFlt::UpVector;
 }
 
-void Camera::MoveForward(const float Delta)
+std::string SCamera::ToString() const
+{
+    return "Camera loc " + std::to_string(Location.X) + " / " + std::to_string(Location.Y) + " / " + std::to_string(Location.Z) +
+           " / pitch " + std::to_string(Pitch) + " / Yaw " + std::to_string(Yaw);
+}
+
+void SCamera::MoveForward(const float Delta)
 {
     const VectorFlt DeltaDir = MoveSpeed * Delta * GetForwardVector();
 
@@ -40,7 +46,7 @@ void Camera::MoveForward(const float Delta)
     UpdateView();
 }
 
-void Camera::MoveRight(const float Delta)
+void SCamera::MoveRight(const float Delta)
 {
     const VectorFlt DeltaDir = MoveSpeed * Delta * GetRightVector();
 
@@ -49,7 +55,7 @@ void Camera::MoveRight(const float Delta)
     UpdateView();
 }
 
-void Camera::MoveUp(const float Delta)
+void SCamera::MoveUp(const float Delta)
 {
     const VectorFlt DeltaDir = MoveSpeed * Delta * GetUpVector();
 
@@ -58,7 +64,7 @@ void Camera::MoveUp(const float Delta)
     UpdateView();
 }
 
-void Camera::LookRight(const float Delta)
+void SCamera::LookRight(const float Delta)
 {
     Yaw += RotationSpeed * Delta;
 
@@ -67,7 +73,7 @@ void Camera::LookRight(const float Delta)
     UpdateView();
 }
 
-void Camera::LookUp(const float Delta)
+void SCamera::LookUp(const float Delta)
 {
     Pitch += RotationSpeed * Delta;
 
@@ -75,7 +81,7 @@ void Camera::LookUp(const float Delta)
     UpdateView();
 }
 
-void Camera::UpdateProjection()
+void SCamera::UpdateProjection()
 {
     Projection = glm::perspective(Fov, Aspect, Near, Far);
 
@@ -84,7 +90,7 @@ void Camera::UpdateProjection()
     Projection[1][1] *= -1;
 }
 
-void Camera::UpdateView()
+void SCamera::UpdateView()
 {
     View = glm::lookAt(Convert(Location), Convert(Location + GetForwardVector()), Convert(GetUpVector()));
 }

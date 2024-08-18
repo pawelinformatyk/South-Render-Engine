@@ -162,7 +162,6 @@ void CreateImage(const VkDevice              InDevice,
 
 } // namespace Private
 
-Camera g_EditorCam;
 
 const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
@@ -177,6 +176,13 @@ const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
 
 Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
 {
+    Camera.Location = VectorFlt {-55, 35, 27};
+    Camera.Yaw      = -20;
+    Camera.Pitch    = -28;
+    Camera.Aspect   = static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height);
+    Camera.UpdateView();
+    Camera.UpdateProjection();
+
     m_MainViewport = new EditorViewport();
 
     CreateViewportImages();
@@ -278,12 +284,6 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     {
         m_ViewportTextures[Index] = ImGui_ImplVulkan_AddTexture(m_TextureSampler, m_ViewportImagesViews[Index], VK_IMAGE_LAYOUT_GENERAL);
     }
-
-    g_EditorCam.Aspect = static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height);
-    g_EditorCam.UpdateProjection();
-
-    //    g_EditorCam.Location.Z = 100;
-    //    g_EditorCam.UpdateView();
 }
 
 Editor::~Editor()
@@ -371,8 +371,8 @@ void Editor::OnEvent(const Event& InEvent)
 
         if(bCameraCanRotate && (CurrentMouseMove != PreviousMouseMove))
         {
-            g_EditorCam.LookRight(CurrentMouseMove.X - PreviousMouseMove.X);
-            g_EditorCam.LookUp(-CurrentMouseMove.Y + PreviousMouseMove.Y);
+            Camera.LookRight(CurrentMouseMove.X - PreviousMouseMove.X);
+            Camera.LookUp(-CurrentMouseMove.Y + PreviousMouseMove.Y);
         }
 
         PreviousMouseMove = CurrentMouseMove;
@@ -385,32 +385,28 @@ void Editor::Tick(const double InFrameTime_Sec)
 
     if(bMoveCameraForward)
     {
-        g_EditorCam.MoveForward(1);
+        Camera.MoveForward(1);
     }
     if(bMoveCameraBackward)
     {
-        g_EditorCam.MoveForward(-1);
+        Camera.MoveForward(-1);
     }
     if(bMoveCameraRight)
     {
-        g_EditorCam.MoveRight(1);
+        Camera.MoveRight(1);
     }
     if(bMoveCameraLeft)
     {
-        g_EditorCam.MoveRight(-1);
+        Camera.MoveRight(-1);
     }
     if(bMoveCameraUp)
     {
-        g_EditorCam.MoveUp(1);
+        Camera.MoveUp(1);
     }
     if(bMoveCameraDown)
     {
-        g_EditorCam.MoveUp(-1);
+        Camera.MoveUp(-1);
     }
-
-    //    STH_INFO("Camera loc " + std::to_string(g_EditorCam.Location.X) + " / " + std::to_string(g_EditorCam.Location.Y) + " / " +
-    //             std::to_string(g_EditorCam.Location.Z) + " / pitch " + std::to_string(g_EditorCam.Pitch) + " / Yaw " +
-    //             std::to_string(g_EditorCam.Yaw));
 
     m_MainViewport->Tick();
 }
@@ -451,8 +447,8 @@ void Editor::Render()
     // Begin
 
     const UniformBufferObject Ubo {
-        .m_View = g_EditorCam.View,
-        .m_Proj = g_EditorCam.Projection,
+        .m_View = Camera.View,
+        .m_Proj = Camera.Projection,
     };
 
     for(auto& CameraUbo : m_CameraUbos)
