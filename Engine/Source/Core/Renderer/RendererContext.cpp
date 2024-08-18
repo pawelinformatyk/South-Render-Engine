@@ -5,14 +5,14 @@
 namespace South
 {
 
-RendererContext& RendererContext::Get()
+SRendererContext& SRendererContext::Get()
 {
-    static RendererContext s_Context;
+    static SRendererContext s_Context;
 
     return s_Context;
 }
 
-void RendererContext::Init(const CreateInfo& Info)
+void SRendererContext::Init(const SCreateInfo& Info)
 {
     CreateInstance();
 
@@ -33,30 +33,30 @@ void RendererContext::Init(const CreateInfo& Info)
 
     const VkSurfaceFormatKHR SwapChainSurfaceFormat = VulkanUtils::ChooseSwapSurfaceFormat(m_Gpu->GetPhysicalDevice(), m_Surface);
 
-    m_SwapChainRenderPass = std::unique_ptr<RenderPass>(RenderPass::Create(RenderPass::CreateInfo {
+    m_SwapChainRenderPass = std::unique_ptr<SRenderPass>(SRenderPass::Create(SRenderPass::SCreateInfo {
         .Format = SwapChainSurfaceFormat.format,
     }));
 
-    m_SwapChain = std::unique_ptr<SwapChain>(SwapChain::Create(SwapChain::CreateInfo {
+    m_SwapChain = std::unique_ptr<SSwapChain>(SSwapChain::Create(SSwapChain::SCreateInfo {
         .Surface       = m_Surface,
         .SurfaceFormat = SwapChainSurfaceFormat,
         .Size          = VkExtent2D {1280, 720},
         .PresentMode   = VK_PRESENT_MODE_FIFO_KHR,
     }));
 
-    m_CommandPool = std::unique_ptr<CommandPool>(
-        CommandPool::Create(m_LogicalDevice->GetLogicalDevice(),
+    m_CommandPool = std::unique_ptr<SCommandPool>(
+        SCommandPool::Create(m_LogicalDevice->GetLogicalDevice(),
                             {VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_LogicalDevice->GetGraphicQueueFamilyIndex()}));
 }
 
-void RendererContext::Deinit()
+void SRendererContext::Deinit()
 {
     vkDeviceWaitIdle(m_LogicalDevice->GetLogicalDevice());
 
-    RenderPass::Destroy(*m_SwapChainRenderPass);
-    SwapChain::Destroy(*m_SwapChain);
-    CommandPool::Destroy(*m_CommandPool);
-    LogicalDeviceAndQueues::Destroy(*m_LogicalDevice);
+    SRenderPass::Destroy(*m_SwapChainRenderPass);
+    SSwapChain::Destroy(*m_SwapChain);
+    SCommandPool::Destroy(*m_CommandPool);
+    SLogicalDeviceAndQueues::Destroy(*m_LogicalDevice);
 
     if(m_bEnableValidationLayers)
     {
@@ -67,42 +67,42 @@ void RendererContext::Deinit()
     vkDestroyInstance(m_VulkanInstance, nullptr);
 }
 
-VkInstance RendererContext::GetVulkanInstance() const
+VkInstance SRendererContext::GetVulkanInstance() const
 {
     return m_VulkanInstance;
 }
 
-VkSurfaceKHR RendererContext::GetSurface() const
+VkSurfaceKHR SRendererContext::GetSurface() const
 {
     return m_Surface;
 }
 
-VkCommandPool RendererContext::GetCommandPool() const
+VkCommandPool SRendererContext::GetCommandPool() const
 {
     return m_CommandPool->GetPool();
 }
 
-const GraphicCard& RendererContext::GetGraphicCard() const
+const SGraphicCard& SRendererContext::GetGraphicCard() const
 {
     return *m_Gpu;
 }
 
-const LogicalDeviceAndQueues& RendererContext::GetDeviceAndQueues() const
+const SLogicalDeviceAndQueues& SRendererContext::GetDeviceAndQueues() const
 {
     return *m_LogicalDevice;
 }
 
-SwapChain& RendererContext::GetSwapChain() const
+SSwapChain& SRendererContext::GetSwapChain() const
 {
     return *m_SwapChain;
 }
 
-RenderPass& RendererContext::GetRenderPass() const
+SRenderPass& SRendererContext::GetRenderPass() const
 {
     return *m_SwapChainRenderPass;
 }
 
-void RendererContext::CreateInstance()
+void SRendererContext::CreateInstance()
 {
     constexpr VkApplicationInfo AppInfo {
         .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -129,15 +129,15 @@ void RendererContext::CreateInstance()
     vkCreateInstance(&CreateInfo, nullptr, &m_VulkanInstance);
 }
 
-void RendererContext::CreateSurface(GLFWwindow& InGlfWwindow)
+void SRendererContext::CreateSurface(GLFWwindow& InGlfWwindow)
 {
     glfwCreateWindowSurface(m_VulkanInstance, &InGlfWwindow, nullptr, &m_Surface);
 }
 
-void RendererContext::CreateDevices()
+void SRendererContext::CreateDevices()
 {
-    m_Gpu = std::unique_ptr<GraphicCard>(GraphicCard::Create(m_VulkanInstance,
-                                                             GraphicCard::CreateInfo {
+    m_Gpu = std::unique_ptr<SGraphicCard>(SGraphicCard::Create(m_VulkanInstance,
+                                                             SGraphicCard::SCreateInfo {
                                                                  .RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
                                                                  .RequiredFeatures =
                                                                      {
@@ -146,10 +146,10 @@ void RendererContext::CreateDevices()
                                                              }));
 
 
-    m_LogicalDevice = std::unique_ptr<LogicalDeviceAndQueues>(LogicalDeviceAndQueues::Create(*m_Gpu, m_Surface));
+    m_LogicalDevice = std::unique_ptr<SLogicalDeviceAndQueues>(SLogicalDeviceAndQueues::Create(*m_Gpu, m_Surface));
 }
 
-std::vector<const char*> RendererContext::GetRequiredInstanceExtensions() const
+std::vector<const char*> SRendererContext::GetRequiredInstanceExtensions() const
 {
     uint32_t     ExtensionCount = 0;
     const char** GlfwExtensions = glfwGetRequiredInstanceExtensions(&ExtensionCount);
@@ -164,7 +164,7 @@ std::vector<const char*> RendererContext::GetRequiredInstanceExtensions() const
     return Extensions;
 }
 
-void RendererContext::CreateMessenger()
+void SRendererContext::CreateMessenger()
 {
     constexpr VkDebugUtilsMessengerCreateInfoEXT CreateInfo {
         .sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -188,7 +188,7 @@ void RendererContext::CreateMessenger()
     }
 }
 
-void RendererContext::DestroyMessenger()
+void SRendererContext::DestroyMessenger()
 {
     if(const auto Func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
            vkGetInstanceProcAddr(m_VulkanInstance, "vkDestroyDebugUtilsMessengerEXT")))
@@ -202,7 +202,7 @@ void RendererContext::DestroyMessenger()
     }
 }
 
-VkBool32 RendererContext::ValidationMessageCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
+VkBool32 SRendererContext::ValidationMessageCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT InMessageSeverity,
                                                     VkDebugUtilsMessageTypeFlagsEXT              InMessageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT*  InCallbackData,
                                                     void*                                        InUserData)
@@ -232,7 +232,7 @@ VkBool32 RendererContext::ValidationMessageCallback(const VkDebugUtilsMessageSev
     return VK_FALSE;
 }
 
-bool RendererContext::CheckValidationLayers() const
+bool SRendererContext::CheckValidationLayers() const
 {
     uint32_t Count;
     vkEnumerateInstanceLayerProperties(&Count, nullptr);

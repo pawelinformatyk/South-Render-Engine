@@ -13,10 +13,10 @@ struct UniformBufferObject
 };
 
 // #TODO: Only for UniformBufferObject - for now ok. Think if I have more examples.
-class UniformBuffer : public Buffer
+class SUniformBuffer : public SBuffer
 {
 public:
-    static UniformBuffer* Create(VkDevice InLogicalDev);
+    static SUniformBuffer* Create(VkDevice InLogicalDev);
 
     void SetData(VkDevice InLogicalDev, const void* InData);
 };

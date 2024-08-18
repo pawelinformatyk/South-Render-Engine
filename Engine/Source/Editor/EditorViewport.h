@@ -1,12 +1,12 @@
 #pragma once
 
-#include "SCamera.h"
+#include "Camera.h"
 
 namespace South
 {
 class SCamera;
 
-class EditorViewport
+class SEditorViewport
 {
 public:
     void Tick();

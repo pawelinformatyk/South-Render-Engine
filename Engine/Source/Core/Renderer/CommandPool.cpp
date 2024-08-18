@@ -6,9 +6,9 @@
 namespace South
 {
 
-CommandPool* CommandPool::Create(const VkDevice InLogicalDevice, const CreateInfo& Info)
+SCommandPool* SCommandPool::Create(const VkDevice InLogicalDevice, const SCreateInfo& Info)
 {
-    auto* OutPool               = new CommandPool();
+    auto* OutPool               = new SCommandPool();
     OutPool->m_Flags            = Info.Flags;
     OutPool->m_QueueFamilyIndex = Info.QueueFamilyIndex;
 
@@ -24,13 +24,13 @@ CommandPool* CommandPool::Create(const VkDevice InLogicalDevice, const CreateInf
     return OutPool;
 }
 
-void CommandPool::Destroy(CommandPool& InCmdPool)
+void SCommandPool::Destroy(SCommandPool& InCmdPool)
 {
-    vkDestroyCommandPool(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), InCmdPool.m_VulkanPool, nullptr);
+    vkDestroyCommandPool(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), InCmdPool.m_VulkanPool, nullptr);
     InCmdPool.m_VulkanPool = nullptr;
 }
 
-VkCommandPool CommandPool::GetPool() const
+VkCommandPool SCommandPool::GetPool() const
 {
     return m_VulkanPool;
 }

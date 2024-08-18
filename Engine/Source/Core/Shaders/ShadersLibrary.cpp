@@ -21,7 +21,7 @@ std::string GetShaderFileExtension(const VkShaderStageFlagBits Stage)
 
 } // namespace Private
 
-void ShadersLibrary::Init()
+void SShadersLibrary::Init()
 {
     s_CompilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
     s_CompilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -29,7 +29,7 @@ void ShadersLibrary::Init()
     STH_INFO("ShadersLibrary : Initialized.");
 }
 
-void ShadersLibrary::Deinit()
+void SShadersLibrary::Deinit()
 {
     for(const auto& [Name, Shader] : s_Shaders)
     {
@@ -41,20 +41,20 @@ void ShadersLibrary::Deinit()
     STH_INFO("ShadersLibrary : Deinitialized");
 }
 
-Shader* ShadersLibrary::AddShader(const VkDevice Device, const std::string& Name, const VkShaderStageFlagBits Stage, const bool bCompile)
+SShader* SShadersLibrary::AddShader(const VkDevice Device, const std::string& Name, const VkShaderStageFlagBits Stage, const bool bCompile)
 {
     const std::string Path = s_ShadersDirectory + Name + Private::GetShaderFileExtension(Stage);
 
     return AddShader(Device, Name, Path, Stage, bCompile);
 }
 
-Shader* ShadersLibrary::AddShader(const VkDevice              Device,
+SShader* SShadersLibrary::AddShader(const VkDevice              Device,
                                   const std::string&          Name,
                                   const std::string&          PathToCode,
                                   const VkShaderStageFlagBits Stage,
                                   const bool                  bCompile /*= true*/)
 {
-    auto* NewShader = new Shader(Device, PathToCode, Stage, bCompile);
+    auto* NewShader = new SShader(Device, PathToCode, Stage, bCompile);
     if(!NewShader)
     {
         return nullptr;
@@ -67,27 +67,27 @@ Shader* ShadersLibrary::AddShader(const VkDevice              Device,
     return NewShader;
 }
 
-Shader* ShadersLibrary::GetShader(const std::string& Name)
+SShader* SShadersLibrary::GetShader(const std::string& Name)
 {
     return s_Shaders.contains(Name) ? s_Shaders[Name] : nullptr;
 }
 
-const std::unordered_map<std::string, Shader*>& ShadersLibrary::GetShaders()
+const std::unordered_map<std::string, SShader*>& SShadersLibrary::GetShaders()
 {
     return s_Shaders;
 }
 
-shaderc::Compiler& ShadersLibrary::GetCompiler()
+shaderc::Compiler& SShadersLibrary::GetCompiler()
 {
     return s_Compiler;
 }
 
-shaderc::CompileOptions& ShadersLibrary::GetCompilerOptions()
+shaderc::CompileOptions& SShadersLibrary::GetCompilerOptions()
 {
     return s_CompilerOptions;
 }
 
-const char* ShadersLibrary::GetShaderStageToString(const VkShaderStageFlagBits Stage)
+const char* SShadersLibrary::GetShaderStageToString(const VkShaderStageFlagBits Stage)
 {
     switch(Stage)
     {

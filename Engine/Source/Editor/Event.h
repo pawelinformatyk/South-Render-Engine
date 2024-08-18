@@ -3,14 +3,14 @@
 namespace South
 {
 
-class Event;
+class SEvent;
 
-using EventCallback = std::function<void(const Event&)>;
+using SEventCallback = std::function<void(const SEvent&)>;
 
-class Event
+class SEvent
 {
 public:
-    virtual ~Event() = default;
+    virtual ~SEvent() = default;
 
     template<class T>
     bool IsA() const
@@ -21,18 +21,18 @@ public:
     virtual std::string ToString() const = 0;
 };
 
-class WindowMoveEvent final : public Event
+class SWindowMoveEvent final : public SEvent
 {
 public:
-    WindowMoveEvent(int InX, int InY);
+    SWindowMoveEvent(int InX, int InY);
 
     virtual std::string ToString() const override;
 };
 
-class WindowSizeEvent final : public Event
+class SWindowSizeEvent final : public SEvent
 {
 public:
-    WindowSizeEvent(int InWidth, int InHeight);
+    SWindowSizeEvent(int InWidth, int InHeight);
 
     virtual std::string ToString() const override;
 
@@ -40,42 +40,42 @@ public:
     int m_Height = 0;
 };
 
-class WindowCloseEvent final : public Event
+class SWindowCloseEvent final : public SEvent
 {
 public:
-    WindowCloseEvent();
+    SWindowCloseEvent();
 
     virtual std::string ToString() const override;
 };
 
-class WindowFocusEvent final : public Event
+class SWindowFocusEvent final : public SEvent
 {
 public:
-    explicit WindowFocusEvent(bool InbFocused);
+    explicit SWindowFocusEvent(bool InbFocused);
 
     virtual std::string ToString() const override;
 };
 
-class WindowMinimizeEvent final : public Event
+class SWindowMinimizeEvent final : public SEvent
 {
 public:
-    explicit WindowMinimizeEvent();
+    explicit SWindowMinimizeEvent();
 
     virtual std::string ToString() const override;
 };
 
-class WindowMaximizeEvent final : public Event
+class SWindowMaximizeEvent final : public SEvent
 {
 public:
-    explicit WindowMaximizeEvent();
+    explicit SWindowMaximizeEvent();
 
     virtual std::string ToString() const override;
 };
 
-class ClickEvent : public Event
+class SClickEvent : public SEvent
 {
 public:
-    ClickEvent(int InKey, int InAction, int InMods) : Key(InKey), Action(InAction), InMods(InMods)
+    SClickEvent(int InKey, int InAction, int InMods) : Key(InKey), Action(InAction), InMods(InMods)
     {
     }
 
@@ -91,10 +91,10 @@ protected:
     int InMods = 0;
 };
 
-class KeyboardClickEvent final : public ClickEvent
+class SKeyboardClickEvent final : public SClickEvent
 {
 public:
-    KeyboardClickEvent(int InKey, int InScancode, int InAction, int InMods) : ClickEvent(InKey, InAction, InMods), Scancode(InScancode)
+    SKeyboardClickEvent(int InKey, int InScancode, int InAction, int InMods) : SClickEvent(InKey, InAction, InMods), Scancode(InScancode)
     {
     }
 
@@ -106,20 +106,20 @@ private:
     int Scancode = 0;
 };
 
-class MouseClickEvent final : public ClickEvent
+class SMouseClickEvent final : public SClickEvent
 {
 public:
-    MouseClickEvent(int InKey, int InAction, int InMods) : ClickEvent(InKey, InAction, InMods)
+    SMouseClickEvent(int InKey, int InAction, int InMods) : SClickEvent(InKey, InAction, InMods)
     {
     }
 
     virtual std::string ToString() const override;
 };
 
-class MouseMoveEvent final : public Event
+class SMouseMoveEvent final : public SEvent
 {
 public:
-    MouseMoveEvent(double InX, double InY);
+    SMouseMoveEvent(double InX, double InY);
 
     virtual std::string ToString() const override;
 

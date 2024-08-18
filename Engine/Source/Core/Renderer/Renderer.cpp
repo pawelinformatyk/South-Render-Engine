@@ -6,23 +6,23 @@
 namespace South
 {
 
-void Renderer::Init(const RendererContext::CreateInfo& Info)
+void SRenderer::Init(const SRendererContext::SCreateInfo& Info)
 {
-    RendererContext& Context = RendererContext::Get();
+    SRendererContext& Context = SRendererContext::Get();
     Context.Init(Info);
 
     STH_INFO("Renderer Initialized");
 }
 
-void Renderer::Deinit()
+void SRenderer::Deinit()
 {
-    RendererContext& Context = RendererContext::Get();
+    SRendererContext& Context = SRendererContext::Get();
     Context.Deinit();
 
     STH_INFO("Renderer Deinitialized");
 }
 
-void Renderer::RenderQuad(const VkCommandBuffer InCommandBuffer, const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform)
+void SRenderer::RenderQuad(const VkCommandBuffer InCommandBuffer, const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform)
 {
     //    const PushConstant Ps {
     //        .Model      = InTransform,
@@ -40,11 +40,11 @@ void Renderer::RenderQuad(const VkCommandBuffer InCommandBuffer, const VkPipelin
     //    vkCmdDrawIndexed(InCommandBuffer, static_cast<uint32_t>(s_QuadModelBuffer->GetIndicesCount()), 1, 0, 0, 0);
 }
 
-void Renderer::RenderTriangle(const VkCommandBuffer InCommandBuffer, const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform)
+void SRenderer::RenderTriangle(const VkCommandBuffer InCommandBuffer, const VkPipelineLayout InPipelineLayout, const glm::mat4& InTransform)
 {
 }
 
-void Renderer::RenderMesh(const VkCommandBuffer InCommandBuffer, const VertexIndexBuffer& InMeshBuffer)
+void SRenderer::RenderMesh(const VkCommandBuffer InCommandBuffer, const SVertexIndexBuffer& InMeshBuffer)
 {
     const VkBuffer         Buffer = InMeshBuffer.GetBuffer();
     constexpr VkDeviceSize Offset = 0;
@@ -55,9 +55,9 @@ void Renderer::RenderMesh(const VkCommandBuffer InCommandBuffer, const VertexInd
     vkCmdDrawIndexed(InCommandBuffer, static_cast<uint32_t>(InMeshBuffer.GetIndicesCount()), 1, 0, 0, 0);
 }
 
-void Renderer::RenderMesh(VkCommandBuffer          InCommandBuffer,
+void SRenderer::RenderMesh(VkCommandBuffer          InCommandBuffer,
                           VkPipelineLayout         InPipelineLayout,
-                          const VertexIndexBuffer& InMeshBuffer,
+                          const SVertexIndexBuffer& InMeshBuffer,
                           const glm::mat4&         InTransform)
 {
 }

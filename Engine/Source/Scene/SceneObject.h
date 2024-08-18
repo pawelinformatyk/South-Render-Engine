@@ -5,16 +5,16 @@
 namespace South
 {
 
-class SceneObject
+class SSceneObject
 {
 public:
     glm::mat4 ToWorld;
 };
 
-class SceneMeshObject : public SceneObject
+class SSceneMeshObject : public SSceneObject
 {
 public:
-    std::vector<std::unique_ptr<Mesh>> Meshes;
+    std::vector<std::unique_ptr<SMesh>> Meshes;
 };
 
 } // namespace South

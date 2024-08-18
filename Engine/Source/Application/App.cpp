@@ -1,19 +1,19 @@
-#include "VulkanExampleApp.h"
+#include "App.h"
 
 #include "Core/Renderer/Renderer.h"
 
 namespace South
 {
 
-Application::Application()
+SApplication::SApplication()
 {
-    South::Logger::Init();
+    South::SLogger::Init();
 
     STH_INFO("Application Start");
 
     s_App = this;
 
-    m_Window = std::make_unique<Window>(Window::CreateInfo {
+    m_Window = std::make_unique<SWindow>(SWindow::SCreateInfo {
         // #ifdef _DEBUG
         .bFullscreen = false,
         // #else
@@ -23,33 +23,33 @@ Application::Application()
         .Height = 720,
         .Name   = "SouthRenderEngine",
         .EventsCallback =
-            [this](const Event& InEvent)
+            [this](const SEvent& InEvent)
         {
             OnEvent(InEvent);
         },
     });
 
     // #TODO: Where to put it
-    Renderer::Init(RendererContext::CreateInfo(*m_Window->ToGlfw()));
+    SRenderer::Init(SRendererContext::SCreateInfo(*m_Window->ToGlfw()));
 
-    m_Editor = std::make_unique<Editor>(VkExtent2D(1280, 720), *m_Window->ToGlfw());
+    m_Editor = std::make_unique<SEditor>(VkExtent2D(1280, 720), *m_Window->ToGlfw());
 }
 
-Application::~Application()
+SApplication::~SApplication()
 {
-    Renderer::Deinit();
+    SRenderer::Deinit();
 
     STH_INFO("Application End");
 
-    South::Logger::DeInit();
+    South::SLogger::DeInit();
 }
 
-Application& Application::Get()
+SApplication& SApplication::Get()
 {
     return *s_App;
 }
 
-void Application::Run()
+void SApplication::Run()
 {
     while(m_bRunning)
     {
@@ -79,12 +79,12 @@ void Application::Run()
     }
 }
 
-void Application::ProcessEvents()
+void SApplication::ProcessEvents()
 {
     m_Window->ProcessEvents();
 }
 
-void Application::OnEvent(const Event& InEvent)
+void SApplication::OnEvent(const SEvent& InEvent)
 {
     //    STH_INFO(InEvent.ToString());
 
@@ -97,22 +97,22 @@ void Application::OnEvent(const Event& InEvent)
     //        RendererContext::Get().GetSwapChain().RecreateSwapChain(SizeEvent->m_Width, SizeEvent->m_Height);
     //    }
 
-    if(InEvent.IsA<WindowCloseEvent>())
+    if(InEvent.IsA<SWindowCloseEvent>())
     {
         Close();
     }
 
-    if(InEvent.IsA<WindowMinimizeEvent>())
+    if(InEvent.IsA<SWindowMinimizeEvent>())
     {
         Minimize();
     }
 
-    if(InEvent.IsA<WindowMaximizeEvent>())
+    if(InEvent.IsA<SWindowMaximizeEvent>())
     {
         Maximize();
     }
 
-    if(auto* KeyEvent = dynamic_cast<const KeyboardClickEvent*>(&InEvent); KeyEvent && KeyEvent->GetKey() == GLFW_KEY_ESCAPE)
+    if(auto* KeyEvent = dynamic_cast<const SKeyboardClickEvent*>(&InEvent); KeyEvent && KeyEvent->GetKey() == GLFW_KEY_ESCAPE)
     {
         Close();
     }
@@ -120,16 +120,16 @@ void Application::OnEvent(const Event& InEvent)
     m_Editor->OnEvent(InEvent);
 }
 
-void Application::Close()
+void SApplication::Close()
 {
     m_bRunning = false;
 }
 
-void Application::Minimize()
+void SApplication::Minimize()
 {
 }
 
-void Application::Maximize()
+void SApplication::Maximize()
 {
 }
 

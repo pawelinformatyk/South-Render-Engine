@@ -5,7 +5,7 @@
 namespace South
 {
 
-class ScenePipeline
+class SScenePipeline
 {
 public:
     void Init();

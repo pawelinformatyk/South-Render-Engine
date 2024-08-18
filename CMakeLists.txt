@@ -8,8 +8,8 @@ include_directories(SouthRenderEngine Engine/Source)
 
 add_executable(SouthRenderEngine
         Engine/Source/Application/Main.cpp
-        Engine/Source/Application/VulkanExampleApp.cpp
-        Engine/Source/Application/VulkanExampleApp.h
+        Engine/Source/Application/App.h
+        Engine/Source/Application/App.cpp
         Engine/Source/Core/Buffers/Buffer.cpp
         Engine/Source/Core/Buffers/Buffer.h
         Engine/Source/Core/Buffers/UniformBuffer.cpp
@@ -18,7 +18,6 @@ add_executable(SouthRenderEngine
         Engine/Source/Core/Buffers/VertexIndexBuffer.h
         Engine/Source/Core/Devices/GraphicCard.cpp
         Engine/Source/Core/Devices/GraphicCard.h
-        Engine/Source/Core/Events/EventsInterface.h
         Engine/Source/Core/FileSystem/FileSystem.cpp
         Engine/Source/Core/FileSystem/FileSystem.h
         Engine/Source/Core/Logger/Logger.cpp
@@ -46,8 +45,8 @@ add_executable(SouthRenderEngine
         Engine/Source/Core/Window/SwapChain.h
         Engine/Source/Core/Window/Window.cpp
         Engine/Source/Core/Window/Window.h
-        Engine/Source/Editor/SCamera.cpp
-        Engine/Source/Editor/SCamera.h
+        Engine/Source/Editor/Camera.cpp
+        Engine/Source/Editor/Camera.h
         Engine/Source/Editor/Editor.cpp
         Engine/Source/Editor/EditorViewport.cpp
         Engine/Source/Editor/EditorViewport.h
@@ -72,6 +71,7 @@ add_executable(SouthRenderEngine
         Engine/Source/Scene/SceneObject.h
         Engine/Source/Scene/ScenePipeline.cpp
         Engine/Source/Scene/ScenePipeline.h
+
 )
 
 target_precompile_headers(SouthRenderEngine PRIVATE Engine/Source/sthpch.h)

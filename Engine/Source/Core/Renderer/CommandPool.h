@@ -4,22 +4,22 @@
 namespace South
 {
 
-class CommandPool
+class SCommandPool
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
         VkCommandPoolCreateFlags Flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         uint32_t                 QueueFamilyIndex = 0;
     };
 
-    static CommandPool* Create(VkDevice InLogicalDevice, const CreateInfo& Info);
-    static void         Destroy(CommandPool& InCmdPool);
+    static SCommandPool* Create(VkDevice InLogicalDevice, const SCreateInfo& Info);
+    static void          Destroy(SCommandPool& InCmdPool);
 
     VkCommandPool GetPool() const;
 
 private:
-    CommandPool() = default;
+    SCommandPool() = default;
 
     VkCommandPoolCreateFlags m_Flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     uint32_t                 m_QueueFamilyIndex = 0;

@@ -9,10 +9,10 @@ namespace South
 
 struct Vertex
 {
-    VectorFlt Pos;
-    VectorFlt Normal;
-    glm::vec2 TexCoords;
-    VectorFlt Color;
+    SVectorFlt Pos;
+    SVectorFlt Normal;
+    glm::vec2  TexCoords;
+    SVectorFlt Color;
 
     static const VkVertexInputBindingDescription&                  GetBindingDescription();
     static const std::array<VkVertexInputAttributeDescription, 4>& GetAttributesDescriptions();
@@ -22,47 +22,47 @@ private:
     static std::array<VkVertexInputAttributeDescription, 4> m_AttributesDescs;
 };
 
-class Mesh
+class SMesh
 {
 public:
-    Mesh();
+    SMesh();
 
     std::vector<Vertex>   Vertices;
     std::vector<uint16_t> Indices;
 
-    std::unique_ptr<VertexIndexBuffer> Buffer;
+    std::unique_ptr<SVertexIndexBuffer> Buffer;
 };
 
 // Examples:
 
-class PlaneMesh : public Mesh
+class SPlaneMesh : public SMesh
 {
 public:
-    PlaneMesh();
+    SPlaneMesh();
 };
 
-class CubeMesh : public Mesh
+class SCubeMesh : public SMesh
 {
 public:
-    CubeMesh();
+    SCubeMesh();
 };
 
-class SphereMesh : public Mesh
+class SSphereMesh : public SMesh
 {
 public:
-    SphereMesh(int SegmentsCount);
+    SSphereMesh(int SegmentsCount);
 };
 
-class TriangleMesh : public Mesh
+class STriangleMesh : public SMesh
 {
 public:
-    TriangleMesh();
+    STriangleMesh();
 };
 
-class CircleMesh : public Mesh
+class SCircleMesh : public SMesh
 {
 public:
-    CircleMesh();
+    SCircleMesh();
 };
 
 } // namespace South

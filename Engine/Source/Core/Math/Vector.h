@@ -91,9 +91,9 @@ struct TVector
     static const TVector UpVector;
 };
 
-using Vector    = TVector<double>;
-using VectorFlt = TVector<float>;
-using VectorInt = TVector<int>;
+using SVector    = TVector<double>;
+using SVectorFlt = TVector<float>;
+using SVectorInt = TVector<int>;
 
 template<typename T>
 TVector<T>::TVector() : X(0), Y(0), Z(0)
@@ -205,9 +205,9 @@ inline glm::vec3 Convert(const South::TVector<T>& Vector)
     return glm::vec3 {Vector.X, Vector.Z, Vector.Y};
 }
 
-inline South::VectorFlt Convert(const glm::vec3& Vector)
+inline South::SVectorFlt Convert(const glm::vec3& Vector)
 {
-    return South::VectorFlt {Vector.x, Vector.z, Vector.y};
+    return South::SVectorFlt {Vector.x, Vector.z, Vector.y};
 }
 
 } // namespace South

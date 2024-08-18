@@ -5,12 +5,12 @@
 namespace South
 {
 // #TODO : Add custom allocator.
-class Buffer
+class SBuffer
 {
 public:
-    static void Destroy(VkDevice InlogicalDev, Buffer* InBuffer);
+    static void Destroy(VkDevice InlogicalDev, SBuffer* InBuffer);
 
-    ~Buffer();
+    ~SBuffer();
 
     VkBuffer       GetBuffer() const;
     VkDeviceMemory GetMemory() const;

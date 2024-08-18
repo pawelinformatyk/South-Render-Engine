@@ -242,7 +242,7 @@ std::optional<std::pair<uint32_t, uint32_t>> FindGraphicAndPresentQueueFamilyInd
 
 } // namespace Private
 
-GraphicCard* GraphicCard::Create(const VkInstance InVulkanInstance, const CreateInfo& InCreateInfo)
+SGraphicCard* SGraphicCard::Create(const VkInstance InVulkanInstance, const SCreateInfo& InCreateInfo)
 {
     const VkPhysicalDevice FoundDevice =
         Private::FindPhysicalDevice(InVulkanInstance, InCreateInfo.RequiredExtensions, InCreateInfo.RequiredFeatures);
@@ -251,7 +251,7 @@ GraphicCard* GraphicCard::Create(const VkInstance InVulkanInstance, const Create
         return nullptr;
     }
 
-    auto* OutGpu = new GraphicCard();
+    auto* OutGpu = new SGraphicCard();
 
     OutGpu->m_PhysicalDevice  = FoundDevice;
     OutGpu->m_ExtensionsNames = InCreateInfo.RequiredExtensions;
@@ -262,32 +262,32 @@ GraphicCard* GraphicCard::Create(const VkInstance InVulkanInstance, const Create
     return OutGpu;
 }
 
-VkPhysicalDevice GraphicCard::GetPhysicalDevice() const
+VkPhysicalDevice SGraphicCard::GetPhysicalDevice() const
 {
     return m_PhysicalDevice;
 }
 
-const std::vector<const char*>& GraphicCard::GetExtensionsNames() const
+const std::vector<const char*>& SGraphicCard::GetExtensionsNames() const
 {
     return m_ExtensionsNames;
 }
 
-const VkPhysicalDeviceFeatures& GraphicCard::GetFeatures() const
+const VkPhysicalDeviceFeatures& SGraphicCard::GetFeatures() const
 {
     return m_Features;
 }
 
-const VkPhysicalDeviceProperties& GraphicCard::GetProperties() const
+const VkPhysicalDeviceProperties& SGraphicCard::GetProperties() const
 {
     return m_Properties;
 }
 
-std::string_view GraphicCard::GetTypeName() const
+std::string_view SGraphicCard::GetTypeName() const
 {
     return m_TypeName;
 }
 
-LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu, const VkSurfaceKHR InSurface)
+SLogicalDeviceAndQueues* SLogicalDeviceAndQueues::Create(const SGraphicCard& InGpu, const VkSurfaceKHR InSurface)
 {
     const VkPhysicalDevice PhysDev = InGpu.GetPhysicalDevice();
 
@@ -338,7 +338,7 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
         .pEnabledFeatures        = &InGpu.GetFeatures(),
     };
 
-    auto* OutDevice = new LogicalDeviceAndQueues();
+    auto* OutDevice = new SLogicalDeviceAndQueues();
 
     OutDevice->m_GraphicQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->first;
     OutDevice->m_PresentQueueFamilyIndex = GraphicAndPresentQueueFamilyIndex->second;
@@ -360,7 +360,7 @@ LogicalDeviceAndQueues* LogicalDeviceAndQueues::Create(const GraphicCard& InGpu,
     return OutDevice;
 }
 
-void LogicalDeviceAndQueues::Destroy(LogicalDeviceAndQueues& InDeviceAndQueues)
+void SLogicalDeviceAndQueues::Destroy(SLogicalDeviceAndQueues& InDeviceAndQueues)
 {
     vkDestroyDevice(InDeviceAndQueues.m_LogicalDevice, nullptr);
     InDeviceAndQueues.m_LogicalDevice = nullptr;
@@ -368,27 +368,27 @@ void LogicalDeviceAndQueues::Destroy(LogicalDeviceAndQueues& InDeviceAndQueues)
     InDeviceAndQueues.m_PresentQueue  = nullptr;
 }
 
-VkDevice LogicalDeviceAndQueues::GetLogicalDevice() const
+VkDevice SLogicalDeviceAndQueues::GetLogicalDevice() const
 {
     return m_LogicalDevice;
 }
 
-VkQueue LogicalDeviceAndQueues::GetGraphicQueue() const
+VkQueue SLogicalDeviceAndQueues::GetGraphicQueue() const
 {
     return m_GraphicQueue;
 }
 
-uint32_t LogicalDeviceAndQueues::GetGraphicQueueFamilyIndex() const
+uint32_t SLogicalDeviceAndQueues::GetGraphicQueueFamilyIndex() const
 {
     return m_GraphicQueueFamilyIndex;
 }
 
-VkQueue LogicalDeviceAndQueues::GetPresentQueue() const
+VkQueue SLogicalDeviceAndQueues::GetPresentQueue() const
 {
     return m_PresentQueue;
 }
 
-uint32_t LogicalDeviceAndQueues::GetPresentQueueFamilyIndex() const
+uint32_t SLogicalDeviceAndQueues::GetPresentQueueFamilyIndex() const
 {
     return m_PresentQueueFamilyIndex;
 }

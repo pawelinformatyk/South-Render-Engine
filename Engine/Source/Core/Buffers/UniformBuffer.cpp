@@ -3,7 +3,7 @@
 namespace South
 {
 
-UniformBuffer* UniformBuffer::Create(const VkDevice InLogicalDev)
+SUniformBuffer* SUniformBuffer::Create(const VkDevice InLogicalDev)
 {
     VkBuffer                 Buffer;
     const VkBufferCreateInfo BufferCi {
@@ -29,7 +29,7 @@ UniformBuffer* UniformBuffer::Create(const VkDevice InLogicalDev)
 
     vkBindBufferMemory(InLogicalDev, Buffer, BufferMemory, 0);
 
-    auto* Ub = new UniformBuffer;
+    auto* Ub = new SUniformBuffer;
 
     Ub->m_Buffer = Buffer;
     Ub->m_Memory = BufferMemory;
@@ -37,7 +37,7 @@ UniformBuffer* UniformBuffer::Create(const VkDevice InLogicalDev)
     return Ub;
 }
 
-void UniformBuffer::SetData(const VkDevice InLogicalDev, const void* InData)
+void SUniformBuffer::SetData(const VkDevice InLogicalDev, const void* InData)
 {
     void* BufferData = nullptr;
 

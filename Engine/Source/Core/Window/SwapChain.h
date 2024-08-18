@@ -6,32 +6,32 @@ struct GLFWwindow;
 
 namespace South
 {
-class RendererContext;
+class SRendererContext;
 
-class LogicalDeviceAndQueues;
+class SLogicalDeviceAndQueues;
 
 // #TODO: Swapchain frambuffer
-class Framebuffer
+class SFramebuffer
 {
-    struct CreateInfo
+    struct SCreateInfo
     {
         VkDevice         Device;
         VkExtent2D       Size;
         VkPresentModeKHR PresentMode;
     };
 
-    explicit Framebuffer(const CreateInfo& InInfo);
-    ~Framebuffer();
+    explicit SFramebuffer(const SCreateInfo& InInfo);
+    ~        SFramebuffer();
 
     VkImage       m_VulkanImage       = nullptr;
     VkImageView   m_VulkanImageView   = nullptr;
     VkFramebuffer m_VulkanFramebuffer = nullptr;
 };
 
-class SwapChain
+class SSwapChain
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
         VkSurfaceKHR       Surface;
         VkSurfaceFormatKHR SurfaceFormat;
@@ -39,8 +39,8 @@ public:
         VkPresentModeKHR   PresentMode;
     };
 
-    static SwapChain* Create(const CreateInfo& InInfo);
-    static void       Destroy(SwapChain& InSwapChain);
+    static SSwapChain* Create(const SCreateInfo& InInfo);
+    static void        Destroy(SSwapChain& InSwapChain);
 
     void RecreateSwapChain(uint32_t InWidth, uint32_t InHeight);
 
@@ -50,7 +50,7 @@ public:
     VkExtent2D     GetSize() const;
 
 private:
-    void CreateSwapchain(const CreateInfo& InInfo);
+    void CreateSwapchain(const SCreateInfo& InInfo);
 
     VkSwapchainKHR m_VulkanSwapChain = nullptr;
 

@@ -4,32 +4,32 @@
 namespace South
 {
 
-std::string WindowSizeEvent::ToString() const
+std::string SWindowSizeEvent::ToString() const
 {
     return "WindowSizeEvent";
 }
 
-std::string WindowCloseEvent::ToString() const
+std::string SWindowCloseEvent::ToString() const
 {
     return "WindowCloseEvent";
 }
 
-std::string WindowFocusEvent::ToString() const
+std::string SWindowFocusEvent::ToString() const
 {
     return "WindowFocusEvent";
 }
 
-std::string WindowMinimizeEvent::ToString() const
+std::string SWindowMinimizeEvent::ToString() const
 {
     return "WindowMinimizeEvent";
 }
 
-std::string WindowMaximizeEvent::ToString() const
+std::string SWindowMaximizeEvent::ToString() const
 {
     return "WindowMaximizeEvent";
 }
 
-std::string ClickEvent::ToString() const
+std::string SClickEvent::ToString() const
 {
     std::string OutStr;
 
@@ -57,70 +57,70 @@ std::string ClickEvent::ToString() const
     return OutStr;
 }
 
-std::string KeyboardClickEvent::ToString() const
+std::string SKeyboardClickEvent::ToString() const
 {
-    return "KeyboardClickEvent " + ClickEvent::ToString();
+    return "KeyboardClickEvent " + SClickEvent::ToString();
 }
 
-std::string MouseClickEvent::ToString() const
+std::string SMouseClickEvent::ToString() const
 {
     return "MouseClickEvent";
 }
 
-MouseMoveEvent::MouseMoveEvent(const double InX, const double InY) : m_MousePosX(InX), m_MousePosY(InY)
+SMouseMoveEvent::SMouseMoveEvent(const double InX, const double InY) : m_MousePosX(InX), m_MousePosY(InY)
 {
 }
 
-std::string MouseMoveEvent::ToString() const
+std::string SMouseMoveEvent::ToString() const
 {
     return "MouseMoveEvent X:" + std::to_string(m_MousePosX) + " Y:" + std::to_string(m_MousePosY);
 }
 
-WindowMoveEvent::WindowMoveEvent(int InX, int InY)
+SWindowMoveEvent::SWindowMoveEvent(int InX, int InY)
 {
 }
 
-std::string WindowMoveEvent::ToString() const
+std::string SWindowMoveEvent::ToString() const
 {
     return "WindowMoveEvent";
 }
 
-WindowSizeEvent::WindowSizeEvent(const int InWidth, const int InHeight) : m_Width(InWidth), m_Height(InHeight)
+SWindowSizeEvent::SWindowSizeEvent(const int InWidth, const int InHeight) : m_Width(InWidth), m_Height(InHeight)
 {
 }
 
-WindowCloseEvent::WindowCloseEvent()
+SWindowCloseEvent::SWindowCloseEvent()
 {
 }
 
-WindowFocusEvent::WindowFocusEvent(bool InbFocused)
+SWindowFocusEvent::SWindowFocusEvent(bool InbFocused)
 {
 }
 
-WindowMinimizeEvent::WindowMinimizeEvent()
+SWindowMinimizeEvent::SWindowMinimizeEvent()
 {
 }
 
-WindowMaximizeEvent::WindowMaximizeEvent()
+SWindowMaximizeEvent::SWindowMaximizeEvent()
 {
 }
 
-int ClickEvent::GetKey() const
+int SClickEvent::GetKey() const
 {
     return Key;
 }
 
-int ClickEvent::GetAction() const
+int SClickEvent::GetAction() const
 {
     return Action;
 }
 
-int ClickEvent::GetInMods() const
+int SClickEvent::GetInMods() const
 {
     return InMods;
 }
 
-int KeyboardClickEvent::GetScancode() const
+int SKeyboardClickEvent::GetScancode() const
 {
     return Scancode;
 }

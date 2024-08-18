@@ -3,7 +3,7 @@
 namespace South
 {
 
-Window::Window(const CreateInfo& InInfo)
+SWindow::SWindow(const SCreateInfo& InInfo)
 {
     glfwInit();
 
@@ -30,107 +30,107 @@ Window::Window(const CreateInfo& InInfo)
     glfwSetWindowPosCallback(m_glfwWindow,
                              [](GLFWwindow* InWindow, const int InX, const int InY)
                              {
-                                 const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                 const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                 Callback(WindowMoveEvent(InX, InY));
+                                 Callback(SWindowMoveEvent(InX, InY));
                              });
 
     glfwSetWindowSizeCallback(m_glfwWindow,
                               [](GLFWwindow* InWindow, const int InWidth, const int InHeight)
                               {
-                                  const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                  const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                  Callback(WindowSizeEvent(InWidth, InHeight));
+                                  Callback(SWindowSizeEvent(InWidth, InHeight));
                               });
 
     glfwSetWindowCloseCallback(m_glfwWindow,
                                [](GLFWwindow* InWindow)
                                {
-                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                   const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                   Callback(WindowCloseEvent());
+                                   Callback(SWindowCloseEvent());
                                });
 
     glfwSetWindowFocusCallback(m_glfwWindow,
                                [](GLFWwindow* InWindow, const int InFocused)
                                {
-                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                   const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                   Callback(WindowFocusEvent(InFocused));
+                                   Callback(SWindowFocusEvent(InFocused));
                                });
 
     glfwSetWindowIconifyCallback(m_glfwWindow,
                                  [](GLFWwindow* InWindow, int)
                                  {
-                                     const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                     const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                     Callback(WindowMinimizeEvent());
+                                     Callback(SWindowMinimizeEvent());
                                  });
 
     glfwSetWindowMaximizeCallback(m_glfwWindow,
                                   [](GLFWwindow* InWindow, int)
                                   {
-                                      const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                      const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                      Callback(WindowMaximizeEvent());
+                                      Callback(SWindowMaximizeEvent());
                                   });
 
     glfwSetKeyCallback(m_glfwWindow,
                        [](GLFWwindow* InWindow, const int InKey, const int InScancode, const int InAction, const int InMods)
                        {
-                           const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                           const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                           Callback(KeyboardClickEvent(InKey, InScancode, InAction, InMods));
+                           Callback(SKeyboardClickEvent(InKey, InScancode, InAction, InMods));
                        });
 
     glfwSetMouseButtonCallback(m_glfwWindow,
                                [](GLFWwindow* InWindow, const int InButton, const int InAction, const int InMods)
                                {
-                                   const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                   const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
-                                   Callback(MouseClickEvent(InButton, InAction, InMods));
+                                   Callback(SMouseClickEvent(InButton, InAction, InMods));
                                });
 
     glfwSetCursorPosCallback(m_glfwWindow,
                              [](GLFWwindow* InWindow, const double InX, const double InY)
                              {
-                                 const EventCallback& Callback = *static_cast<EventCallback*>(glfwGetWindowUserPointer(InWindow));
+                                 const SEventCallback& Callback = *static_cast<SEventCallback*>(glfwGetWindowUserPointer(InWindow));
 
                                  double CurrentMouseMove1, CurrentMouseMove2;
                                  glfwGetCursorPos(InWindow, &CurrentMouseMove1, &CurrentMouseMove2);
 
-                                 Callback(MouseMoveEvent(InX, InY));
+                                 Callback(SMouseMoveEvent(InX, InY));
                              });
 }
 
-Window::~Window()
+SWindow::~SWindow()
 {
     glfwDestroyWindow(m_glfwWindow);
 
     glfwTerminate();
 }
 
-GLFWwindow* Window::ToGlfw() const
+GLFWwindow* SWindow::ToGlfw() const
 {
     return m_glfwWindow;
 }
 
 // #TODO : Add class TickableObject so app can find these classes and then iterate and tick.
-void Window::Tick(const double InDeltaTime)
+void SWindow::Tick(const double InDeltaTime)
 {
 }
 
-void Window::ProcessEvents()
+void SWindow::ProcessEvents()
 {
     glfwPollEvents();
 }
 
-void Window::Minimise()
+void SWindow::Minimise()
 {
     glfwIconifyWindow(m_glfwWindow);
 }
 
-void Window::Maximise()
+void SWindow::Maximise()
 {
     glfwMaximizeWindow(m_glfwWindow);
 }

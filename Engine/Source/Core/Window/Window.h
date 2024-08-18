@@ -7,20 +7,20 @@
 namespace South
 {
 
-class Window
+class SWindow
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
-        bool          bFullscreen = true;
-        int           Width       = 0;
-        int           Height      = 0;
-        std::string   Name;
-        EventCallback EventsCallback;
+        bool           bFullscreen = true;
+        int            Width       = 0;
+        int            Height      = 0;
+        std::string    Name;
+        SEventCallback EventsCallback;
     };
 
-    explicit Window(const CreateInfo& InInfo);
-    ~Window();
+    explicit SWindow(const SCreateInfo& InInfo);
+    ~        SWindow();
 
     GLFWwindow* ToGlfw() const;
 
@@ -37,7 +37,7 @@ public:
     void Maximise();
 
 private:
-    EventCallback m_EventsCallback;
+    SEventCallback m_EventsCallback;
 
     //~ Events
 };

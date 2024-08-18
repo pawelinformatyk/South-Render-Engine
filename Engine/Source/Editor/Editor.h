@@ -1,7 +1,7 @@
 #pragma once
 
 // #include "imconfig.h"
-#include "SCamera.h"
+#include "Camera.h"
 #include "vulkan/vulkan_core.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -11,18 +11,18 @@ struct GLFWwindow;
 namespace South
 {
 
-class Event;
-class EditorViewport;
-class UniformBuffer;
-class VertexIndexBuffer;
+class SEvent;
+class SEditorViewport;
+class SUniformBuffer;
+class SVertexIndexBuffer;
 
-class Editor
+class SEditor
 {
 public:
-     Editor(VkExtent2D InViewportExtent, GLFWwindow& InWindow);
-    ~Editor();
+     SEditor(VkExtent2D InViewportExtent, GLFWwindow& InWindow);
+    ~SEditor();
 
-    void OnEvent(const Event& InEvent);
+    void OnEvent(const SEvent& InEvent);
 
     void Tick(double InFrameTime_Sec);
 
@@ -42,7 +42,7 @@ public:
 private:
     double m_LastFrame_Sec = 0.;
 
-    EditorViewport* m_MainViewport = nullptr;
+    SEditorViewport* m_MainViewport = nullptr;
 
     std::vector<VkCommandBuffer> m_CommandBuffers;
     VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
@@ -56,14 +56,14 @@ private:
     VkSampler m_TextureSampler = nullptr;
 
     // Scene:
-    VkImage                         m_SceneTextureImage       = nullptr;
-    VkDeviceMemory                  m_SceneTextureImageMemory = nullptr;
-    VkImageView                     m_SceneTextureImageView   = nullptr;
-    std::vector<VertexIndexBuffer*> m_MeshesBuffers;
+    VkImage                          m_SceneTextureImage       = nullptr;
+    VkDeviceMemory                   m_SceneTextureImageMemory = nullptr;
+    VkImageView                      m_SceneTextureImageView   = nullptr;
+    std::vector<SVertexIndexBuffer*> m_MeshesBuffers;
 
-    VertexIndexBuffer* m_GridBuffer = nullptr;
+    SVertexIndexBuffer* m_GridBuffer = nullptr;
 
-    std::array<UniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
+    std::array<SUniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
@@ -139,14 +139,14 @@ private:
 
     SCamera Camera;
 
-    bool   bMoveCameraForward  = false;
-    bool   bMoveCameraBackward = false;
-    bool   bMoveCameraLeft     = false;
-    bool   bMoveCameraRight    = false;
-    bool   bMoveCameraUp       = false;
-    bool   bMoveCameraDown     = false;
-    bool   bCameraCanRotate    = false;
-    Vector PreviousMouseMove;
+    bool    bMoveCameraForward  = false;
+    bool    bMoveCameraBackward = false;
+    bool    bMoveCameraLeft     = false;
+    bool    bMoveCameraRight    = false;
+    bool    bMoveCameraUp       = false;
+    bool    bMoveCameraDown     = false;
+    bool    bCameraCanRotate    = false;
+    SVector PreviousMouseMove;
 };
 
 } // namespace South

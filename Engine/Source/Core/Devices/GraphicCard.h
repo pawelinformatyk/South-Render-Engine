@@ -5,16 +5,16 @@
 namespace South
 {
 
-class GraphicCard
+class SGraphicCard
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
         std::vector<const char*> RequiredExtensions;
         VkPhysicalDeviceFeatures RequiredFeatures;
     };
 
-    static GraphicCard* Create(VkInstance InVulkanInstance, const CreateInfo& InCreateInfo);
+    static SGraphicCard* Create(VkInstance InVulkanInstance, const SCreateInfo& InCreateInfo);
 
     VkPhysicalDevice                  GetPhysicalDevice() const;
     const std::vector<const char*>&   GetExtensionsNames() const;
@@ -40,11 +40,11 @@ private:
  * queues to create now that we've queried which queue families are available. You can even create multiple logical devices from
  * the same physical device if you have varying requirements.
  */
-class LogicalDeviceAndQueues
+class SLogicalDeviceAndQueues
 {
 public:
-    static LogicalDeviceAndQueues* Create(const GraphicCard& InGpu, VkSurfaceKHR InSurface);
-    static void                    Destroy(LogicalDeviceAndQueues& InDeviceAndQueues);
+    static SLogicalDeviceAndQueues* Create(const SGraphicCard& InGpu, VkSurfaceKHR InSurface);
+    static void                     Destroy(SLogicalDeviceAndQueues& InDeviceAndQueues);
 
     VkDevice GetLogicalDevice() const;
     VkQueue  GetGraphicQueue() const;

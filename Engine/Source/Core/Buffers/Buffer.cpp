@@ -5,7 +5,7 @@ namespace South
 {
 
 
-void Buffer::Destroy(const VkDevice InlogicalDev, Buffer* InBuffer)
+void SBuffer::Destroy(const VkDevice InlogicalDev, SBuffer* InBuffer)
 {
     if(!InBuffer)
     {
@@ -18,19 +18,19 @@ void Buffer::Destroy(const VkDevice InlogicalDev, Buffer* InBuffer)
     delete InBuffer;
 }
 
-VkBuffer Buffer::GetBuffer() const
+VkBuffer SBuffer::GetBuffer() const
 {
     return m_Buffer;
 }
 
-VkDeviceMemory Buffer::GetMemory() const
+VkDeviceMemory SBuffer::GetMemory() const
 {
     return m_Memory;
 }
 
-Buffer::~Buffer()
+SBuffer::~SBuffer()
 {
-    VkDevice LogicalDevice = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    VkDevice LogicalDevice = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     vkDestroyBuffer(LogicalDevice, m_Buffer, nullptr);
     vkFreeMemory(LogicalDevice, m_Memory, nullptr);

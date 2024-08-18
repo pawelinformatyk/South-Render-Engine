@@ -6,18 +6,17 @@
 namespace South
 {
 
-// #TODO: Add prefix to classes, it's infuriating
-class Application
+class SApplication
 {
 public:
-    Application();
-    ~Application();
+     SApplication();
+    ~SApplication();
 
-    static Application& Get();
+    static SApplication& Get();
 
     void Run();
 
-    void OnEvent(const Event& InEvent);
+    void OnEvent(const SEvent& InEvent);
 
 private:
     void Close();
@@ -26,16 +25,16 @@ private:
 
     void ProcessEvents();
 
-    inline static Application* s_App = nullptr;
+    inline static SApplication* s_App = nullptr;
 
     double m_FrameTime_Sec = 0.;
 
     bool m_bRunning   = true;
     bool m_bMinimized = false;
 
-    std::unique_ptr<Window> m_Window = nullptr;
+    std::unique_ptr<SWindow> m_Window = nullptr;
 
-    std::unique_ptr<Editor> m_Editor = nullptr;
+    std::unique_ptr<SEditor> m_Editor = nullptr;
 };
 
 } // namespace South

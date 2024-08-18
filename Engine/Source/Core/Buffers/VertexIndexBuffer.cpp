@@ -4,11 +4,11 @@
 namespace South
 {
 
-VertexIndexBuffer* VertexIndexBuffer::Create(const VkDevice        InLogicalDev,
+SVertexIndexBuffer* SVertexIndexBuffer::Create(const VkDevice        InLogicalDev,
                                              const VkCommandBuffer InCmdBuffer,
                                              const VkQueue         InQueue,
-                                             const CreateInfo&     InVertexInfo,
-                                             const CreateInfo&     InIndexInfo)
+                                             const SCreateInfo&     InVertexInfo,
+                                             const SCreateInfo&     InIndexInfo)
 {
     // #TODO : Check if actually is more performant than two separated buffers. Check
     // VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
@@ -98,7 +98,7 @@ VertexIndexBuffer* VertexIndexBuffer::Create(const VkDevice        InLogicalDev,
     vkDestroyBuffer(InLogicalDev, StagingBuffer, nullptr);
     vkFreeMemory(InLogicalDev, StagingBufferMemory, nullptr);
 
-    auto* ViBuffer = new VertexIndexBuffer;
+    auto* ViBuffer = new SVertexIndexBuffer;
 
     ViBuffer->m_Buffer        = TargetBuffer;
     ViBuffer->m_Memory        = TargetBufferMemory;
@@ -111,22 +111,22 @@ VertexIndexBuffer* VertexIndexBuffer::Create(const VkDevice        InLogicalDev,
 }
 
 
-uint32_t VertexIndexBuffer::GetVerticesCount() const
+uint32_t SVertexIndexBuffer::GetVerticesCount() const
 {
     return m_VerticesCount;
 }
 
-uint32_t VertexIndexBuffer::GetIndicesCount() const
+uint32_t SVertexIndexBuffer::GetIndicesCount() const
 {
     return m_IndicesCount;
 }
 
-uint32_t VertexIndexBuffer::GetVerticesSize() const
+uint32_t SVertexIndexBuffer::GetVerticesSize() const
 {
     return m_VerticesSize;
 }
 
-uint32_t VertexIndexBuffer::GetIndicesSize() const
+uint32_t SVertexIndexBuffer::GetIndicesSize() const
 {
     return m_IndicesSize;
 }

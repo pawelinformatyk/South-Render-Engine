@@ -5,9 +5,9 @@
 namespace South
 {
 
-RenderPass* RenderPass::Create(const CreateInfo& InInfo)
+SRenderPass* SRenderPass::Create(const SCreateInfo& InInfo)
 {
-    auto* OutRenderPass = new RenderPass;
+    auto* OutRenderPass = new SRenderPass;
 
     const VkAttachmentDescription ColorAttachment {
         .format         = InInfo.Format,
@@ -52,7 +52,7 @@ RenderPass* RenderPass::Create(const CreateInfo& InInfo)
         .dependencyCount = 1,
         .pDependencies   = &Dependency,
     };
-    vkCreateRenderPass(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+    vkCreateRenderPass(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                        &RenderPassInfo,
                        nullptr,
                        &OutRenderPass->m_VulkanRenderPass);
@@ -60,13 +60,13 @@ RenderPass* RenderPass::Create(const CreateInfo& InInfo)
     return OutRenderPass;
 }
 
-void RenderPass::Destroy(RenderPass& InRenderPass)
+void SRenderPass::Destroy(SRenderPass& InRenderPass)
 {
-    vkDestroyRenderPass(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), InRenderPass.m_VulkanRenderPass, nullptr);
+    vkDestroyRenderPass(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), InRenderPass.m_VulkanRenderPass, nullptr);
     InRenderPass.m_VulkanRenderPass = nullptr;
 }
 
-VkRenderPass RenderPass::GetVulkanPass() const
+VkRenderPass SRenderPass::GetVulkanPass() const
 {
     return m_VulkanRenderPass;
 }

@@ -4,7 +4,7 @@
 namespace South
 {
 
-void ScenePipeline::Init()
+void SScenePipeline::Init()
 {
     //    VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
     //

@@ -3,7 +3,7 @@
 namespace South::Core
 {
 
-class ScenePipeline
+class SScenePipeline
 {
 };
 

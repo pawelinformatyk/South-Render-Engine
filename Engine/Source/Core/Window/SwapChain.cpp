@@ -8,19 +8,19 @@
 namespace South
 {
 
-SwapChain* SwapChain::Create(const CreateInfo& InInfo)
+SSwapChain* SSwapChain::Create(const SCreateInfo& InInfo)
 {
-    auto* OutSwapChain = new SwapChain();
+    auto* OutSwapChain = new SSwapChain();
 
     OutSwapChain->CreateSwapchain(InInfo);
 
     return OutSwapChain;
 }
 
-void SwapChain::CreateSwapchain(const CreateInfo& InInfo)
+void SSwapChain::CreateSwapchain(const SCreateInfo& InInfo)
 {
-    const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
-    const GraphicCard&            Gpu            = RendererContext::Get().GetGraphicCard();
+    const SLogicalDeviceAndQueues& LogicalDevice  = SRendererContext::Get().GetDeviceAndQueues();
+    const SGraphicCard&            Gpu            = SRendererContext::Get().GetGraphicCard();
     const VkPhysicalDevice        PhysicalDevice = Gpu.GetPhysicalDevice();
 
     m_PresentMode = InInfo.PresentMode;
@@ -80,7 +80,7 @@ void SwapChain::CreateSwapchain(const CreateInfo& InInfo)
         const VkFramebufferCreateInfo FramebufferInfo {
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext           = nullptr,
-            .renderPass      = RendererContext::Get().GetRenderPass().GetVulkanPass(),
+            .renderPass      = SRendererContext::Get().GetRenderPass().GetVulkanPass(),
             .attachmentCount = 1,
             .pAttachments    = &m_ImagesViews[i],
             .width           = m_Size.width,
@@ -91,9 +91,9 @@ void SwapChain::CreateSwapchain(const CreateInfo& InInfo)
     }
 }
 
-void SwapChain::Destroy(SwapChain& InSwapChain)
+void SSwapChain::Destroy(SSwapChain& InSwapChain)
 {
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     for(const VkImageView& ImageView : InSwapChain.m_ImagesViews)
     {
@@ -112,15 +112,15 @@ void SwapChain::Destroy(SwapChain& InSwapChain)
     InSwapChain.m_VulkanSwapChain = nullptr;
 }
 
-void SwapChain::RecreateSwapChain(const uint32_t InWidth, const uint32_t InHeight)
+void SSwapChain::RecreateSwapChain(const uint32_t InWidth, const uint32_t InHeight)
 {
     // #TODO: Change without waiting
-    vkDeviceWaitIdle(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
+    vkDeviceWaitIdle(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
 
     Destroy(*this);
 
-    CreateSwapchain(CreateInfo {
-        .Surface       = RendererContext::Get().GetSurface(),
+    CreateSwapchain(SCreateInfo {
+        .Surface       = SRendererContext::Get().GetSurface(),
         .SurfaceFormat = {m_ImageFormat, m_ImageColorSpace},
         .Size          = {InWidth, InHeight},
         .PresentMode   = m_PresentMode,
@@ -128,22 +128,22 @@ void SwapChain::RecreateSwapChain(const uint32_t InWidth, const uint32_t InHeigh
 }
 
 
-VkSwapchainKHR SwapChain::GetVulkanSwapChain() const
+VkSwapchainKHR SSwapChain::GetVulkanSwapChain() const
 {
     return m_VulkanSwapChain;
 }
 
-VkFramebuffer SwapChain::GetFramebuffer(const uint32_t InIndex) const
+VkFramebuffer SSwapChain::GetFramebuffer(const uint32_t InIndex) const
 {
     return m_Framebuffers[InIndex];
 }
 
-uint32_t SwapChain::GetFramebuffersCount() const
+uint32_t SSwapChain::GetFramebuffersCount() const
 {
     return static_cast<uint32_t>(m_Framebuffers.size());
 }
 
-VkExtent2D SwapChain::GetSize() const
+VkExtent2D SSwapChain::GetSize() const
 {
     return m_Size;
 }

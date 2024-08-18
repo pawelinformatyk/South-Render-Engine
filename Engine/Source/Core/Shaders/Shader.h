@@ -7,11 +7,11 @@ namespace South
 {
 // #TODO : Shader should be aware of pushConstants, desriptors etc.? Look Record function in context.
 // #TODO : Cache compiled shaders (spirv) in some directory.
-class Shader
+class SShader
 {
 public:
-    Shader(VkDevice Device, const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
-    ~Shader();
+     SShader(VkDevice Device, const std::string& inPathToCode, VkShaderStageFlagBits InStages, bool bCompile = true);
+    ~SShader();
 
     void Compile(VkDevice Device);
 

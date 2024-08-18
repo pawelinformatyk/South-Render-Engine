@@ -7,10 +7,10 @@ namespace South
 
 // One buffer for vertex and indices data.
 // (vertices...indices)
-class VertexIndexBuffer : public Buffer
+class SVertexIndexBuffer : public SBuffer
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
         const void* Data = nullptr;
         // Size of one element.
@@ -18,11 +18,11 @@ public:
         uint32_t Count = 0;
     };
 
-    static VertexIndexBuffer* Create(VkDevice          InLogicalDev,
+    static SVertexIndexBuffer* Create(VkDevice          InLogicalDev,
                                      VkCommandBuffer   InCmdBuffer,
                                      VkQueue           InQueue,
-                                     const CreateInfo& InVertexInfo,
-                                     const CreateInfo& InIndexInfo);
+                                     const SCreateInfo& InVertexInfo,
+                                     const SCreateInfo& InIndexInfo);
 
     uint32_t GetVerticesSize() const;
     uint32_t GetIndicesSize() const;

@@ -11,7 +11,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
-#include <Application/VulkanExampleApp.h>
+#include <Application/App.h>
 
 namespace South
 {
@@ -167,23 +167,23 @@ const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 constexpr float g_GridSize = 1.f;
 
-const std::vector<Vertex> g_Vertices = {{VectorFlt {-g_GridSize, -g_GridSize, 0.0f}, VectorFlt {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-                                        {VectorFlt {g_GridSize, -g_GridSize, 0.0f}, VectorFlt {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-                                        {VectorFlt {g_GridSize, g_GridSize, 0.0f}, VectorFlt {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-                                        {VectorFlt {-g_GridSize, g_GridSize, 0.0f}, VectorFlt {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+const std::vector<Vertex> g_Vertices = {{SVectorFlt {-g_GridSize, -g_GridSize, 0.0f}, SVectorFlt {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                                        {SVectorFlt {g_GridSize, -g_GridSize, 0.0f}, SVectorFlt {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                                        {SVectorFlt {g_GridSize, g_GridSize, 0.0f}, SVectorFlt {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                                        {SVectorFlt {-g_GridSize, g_GridSize, 0.0f}, SVectorFlt {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
 
 const std::vector<uint32_t> g_Indices = {0, 1, 2, 3, 4, 5};
 
-Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
+SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
 {
-    Camera.Location = VectorFlt {-55, 35, 27};
+    Camera.Location = SVectorFlt {-55, 35, 27};
     Camera.Yaw      = -20;
     Camera.Pitch    = -28;
     Camera.Aspect   = static_cast<float>(m_ViewportExtent.width) / static_cast<float>(m_ViewportExtent.height);
     Camera.UpdateView();
     Camera.UpdateProjection();
 
-    m_MainViewport = new EditorViewport();
+    m_MainViewport = new SEditorViewport();
 
     CreateViewportImages();
 
@@ -191,7 +191,7 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
 
     CreateDescriptorSetLayout();
 
-    ShadersLibrary::Init();
+    SShadersLibrary::Init();
 
     CreateViewportGraphicsPipeline();
 
@@ -210,8 +210,8 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     CreateCommandBuffers();
     CreateSyncObjects();
 
-    const LogicalDeviceAndQueues& LogicalDevice  = RendererContext::Get().GetDeviceAndQueues();
-    VkInstance                    VulkanInstance = RendererContext::Get().GetVulkanInstance();
+    const SLogicalDeviceAndQueues& LogicalDevice  = SRendererContext::Get().GetDeviceAndQueues();
+    VkInstance                     VulkanInstance = SRendererContext::Get().GetVulkanInstance();
 
     LoadExampleScene();
 
@@ -229,7 +229,7 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     // // #TODO : Remove this struct later and refactor ImGui_ImplVulkan_...
     ImGui_ImplVulkan_InitInfo InitInfo = {
         .Instance        = VulkanInstance,
-        .PhysicalDevice  = RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
+        .PhysicalDevice  = SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
         .Device          = LogicalDevice.GetLogicalDevice(),
         .QueueFamily     = LogicalDevice.GetGraphicQueueFamilyIndex(),
         .Queue           = LogicalDevice.GetGraphicQueue(),
@@ -242,7 +242,7 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
     };
-    ImGui_ImplVulkan_Init(&InitInfo, RendererContext::Get().GetRenderPass().GetVulkanPass());
+    ImGui_ImplVulkan_Init(&InitInfo, SRendererContext::Get().GetRenderPass().GetVulkanPass());
 
     // constexpr float FontSize = 17.f;
     // #TODO : Path should be somewhere coded?
@@ -253,7 +253,7 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\ProggyTiny.ttf", FontSize);
     // IO.Fonts->AddFontFromFileTTF("Resources\\Fonts\\Roboto-Medium.ttf", FontSize);
 
-    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), RendererContext::Get().GetCommandPool(), 0);
+    vkResetCommandPool(LogicalDevice.GetLogicalDevice(), SRendererContext::Get().GetCommandPool(), 0);
 
     VkCommandBufferBeginInfo BeginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -286,10 +286,10 @@ Editor::Editor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_View
     }
 }
 
-Editor::~Editor()
+SEditor::~SEditor()
 {
     // #TODO: It's null
-    VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
     if(!Device)
     {
         return;
@@ -329,9 +329,9 @@ Editor::~Editor()
     }
 }
 
-void Editor::OnEvent(const Event& InEvent)
+void SEditor::OnEvent(const SEvent& InEvent)
 {
-    if(auto* KeyEvent = dynamic_cast<const KeyboardClickEvent*>(&InEvent))
+    if(auto* KeyEvent = dynamic_cast<const SKeyboardClickEvent*>(&InEvent))
     {
         if(KeyEvent->GetKey() == GLFW_KEY_W)
         {
@@ -358,16 +358,16 @@ void Editor::OnEvent(const Event& InEvent)
             bMoveCameraDown = KeyEvent->GetAction() != GLFW_RELEASE;
         }
     }
-    else if(auto* MouseClick = dynamic_cast<const MouseClickEvent*>(&InEvent))
+    else if(auto* MouseClick = dynamic_cast<const SMouseClickEvent*>(&InEvent))
     {
         if(MouseClick->GetKey() == GLFW_MOUSE_BUTTON_RIGHT)
         {
             bCameraCanRotate = MouseClick->GetAction() != GLFW_RELEASE;
         }
     }
-    else if(auto* MouseMove = dynamic_cast<const MouseMoveEvent*>(&InEvent))
+    else if(auto* MouseMove = dynamic_cast<const SMouseMoveEvent*>(&InEvent))
     {
-        const Vector CurrentMouseMove = Vector(MouseMove->m_MousePosX, MouseMove->m_MousePosY);
+        const SVector CurrentMouseMove = SVector(MouseMove->m_MousePosX, MouseMove->m_MousePosY);
 
         if(bCameraCanRotate && (CurrentMouseMove != PreviousMouseMove))
         {
@@ -379,7 +379,7 @@ void Editor::OnEvent(const Event& InEvent)
     }
 }
 
-void Editor::Tick(const double InFrameTime_Sec)
+void SEditor::Tick(const double InFrameTime_Sec)
 {
     m_LastFrame_Sec = InFrameTime_Sec;
 
@@ -411,16 +411,16 @@ void Editor::Tick(const double InFrameTime_Sec)
     m_MainViewport->Tick();
 }
 
-void Editor::BeginFrame()
+void SEditor::BeginFrame()
 {
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     // Wait for the previous frame to finish
     vkWaitForFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
     vkResetFences(Device, 1, &m_InFlightFences[m_CurrentFrameIndex]);
 
     vkAcquireNextImageKHR(Device,
-                          RendererContext::Get().GetSwapChain().GetVulkanSwapChain(),
+                          SRendererContext::Get().GetSwapChain().GetVulkanSwapChain(),
                           UINT64_MAX,
                           m_ImageAvailableSemaphores[m_CurrentFrameIndex],
                           nullptr,
@@ -437,12 +437,12 @@ void Editor::BeginFrame()
     vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex], &BeginInfo);
 }
 
-void Editor::EndFrame()
+void SEditor::EndFrame()
 {
     vkEndCommandBuffer(m_CommandBuffers[m_CurrentFrameIndex]);
 }
 
-void Editor::Render()
+void SEditor::Render()
 {
     // Begin
 
@@ -453,7 +453,7 @@ void Editor::Render()
 
     for(auto& CameraUbo : m_CameraUbos)
     {
-        CameraUbo->SetData(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
+        CameraUbo->SetData(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &Ubo);
     }
 
     std::array<VkClearValue, 2> ClearColor {};
@@ -519,14 +519,14 @@ void Editor::Render()
             continue;
         }
 
-        Renderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *Mesh);
+        SRenderer::RenderMesh(m_CommandBuffers[m_CurrentFrameIndex], *Mesh);
     }
 
     // End
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
 }
 
-void Editor::BeginGui()
+void SEditor::BeginGui()
 {
     std::array<VkClearValue, 2> ClearColor {};
     ClearColor[0].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -535,9 +535,9 @@ void Editor::BeginGui()
     const VkRenderPassBeginInfo RenderPassInfo {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext           = nullptr,
-        .renderPass      = RendererContext::Get().GetRenderPass().GetVulkanPass(),
-        .framebuffer     = RendererContext::Get().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
-        .renderArea      = VkRect2D({0, 0}, RendererContext::Get().GetSwapChain().GetSize()),
+        .renderPass      = SRendererContext::Get().GetRenderPass().GetVulkanPass(),
+        .framebuffer     = SRendererContext::Get().GetSwapChain().GetFramebuffer(m_CurrentImageIndex),
+        .renderArea      = VkRect2D({0, 0}, SRendererContext::Get().GetSwapChain().GetSize()),
         .clearValueCount = static_cast<uint32_t>(ClearColor.size()),
         .pClearValues    = ClearColor.data(),
     };
@@ -548,7 +548,7 @@ void Editor::BeginGui()
     ImGui::NewFrame();
 }
 
-void Editor::RenderGui()
+void SEditor::RenderGui()
 {
     ImGuiStyle& Style               = ImGui::GetStyle();
     ImGuiIO&    IO                  = ImGui::GetIO();
@@ -664,7 +664,7 @@ void Editor::RenderGui()
     ImGui::End();
 }
 
-void Editor::EndGui()
+void SEditor::EndGui()
 {
     ImGui::Render();
 
@@ -673,7 +673,7 @@ void Editor::EndGui()
     vkCmdEndRenderPass(m_CommandBuffers[m_CurrentFrameIndex]);
 }
 
-void Editor::Present()
+void SEditor::Present()
 {
     constexpr VkPipelineStageFlags WaitStages(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
@@ -688,12 +688,12 @@ void Editor::Present()
         .signalSemaphoreCount = 1,
         .pSignalSemaphores    = &m_RenderFinishedSemaphores[m_CurrentFrameIndex],
     };
-    vkQueueSubmit(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
+    vkQueueSubmit(SRendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &SubmitInfo, m_InFlightFences[m_CurrentFrameIndex]);
 
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
-    VkSwapchainKHR Swapchain = RendererContext::Get().GetSwapChain().GetVulkanSwapChain();
+    VkSwapchainKHR Swapchain = SRendererContext::Get().GetSwapChain().GetVulkanSwapChain();
 
     const VkPresentInfoKHR PresentInfo {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -705,14 +705,14 @@ void Editor::Present()
         .pImageIndices      = &m_CurrentImageIndex,
         .pResults           = nullptr,
     };
-    vkQueuePresentKHR(RendererContext::Get().GetDeviceAndQueues().GetPresentQueue(), &PresentInfo);
+    vkQueuePresentKHR(SRendererContext::Get().GetDeviceAndQueues().GetPresentQueue(), &PresentInfo);
 
     m_LastViewportTexture = m_ViewportTextures[m_CurrentFrameIndex];
 
     m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Editor::LoadExampleScene()
+void SEditor::LoadExampleScene()
 {
     std::random_device                    Dev;
     std::mt19937                          Rng(Dev());
@@ -749,16 +749,16 @@ void Editor::LoadExampleScene()
         }
     }
 
-    const LogicalDeviceAndQueues& LogicalDevice = RendererContext::Get().GetDeviceAndQueues();
+    const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
 
-    m_MeshesBuffers.emplace_back(VertexIndexBuffer::Create(
+    m_MeshesBuffers.emplace_back(SVertexIndexBuffer::Create(
         LogicalDevice.GetLogicalDevice(),
         m_CommandBuffers[0],
         LogicalDevice.GetGraphicQueue(),
         {static_cast<const void*>(Vertices.data()), static_cast<uint32_t>(sizeof(Vertex)), static_cast<uint32_t>(Vertices.size())},
         {static_cast<const void*>(Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(Indices.size())}));
 
-    m_GridBuffer = VertexIndexBuffer::Create(
+    m_GridBuffer = SVertexIndexBuffer::Create(
         LogicalDevice.GetLogicalDevice(),
         m_CommandBuffers[0],
         LogicalDevice.GetGraphicQueue(),
@@ -766,9 +766,9 @@ void Editor::LoadExampleScene()
         {static_cast<const void*>(g_Indices.data()), static_cast<uint32_t>(sizeof(uint32_t)), static_cast<uint32_t>(g_Indices.size())});
 }
 
-void Editor::CreateViewportImages()
+void SEditor::CreateViewportImages()
 {
-    const uint32_t FramebuffersCount = RendererContext::Get().GetSwapChain().GetFramebuffersCount();
+    const uint32_t FramebuffersCount = SRendererContext::Get().GetSwapChain().GetFramebuffersCount();
 
     m_ViewportImages.resize(FramebuffersCount);
     m_ViewportImagesMemories.resize(FramebuffersCount);
@@ -776,8 +776,8 @@ void Editor::CreateViewportImages()
 
     for(uint32_t i = 0; i < m_ViewportImages.size(); i++)
     {
-        Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-                             RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
+        Private::CreateImage(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                             SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                              m_ViewportExtent.width,
                              m_ViewportExtent.height,
                              m_ViewportImageFormat,
@@ -791,7 +791,7 @@ void Editor::CreateViewportImages()
     }
 }
 
-void Editor::CreateViewportRenderPass()
+void SEditor::CreateViewportRenderPass()
 {
     const VkAttachmentDescription ColorAttachment {
         .format         = m_ViewportImageFormat,
@@ -852,10 +852,10 @@ void Editor::CreateViewportRenderPass()
         .dependencyCount = 1,
         .pDependencies   = &Dependency,
     };
-    vkCreateRenderPass(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_ViewportRenderPass);
+    vkCreateRenderPass(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &RenderPassInfo, nullptr, &m_ViewportRenderPass);
 }
 
-void Editor::CreateDescriptorSetLayout()
+void SEditor::CreateDescriptorSetLayout()
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding {};
     uboLayoutBinding.binding            = 0;
@@ -877,7 +877,7 @@ void Editor::CreateDescriptorSetLayout()
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutInfo.pBindings    = bindings.data();
 
-    if(vkCreateDescriptorSetLayout(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+    if(vkCreateDescriptorSetLayout(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                                    &layoutInfo,
                                    nullptr,
                                    &m_DescriptorSetLayout) != VK_SUCCESS)
@@ -886,16 +886,16 @@ void Editor::CreateDescriptorSetLayout()
     }
 }
 
-void Editor::CreateViewportGraphicsPipeline()
+void SEditor::CreateViewportGraphicsPipeline()
 {
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     const char* ShaderName = "GrayMesh";
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo =
-        ShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
+        SShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_VERTEX_BIT)->GetInfo();
     VkPipelineShaderStageCreateInfo fragShaderStageInfo =
-        ShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
+        SShadersLibrary::AddShader(Device, ShaderName, VK_SHADER_STAGE_FRAGMENT_BIT)->GetInfo();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
@@ -1003,7 +1003,7 @@ void Editor::CreateViewportGraphicsPipeline()
     vkCreateGraphicsPipelines(Device, nullptr, 1, &pipelineInfo, nullptr, &m_ViewportGraphicsPipelineMesh);
 }
 
-void Editor::CreateViewportFramebuffers()
+void SEditor::CreateViewportFramebuffers()
 {
     m_ViewportFramebuffers.resize(m_ViewportImagesViews.size());
 
@@ -1021,19 +1021,19 @@ void Editor::CreateViewportFramebuffers()
             .height          = m_ViewportExtent.height,
             .layers          = 1,
         };
-        vkCreateFramebuffer(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+        vkCreateFramebuffer(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                             &FramebufferInfo,
                             nullptr,
                             &m_ViewportFramebuffers[i]);
     }
 }
 
-void Editor::CreateViewportDepthResources()
+void SEditor::CreateViewportDepthResources()
 {
     const VkFormat DepthFormat = FindDepthFormat();
 
-    Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-                         RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
+    Private::CreateImage(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                          m_ViewportExtent.width,
                          m_ViewportExtent.height,
                          DepthFormat,
@@ -1046,12 +1046,12 @@ void Editor::CreateViewportDepthResources()
 }
 
 VkFormat
-    Editor::FindSupportedFormat(const std::vector<VkFormat>& candidates, const VkImageTiling tiling, const VkFormatFeatureFlags features)
+    SEditor::FindSupportedFormat(const std::vector<VkFormat>& candidates, const VkImageTiling tiling, const VkFormatFeatureFlags features)
 {
     for(VkFormat format : candidates)
     {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), format, &props);
+        vkGetPhysicalDeviceFormatProperties(SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(), format, &props);
 
         if(tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
         {
@@ -1066,19 +1066,19 @@ VkFormat
     return VK_FORMAT_UNDEFINED;
 }
 
-VkFormat Editor::FindDepthFormat()
+VkFormat SEditor::FindDepthFormat()
 {
     return FindSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                                VK_IMAGE_TILING_OPTIMAL,
                                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-bool Editor::HasStencilComponent(const VkFormat format)
+bool SEditor::HasStencilComponent(const VkFormat format)
 {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Editor::CreateTextureImage()
+void SEditor::CreateTextureImage()
 {
     int texWidth  = 4;
     int texHeight = 4;
@@ -1109,8 +1109,8 @@ void Editor::CreateTextureImage()
     //
     //    stbi_image_free(pixels);
 
-    Private::CreateImage(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-                         RendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
+    Private::CreateImage(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
                          texWidth,
                          texHeight,
                          VK_FORMAT_R8G8B8A8_SRGB,
@@ -1131,15 +1131,15 @@ void Editor::CreateTextureImage()
     //    vkFreeMemory(Device, stagingBufferMemory, nullptr);
 }
 
-void Editor::CreateTextureImageView()
+void SEditor::CreateTextureImageView()
 {
     m_SceneTextureImageView = CreateImageView(m_SceneTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void Editor::CreateTextureSampler()
+void SEditor::CreateTextureSampler()
 {
     VkPhysicalDeviceProperties properties {};
-    vkGetPhysicalDeviceProperties(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), &properties);
+    vkGetPhysicalDeviceProperties(SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(), &properties);
 
     VkSamplerCreateInfo samplerInfo {};
     samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -1156,14 +1156,14 @@ void Editor::CreateTextureSampler()
     samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-    if(vkCreateSampler(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler) !=
+    if(vkCreateSampler(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler) !=
        VK_SUCCESS)
     {
         throw std::runtime_error("failed to create texture sampler!");
     }
 }
 
-VkImageView Editor::CreateImageView(const VkImage image, const VkFormat format, const VkImageAspectFlags aspectFlags)
+VkImageView SEditor::CreateImageView(const VkImage image, const VkFormat format, const VkImageAspectFlags aspectFlags)
 {
     VkImageView OutImageView;
 
@@ -1182,12 +1182,12 @@ VkImageView Editor::CreateImageView(const VkImage image, const VkFormat format, 
                 .layerCount     = 1,
             },
     };
-    vkCreateImageView(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &ViewInfo, nullptr, &OutImageView);
+    vkCreateImageView(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &ViewInfo, nullptr, &OutImageView);
 
     return OutImageView;
 }
 
-void Editor::TransitionImageLayout(const VkImage image, VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout)
+void SEditor::TransitionImageLayout(const VkImage image, VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -1233,7 +1233,7 @@ void Editor::TransitionImageLayout(const VkImage image, VkFormat format, const V
     EndSingleTimeCommands(commandBuffer);
 }
 
-void Editor::CopyBufferToImage(const VkBuffer buffer, const VkImage image, const uint32_t width, const uint32_t height)
+void SEditor::CopyBufferToImage(const VkBuffer buffer, const VkImage image, const uint32_t width, const uint32_t height)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -1253,15 +1253,15 @@ void Editor::CopyBufferToImage(const VkBuffer buffer, const VkImage image, const
     EndSingleTimeCommands(commandBuffer);
 }
 
-void Editor::CreateCameraUbos()
+void SEditor::CreateCameraUbos()
 {
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        m_CameraUbos[i] = UniformBuffer::Create(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
+        m_CameraUbos[i] = SUniformBuffer::Create(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
     }
 }
 
-void Editor::CreateDescriptorPool()
+void SEditor::CreateDescriptorPool()
 {
     // #TODO: How many PoolSizes? And how many sets.
     const std::vector<VkDescriptorPoolSize> PoolSizes = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
@@ -1283,10 +1283,10 @@ void Editor::CreateDescriptorPool()
         .poolSizeCount = static_cast<uint32_t>(PoolSizes.size()),
         .pPoolSizes    = PoolSizes.data(),
     };
-    vkCreateDescriptorPool(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
+    vkCreateDescriptorPool(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CreateInfo, nullptr, &m_DescriptorPool);
 }
 
-void Editor::CreateDescriptorSets()
+void SEditor::CreateDescriptorSets()
 {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout);
     VkDescriptorSetAllocateInfo        allocInfo {};
@@ -1296,7 +1296,7 @@ void Editor::CreateDescriptorSets()
     allocInfo.pSetLayouts        = layouts.data();
 
     m_DescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if(vkAllocateDescriptorSets(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, m_DescriptorSets.data()) !=
+    if(vkAllocateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, m_DescriptorSets.data()) !=
        VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate descriptor sets!");
@@ -1332,7 +1332,7 @@ void Editor::CreateDescriptorSets()
         descriptorWrites[1].descriptorCount = 1;
         descriptorWrites[1].pImageInfo      = &imageInfo;
 
-        vkUpdateDescriptorSets(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+        vkUpdateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
                                static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(),
                                0,
@@ -1340,11 +1340,11 @@ void Editor::CreateDescriptorSets()
     }
 }
 
-void Editor::CreateBuffer(const VkDeviceSize          size,
-                          const VkBufferUsageFlags    usage,
-                          const VkMemoryPropertyFlags properties,
-                          VkBuffer&                   buffer,
-                          VkDeviceMemory&             bufferMemory)
+void SEditor::CreateBuffer(const VkDeviceSize          size,
+                           const VkBufferUsageFlags    usage,
+                           const VkMemoryPropertyFlags properties,
+                           VkBuffer&                   buffer,
+                           VkDeviceMemory&             bufferMemory)
 {
     VkBufferCreateInfo bufferInfo {};
     bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1352,7 +1352,7 @@ void Editor::CreateBuffer(const VkDeviceSize          size,
     bufferInfo.usage       = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     if(vkCreateBuffer(Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
     {
@@ -1366,7 +1366,7 @@ void Editor::CreateBuffer(const VkDeviceSize          size,
     allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex =
-        Private::FindMemoryType(RendererContext::Get().GetGraphicCard().GetPhysicalDevice(), memRequirements.memoryTypeBits, properties);
+        Private::FindMemoryType(SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(), memRequirements.memoryTypeBits, properties);
 
     if(vkAllocateMemory(Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
     {
@@ -1376,17 +1376,17 @@ void Editor::CreateBuffer(const VkDeviceSize          size,
     vkBindBufferMemory(Device, buffer, bufferMemory, 0);
 }
 
-VkCommandBuffer Editor::BeginSingleTimeCommands()
+VkCommandBuffer SEditor::BeginSingleTimeCommands()
 {
     VkCommandBuffer OutCommandBuffer;
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = RendererContext::Get().GetCommandPool(),
+        .commandPool        = SRendererContext::Get().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
-    vkAllocateCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, &OutCommandBuffer);
+    vkAllocateCommandBuffers(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, &OutCommandBuffer);
 
     const VkCommandBufferBeginInfo CmdBufferBeginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -1397,7 +1397,7 @@ VkCommandBuffer Editor::BeginSingleTimeCommands()
     return OutCommandBuffer;
 }
 
-void Editor::EndSingleTimeCommands(const VkCommandBuffer commandBuffer)
+void SEditor::EndSingleTimeCommands(const VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
 
@@ -1406,16 +1406,16 @@ void Editor::EndSingleTimeCommands(const VkCommandBuffer commandBuffer)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers    = &commandBuffer;
 
-    vkQueueSubmit(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(RendererContext::Get().GetDeviceAndQueues().GetGraphicQueue());
+    vkQueueSubmit(SRendererContext::Get().GetDeviceAndQueues().GetGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(SRendererContext::Get().GetDeviceAndQueues().GetGraphicQueue());
 
-    vkFreeCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-                         RendererContext::Get().GetCommandPool(),
+    vkFreeCommandBuffers(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                         SRendererContext::Get().GetCommandPool(),
                          1,
                          &commandBuffer);
 }
 
-void Editor::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
+void SEditor::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
 {
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
@@ -1426,20 +1426,20 @@ void Editor::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, cons
     EndSingleTimeCommands(commandBuffer);
 }
 
-void Editor::CreateCommandBuffers()
+void SEditor::CreateCommandBuffers()
 {
     m_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = RendererContext::Get().GetCommandPool(),
+        .commandPool        = SRendererContext::Get().GetCommandPool(),
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size()),
     };
-    vkAllocateCommandBuffers(RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, m_CommandBuffers.data());
+    vkAllocateCommandBuffers(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &CmdBufferAllocInfo, m_CommandBuffers.data());
 }
 
-void Editor::CreateSyncObjects()
+void SEditor::CreateSyncObjects()
 {
     m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1456,7 +1456,7 @@ void Editor::CreateSyncObjects()
         .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
 
-    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
+    const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {

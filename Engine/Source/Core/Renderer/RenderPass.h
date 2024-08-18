@@ -5,16 +5,16 @@
 namespace South
 {
 
-class RenderPass
+class SRenderPass
 {
 public:
-    struct CreateInfo
+    struct SCreateInfo
     {
         VkFormat Format;
     };
 
-    static RenderPass* Create(const CreateInfo& InInfo);
-    static void        Destroy(RenderPass& InRenderPass);
+    static SRenderPass* Create(const SCreateInfo& InInfo);
+    static void         Destroy(SRenderPass& InRenderPass);
 
     VkRenderPass GetVulkanPass() const;
 
@@ -22,4 +22,4 @@ private:
     VkRenderPass m_VulkanRenderPass = nullptr;
 };
 
-}
+} // namespace South

@@ -10,9 +10,9 @@ public:
 
     glm::mat4 GetViewProjection() const;
 
-    VectorFlt GetForwardVector() const;
-    VectorFlt GetRightVector() const;
-    VectorFlt GetUpVector() const;
+    SVectorFlt GetForwardVector() const;
+    SVectorFlt GetRightVector() const;
+    SVectorFlt GetUpVector() const;
 
 
     std::string ToString() const;
@@ -29,7 +29,7 @@ public:
 
     glm::mat4 View = glm::mat4(1.f);
 
-    VectorFlt Location = VectorFlt::ZeroVector;
+    SVectorFlt Location = SVectorFlt::ZeroVector;
 
     float Pitch = 0.f;
     float Yaw   = 0.f;

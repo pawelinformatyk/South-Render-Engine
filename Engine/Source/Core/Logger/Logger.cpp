@@ -3,10 +3,10 @@
 namespace South
 {
 
-std::shared_ptr<spdlog::logger> Logger::s_CoreLogger;
-std::shared_ptr<spdlog::logger> Logger::s_VulkanLogger;
+std::shared_ptr<spdlog::logger> SLogger::s_CoreLogger;
+std::shared_ptr<spdlog::logger> SLogger::s_VulkanLogger;
 
-void Logger::Init()
+void SLogger::Init()
 {
     s_CoreLogger = spdlog::stdout_color_mt("CORE", spdlog::color_mode::always);
     s_CoreLogger->set_level(spdlog::level::trace);
@@ -25,7 +25,7 @@ void Logger::Init()
 #endif
 }
 
-void Logger::DeInit()
+void SLogger::DeInit()
 {
     s_VulkanLogger.reset();
     s_CoreLogger.reset();

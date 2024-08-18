@@ -46,38 +46,38 @@ std::array<VkVertexInputAttributeDescription, 4> Vertex::m_AttributesDescs = {
     },
 };
 
-Mesh::Mesh()
+SMesh::SMesh()
 {
-    Buffer = std::make_unique<VertexIndexBuffer>();
+    Buffer = std::make_unique<SVertexIndexBuffer>();
 }
 
-PlaneMesh::PlaneMesh()
+SPlaneMesh::SPlaneMesh()
 {
-    const VectorFlt Color = VectorFlt::Rand(0, 1);
-    const VectorFlt Normal(0, 0, 1);
+    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
+    const SVectorFlt Normal(0, 0, 1);
 
     Vertices.reserve(4);
-    Vertices.emplace_back(VectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
-    Vertices.emplace_back(VectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
-    Vertices.emplace_back(VectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
-    Vertices.emplace_back(VectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
+    Vertices.emplace_back(SVectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
+    Vertices.emplace_back(SVectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
+    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
+    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
 }
 
-CubeMesh::CubeMesh()
+SCubeMesh::SCubeMesh()
 {
-    const VectorFlt Color = VectorFlt::Rand(0, 1);
-    const VectorFlt Normal(0, 0, 1);
+    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
+    const SVectorFlt Normal(0, 0, 1);
 
     Vertices.reserve(8);
-    Vertices.emplace_back(VectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
-    Vertices.emplace_back(VectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
-    Vertices.emplace_back(VectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
-    Vertices.emplace_back(VectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
+    Vertices.emplace_back(SVectorFlt(-1, -1, 0), Normal, glm::vec2(1, 0), Color);
+    Vertices.emplace_back(SVectorFlt(1, -1, 0), Normal, glm::vec2(0, 0), Color);
+    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(0, 1), Color);
+    Vertices.emplace_back(SVectorFlt(1, 1, 0), Normal, glm::vec2(1, 1), Color);
 }
 
-SphereMesh::SphereMesh(int SegmentsCount)
+SSphereMesh::SSphereMesh(int SegmentsCount)
 {
-    const VectorFlt Color = VectorFlt::Rand(0, 1);
+    const SVectorFlt Color = SVectorFlt::Rand(0, 1);
 
     // #TODO: Reserve
     Vertices.reserve(4);
@@ -90,7 +90,7 @@ SphereMesh::SphereMesh(int SegmentsCount)
         {
             const float SegmentY = (float)IdxY / (float)SegmentsCount;
 
-            const VectorFlt Loc = VectorFlt(std::cos(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI),
+            const SVectorFlt Loc = SVectorFlt(std::cos(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI),
                                             std::cos(SegmentY * M_PI),
                                             std::sin(SegmentX * 2.0f * M_PI) * std::sin(SegmentY * M_PI));
 
@@ -123,11 +123,11 @@ SphereMesh::SphereMesh(int SegmentsCount)
     }
 }
 
-TriangleMesh::TriangleMesh()
+STriangleMesh::STriangleMesh()
 {
 }
 
-CircleMesh::CircleMesh()
+SCircleMesh::SCircleMesh()
 {
 }
 

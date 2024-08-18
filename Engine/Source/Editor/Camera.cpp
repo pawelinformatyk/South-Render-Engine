@@ -1,4 +1,4 @@
-#include "SCamera.h"
+#include "Camera.h"
 
 namespace South
 {
@@ -14,21 +14,21 @@ glm::mat4 SCamera::GetViewProjection() const
     return View * Projection;
 }
 
-VectorFlt SCamera::GetForwardVector() const
+SVectorFlt SCamera::GetForwardVector() const
 {
     return Convert(glm::normalize(glm::vec3(cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)),
                                             sin(glm::radians(Pitch)),
                                             sin(glm::radians(Yaw)) * cos(glm::radians(Pitch)))));
 }
 
-VectorFlt SCamera::GetRightVector() const
+SVectorFlt SCamera::GetRightVector() const
 {
     return Convert(glm::cross(Convert(GetForwardVector()), Convert(GetUpVector())));
 }
 
-VectorFlt SCamera::GetUpVector() const
+SVectorFlt SCamera::GetUpVector() const
 {
-    return VectorFlt::UpVector;
+    return SVectorFlt::UpVector;
 }
 
 std::string SCamera::ToString() const
@@ -39,7 +39,7 @@ std::string SCamera::ToString() const
 
 void SCamera::MoveForward(const float Delta)
 {
-    const VectorFlt DeltaDir = MoveSpeed * Delta * GetForwardVector();
+    const SVectorFlt DeltaDir = MoveSpeed * Delta * GetForwardVector();
 
     Location += DeltaDir;
 
@@ -48,7 +48,7 @@ void SCamera::MoveForward(const float Delta)
 
 void SCamera::MoveRight(const float Delta)
 {
-    const VectorFlt DeltaDir = MoveSpeed * Delta * GetRightVector();
+    const SVectorFlt DeltaDir = MoveSpeed * Delta * GetRightVector();
 
     Location += DeltaDir;
 
@@ -57,7 +57,7 @@ void SCamera::MoveRight(const float Delta)
 
 void SCamera::MoveUp(const float Delta)
 {
-    const VectorFlt DeltaDir = MoveSpeed * Delta * GetUpVector();
+    const SVectorFlt DeltaDir = MoveSpeed * Delta * GetUpVector();
 
     Location += DeltaDir;
 
