@@ -596,14 +596,14 @@ void SEditor::RenderGui()
     {
         ImGui::PopStyleVar(2);
 
-            const ImVec2 ViewportSize(static_cast<float>(m_ViewportExtent.width), static_cast<float>(m_ViewportExtent.height));
-        ImGui::BeginChild("Viewport",  ImVec2(),false, ImGuiWindowFlags_NoDecoration);
+        ImGui::BeginChild("Viewport", ImVec2(), false, ImGuiWindowFlags_NoDecoration);
         {
             if(m_LastViewportTexture)
             {
+                const ImVec2 ViewportSize(static_cast<float>(m_ViewportExtent.width), static_cast<float>(m_ViewportExtent.height));
+
                 ImGui::Image(m_LastViewportTexture, ViewportSize);
             }
-
         }
         ImGui::EndChild();
     }
