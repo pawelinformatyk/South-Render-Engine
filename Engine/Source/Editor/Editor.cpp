@@ -592,100 +592,20 @@ void SEditor::RenderGui()
                                              ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
                                              ImGuiWindowFlags_NoDocking;
 
-
     ImGui::Begin("Editor", nullptr, EditorFlags);
     {
         ImGui::PopStyleVar(2);
 
-        ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-
-        constexpr ImGuiWindowFlags MenuBarFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
-                                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground;
-
-        ImGui::Begin("MenuBar", nullptr, MenuBarFlags);
-        {
-            ImGui::BeginMenuBar();
-            {
-                if(ImGui::BeginMenu("File"))
-                {
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-                    ImGui::MenuItem("Option");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
-                if(ImGui::BeginMenu("Editor Settings"))
-                {
-                    ImGui::Button("Font");
-                    ImGui::Button("Font");
-                    ImGui::Button("Font");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
-                if(ImGui::BeginMenu("Window"))
-                {
-                    ImGui::MenuItem("Open new window");
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
-                const int Fps = static_cast<int>(1 / m_LastFrame_Sec);
-                ImGui::Text("FPS: %4d / %.2f ms", Fps, m_LastFrame_Sec * 1e3);
-
-                ImGui::Separator();
-            }
-            ImGui::EndMenuBar();
-
-            ImGui::BeginMenuBar();
-            {
-                const float ControlButtonsWidth =
-                    ImGui::CalcTextSize("_").x + ImGui::CalcTextSize("[ ]").x + ImGui::CalcTextSize("X").x + Style.FramePadding.x * 6.f;
-
-                ImGui::SetCursorPosX(Viewport.Size.x - ControlButtonsWidth - 50.f);
-
-                ImGui::Separator();
-
-                // #TODO: Events
-                //                if(ImGui::Button("_"))
-                //                {
-                //                    Application::Get().OnEvent(WindowMinimizeEvent());
-                //                }
-                //
-                //                if(ImGui::Button("[ ]"))
-                //                {
-                //                    Application::Get().OnEvent(WindowMaximizeEvent());
-                //                }
-                //
-                //                if(ImGui::Button("X"))
-                //                {
-                //                    Application::Get().OnEvent(WindowCloseEvent());
-                //                }
-            }
-            ImGui::EndMenuBar();
-        }
-        ImGui::End();
-
-        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-        {
             const ImVec2 ViewportSize(static_cast<float>(m_ViewportExtent.width), static_cast<float>(m_ViewportExtent.height));
-
+        ImGui::BeginChild("Viewport",  ImVec2(),false, ImGuiWindowFlags_NoDecoration);
+        {
             if(m_LastViewportTexture)
             {
                 ImGui::Image(m_LastViewportTexture, ViewportSize);
             }
 
-            //            ImGui::ShowDemoWindow();
         }
-        ImGui::End();
+        ImGui::EndChild();
     }
     ImGui::End();
 }

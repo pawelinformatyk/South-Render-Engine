@@ -10,7 +10,6 @@ SApplication::SApplication()
     South::SLogger::Init();
 
     STH_INFO("Application Start");
-
     s_App = this;
 
     m_Window = std::make_unique<SWindow>(SWindow::SCreateInfo {
