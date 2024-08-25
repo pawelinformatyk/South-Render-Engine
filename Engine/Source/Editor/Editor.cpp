@@ -5,8 +5,8 @@
 #include "Core/Mesh/Mesh.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Shaders/ShadersLibrary.h"
-#include "EditorViewport.h"
 #include "Event.h"
+#include "Scene/SceneViewport.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
@@ -164,8 +164,21 @@ void CreateImage(const VkDevice              InDevice,
 
 const std::vector g_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_ViewportExtent(InViewportExtent)
+SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) :
+    Scene(std::make_shared<SScene>()), m_ViewportExtent(InViewportExtent)
+
 {
+    SShadersLibrary::Init();
+
+    const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
+
+    const auto ShaderName = "BlinnPhongColor";
+
+    const SShader* VertexShader   = SShadersLibrary::AddShader(LogicalDevice.GetLogicalDevice(), ShaderName, VK_SHADER_STAGE_VERTEX_BIT);
+    const SShader* FragmentShader = SShadersLibrary::AddShader(LogicalDevice.GetLogicalDevice(), ShaderName, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    Viewport = std::make_unique<SSceneViewport>(Scene, *VertexShader, *FragmentShader);
+
     Camera.Location = SVectorFlt {-55, 35, 27};
     Camera.Yaw      = -20;
     Camera.Pitch    = -28;
@@ -173,15 +186,11 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Vi
     Camera.UpdateView();
     Camera.UpdateProjection();
 
-    m_MainViewport = new SEditorViewport();
-
     CreateViewportImages();
 
     CreateViewportRenderPass();
 
     CreateDescriptorSetLayout();
-
-    SShadersLibrary::Init();
 
     CreateViewportGraphicsPipeline();
 
@@ -200,12 +209,11 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Vi
     CreateCommandBuffers();
     CreateSyncObjects();
 
-    const SLogicalDeviceAndQueues& LogicalDevice = SRendererContext::Get().GetDeviceAndQueues();
 
-    Scene.LoadExample();
+    Scene->LoadExample();
 
     // #TODO: When to create these buffers?
-    for(const auto& SceneObject : Scene.SceneObjects)
+    for(const auto& SceneObject : Scene->SceneObjects)
     {
         auto* SceneMeshObject = dynamic_cast<SSceneMeshObject*>(SceneObject.get());
         if(!SceneMeshObject)
@@ -226,7 +234,7 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) : m_Vi
                                                           m_CommandBuffers[m_CurrentFrameIndex],
                                                           LogicalDevice.GetGraphicQueue(),
                                                           {static_cast<const void*>(Mesh->Vertices.data()),
-                                                           static_cast<uint32_t>(sizeof(Vertex)),
+                                                           static_cast<uint32_t>(sizeof(SVertex)),
                                                            static_cast<uint32_t>(Mesh->Vertices.size())},
                                                           {static_cast<const void*>(Mesh->Indices.data()),
                                                            static_cast<uint32_t>(sizeof(uint32_t)),
@@ -429,8 +437,6 @@ void SEditor::Tick(const double InFrameTime_Sec)
     {
         Camera.MoveUp(-1);
     }
-
-    m_MainViewport->Tick();
 }
 
 void SEditor::BeginFrame()
@@ -519,7 +525,7 @@ void SEditor::Render()
                             nullptr);
 
 
-    for(const auto& SceneObject : Scene.SceneObjects)
+    for(const auto& SceneObject : Scene->SceneObjects)
     {
         auto* SceneMeshObject = dynamic_cast<SSceneMeshObject*>(SceneObject.get());
         if(!SceneMeshObject)
@@ -794,8 +800,8 @@ void SEditor::CreateViewportGraphicsPipeline()
     VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    const VkVertexInputBindingDescription&                  bindingDescription    = Vertex::GetBindingDescription();
-    const std::array<VkVertexInputAttributeDescription, 3>& attributeDescriptions = Vertex::GetAttributesDescriptions();
+    const VkVertexInputBindingDescription&                  bindingDescription    = SVertex::GetBindingDescription();
+    const std::array<VkVertexInputAttributeDescription, 3>& attributeDescriptions = SVertex::GetAttributesDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount   = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());

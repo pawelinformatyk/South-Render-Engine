@@ -7,7 +7,7 @@
 namespace South
 {
 
-struct Vertex
+struct SVertex
 {
     SVectorFlt   Location;
     SVectorFlt   Normal;
@@ -24,7 +24,7 @@ private:
 class SMesh
 {
 public:
-    std::vector<Vertex>   Vertices;
+    std::vector<SVertex>  Vertices;
     std::vector<uint32_t> Indices;
 
     // #TODO: For now raw ptr till I figure out render/scene relation
@@ -33,7 +33,7 @@ public:
 
 struct SMeshDescription
 {
-    std::vector<Vertex>   Vertices;
+    std::vector<SVertex>  Vertices;
     std::vector<uint32_t> Indices;
 };
 

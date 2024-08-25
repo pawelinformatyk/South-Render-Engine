@@ -48,8 +48,6 @@ add_executable(SouthRenderEngine
         Engine/Source/Editor/Camera.cpp
         Engine/Source/Editor/Camera.h
         Engine/Source/Editor/Editor.cpp
-        Engine/Source/Editor/EditorViewport.cpp
-        Engine/Source/Editor/EditorViewport.h
         Engine/Source/Editor/Event.cpp
         Engine/Source/Editor/Event.h
         Engine/ThirdParty/ImGui/imconfig.h
@@ -75,6 +73,12 @@ add_executable(SouthRenderEngine
         Engine/Source/Scene/Scene.h
         Engine/Source/Core/Math/LinearColor.cpp
         Engine/Source/Core/Math/LinearColor.h
+        Engine/Source/Scene/SceneRenderPass.cpp
+        Engine/Source/Scene/SceneRenderPass.h
+        Engine/Source/Scene/SceneViewport.cpp
+        Engine/Source/Scene/SceneViewport.h
+        Engine/Source/Scene/SceneDescriptorSet.cpp
+        Engine/Source/Scene/SceneDescriptorSet.h
 
 )
 

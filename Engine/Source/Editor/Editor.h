@@ -7,16 +7,23 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
+namespace South
+{
+class SSceneViewport;
+}
 struct GLFWwindow;
 
 namespace South
 {
 
 class SEvent;
-class SEditorViewport;
 class SUniformBuffer;
 class SVertexIndexBuffer;
 
+// #TODO: Editor is kinda lower level application class?
+/**
+ * Viewport (scene) + UI
+ */
 class SEditor
 {
 public:
@@ -41,7 +48,9 @@ public:
 private:
     double m_LastFrame_Sec = 0.;
 
-    SEditorViewport* m_MainViewport = nullptr;
+    std::shared_ptr<SScene> Scene;
+
+    std::unique_ptr<SSceneViewport> Viewport;
 
     std::vector<VkCommandBuffer> m_CommandBuffers;
     VkDescriptorSetLayout        m_DescriptorSetLayout = nullptr;
@@ -54,7 +63,6 @@ private:
 
     VkSampler m_TextureSampler = nullptr;
 
-    // Scene:
     VkImage        m_SceneTextureImage       = nullptr;
     VkDeviceMemory m_SceneTextureImageMemory = nullptr;
     VkImageView    m_SceneTextureImageView   = nullptr;
@@ -143,8 +151,6 @@ private:
     bool    bMoveCameraDown     = false;
     bool    bCameraCanRotate    = false;
     SVector PreviousMouseMove;
-
-    SScene Scene;
 };
 
 } // namespace South

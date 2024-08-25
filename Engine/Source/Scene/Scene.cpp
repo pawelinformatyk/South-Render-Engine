@@ -23,8 +23,7 @@ void SScene::LoadExample()
 
     for(const auto& Shape : Shapes)
     {
-        std::vector<Vertex>   Vertices;
-        std::vector<uint32_t> Indices;
+        SMeshDescription MeshDesc;
 
         // #TODO: Colors are now fucked
         SLinearColor Color;
@@ -56,11 +55,11 @@ void SScene::LoadExample()
                                                   Attrib.normals[3 * Index.normal_index + 0]}
                                           .GetNormalized();
 
-            Vertices.emplace_back(Location, Normal, Color);
-            Indices.emplace_back(static_cast<uint32_t>(Indices.size()));
+            MeshDesc.Vertices.emplace_back(Location, Normal, Color);
+            MeshDesc.Indices.emplace_back(static_cast<uint32_t>(MeshDesc.Indices.size()));
         }
 
-        SceneMeshObject->AddMesh(std::move(Vertices), std::move(Indices));
+        SceneMeshObject->AddMesh(MeshDesc);
     }
 
     SceneObjects.emplace_back(std::move(SceneMeshObject));

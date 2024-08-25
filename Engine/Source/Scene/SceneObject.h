@@ -18,10 +18,20 @@ public:
 class SSceneMeshObject : public SSceneObject
 {
 public:
-    void AddMesh(std::vector<Vertex> Vertices, std::vector<uint32_t> Indices);
     void AddMesh(const SMeshDescription& MeshDescription);
 
     std::vector<std::unique_ptr<SMesh>> Meshes;
 };
+
+// Examples to be done:
+
+class SSceneTextObject
+{
+};
+
+class SScenePointLightObject
+{
+};
+
 
 } // namespace South
