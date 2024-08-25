@@ -5,6 +5,32 @@
 namespace South
 {
 
+void SSceneDescriptorSet::UpdateSets(const VkDescriptorBufferInfo& CameraBufferInfo, const VkDescriptorImageInfo& CombinedImageInfo) const
+{
+    std::array<VkWriteDescriptorSet, 2> descriptorWrites {};
+
+    descriptorWrites[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet          = Set;
+    descriptorWrites[0].dstBinding      = 0;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].pBufferInfo     = &CameraBufferInfo;
+
+    descriptorWrites[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[1].dstSet          = Set;
+    descriptorWrites[1].dstBinding      = 1;
+    descriptorWrites[1].dstArrayElement = 0;
+    descriptorWrites[1].descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites[1].descriptorCount = 1;
+    descriptorWrites[1].pImageInfo      = &CombinedImageInfo;
+
+    vkUpdateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
+                           descriptorWrites.size(),
+                           descriptorWrites.data(),
+                           0,
+                           nullptr);
+}
 SSceneDescriptorSet::SSceneDescriptorSet()
 {
     constexpr VkDescriptorSetLayoutBinding UboLayoutBinding {
@@ -42,62 +68,23 @@ SSceneDescriptorSet::SSceneDescriptorSet()
 
     const VkDescriptorPoolCreateInfo PoolCi = {
         .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .pNext         = nullptr,
         .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
         .maxSets       = 1000 * static_cast<uint32_t>(PoolSizes.size()),
         .poolSizeCount = static_cast<uint32_t>(PoolSizes.size()),
         .pPoolSizes    = PoolSizes.data(),
     };
     vkCreateDescriptorPool(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &PoolCi, nullptr, &Pool);
-    //
-    // std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, Layout);
-    // VkDescriptorSetAllocateInfo        allocInfo {};
-    // allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    // allocInfo.descriptorPool     = Pool;
-    // allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    // allocInfo.pSetLayouts        = layouts.data();
-    //
-    // Sets.resize(MAX_FRAMES_IN_FLIGHT);
-    // if(vkAllocateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, Sets.data()) != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to allocate descriptor sets!");
-    // }
-    //
-    // for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    // {
-    //     VkDescriptorBufferInfo bufferInfo {};
-    //     bufferInfo.buffer = m_CameraUbos[i]->GetBuffer();
-    //     bufferInfo.offset = 0;
-    //     bufferInfo.range  = sizeof(UniformBufferObject);
-    //
-    //     VkDescriptorImageInfo imageInfo {};
-    //     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //     imageInfo.imageView   = m_SceneTextureImageView;
-    //     imageInfo.sampler     = m_TextureSampler;
-    //
-    //     std::array<VkWriteDescriptorSet, 2> descriptorWrites {};
-    //
-    //     descriptorWrites[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    //     descriptorWrites[0].dstSet          = Sets[i];
-    //     descriptorWrites[0].dstBinding      = 0;
-    //     descriptorWrites[0].dstArrayElement = 0;
-    //     descriptorWrites[0].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    //     descriptorWrites[0].descriptorCount = 1;
-    //     descriptorWrites[0].pBufferInfo     = &bufferInfo;
-    //
-    //     descriptorWrites[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    //     descriptorWrites[1].dstSet          = Sets[i];
-    //     descriptorWrites[1].dstBinding      = 1;
-    //     descriptorWrites[1].dstArrayElement = 0;
-    //     descriptorWrites[1].descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    //     descriptorWrites[1].descriptorCount = 1;
-    //     descriptorWrites[1].pImageInfo      = &imageInfo;
-    //
-    //     vkUpdateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-    //                            static_cast<uint32_t>(descriptorWrites.size()),
-    //                            descriptorWrites.data(),
-    //                            0,
-    //                            nullptr);
-    // }
+
+    const VkDescriptorSetAllocateInfo SetCi {
+        .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .pNext              = nullptr,
+        .descriptorPool     = Pool,
+        .descriptorSetCount = 1,
+        .pSetLayouts        = &Layout,
+    };
+
+    vkAllocateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &SetCi, &Set);
 }
 
 SSceneDescriptorSet::~SSceneDescriptorSet()

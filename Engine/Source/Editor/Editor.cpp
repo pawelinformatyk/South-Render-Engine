@@ -198,8 +198,6 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) :
 
     CreateViewportFramebuffers();
 
-    CreateTextureImage();
-    CreateTextureImageView();
     CreateTextureSampler();
 
     CreateCameraUbos();
@@ -208,7 +206,6 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) :
     CreateDescriptorSets();
     CreateCommandBuffers();
     CreateSyncObjects();
-
 
     Scene->LoadExample();
 
@@ -267,7 +264,7 @@ SEditor::SEditor(const VkExtent2D InViewportExtent, GLFWwindow& InWindow) :
         .DescriptorPool  = m_DescriptorPool,
         .Subpass         = 0,
         .MinImageCount   = 2,
-        .ImageCount      = MAX_FRAMES_IN_FLIGHT,
+        .ImageCount      = EDITOR_MAX_FRAMES_IN_FLIGHT,
         .MSAASamples     = VK_SAMPLE_COUNT_1_BIT,
         .Allocator       = nullptr,
         .CheckVkResultFn = nullptr,
@@ -351,7 +348,7 @@ SEditor::~SEditor()
 
     vkDestroyDescriptorSetLayout(Device, m_DescriptorSetLayout, nullptr);
 
-    for(size_t Idx = 0; Idx < MAX_FRAMES_IN_FLIGHT; Idx++)
+    for(size_t Idx = 0; Idx < EDITOR_MAX_FRAMES_IN_FLIGHT; Idx++)
     {
         vkDestroySemaphore(Device, m_RenderFinishedSemaphores[Idx], nullptr);
         vkDestroySemaphore(Device, m_ImageAvailableSemaphores[Idx], nullptr);
@@ -474,7 +471,7 @@ void SEditor::Render()
 {
     // Begin
 
-    const UniformBufferObject Ubo {
+    const SUniformBufferObject Ubo {
         .m_View = Camera.View,
         .m_Proj = Camera.Projection,
     };
@@ -661,7 +658,7 @@ void SEditor::Present()
 
     m_LastViewportTexture = m_ViewportTextures[m_CurrentFrameIndex];
 
-    m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+    m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % EDITOR_MAX_FRAMES_IN_FLIGHT;
 }
 
 void SEditor::CreateViewportImages()
@@ -976,64 +973,6 @@ bool SEditor::HasStencilComponent(const VkFormat format)
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void SEditor::CreateTextureImage()
-{
-    int texWidth  = 4;
-    int texHeight = 4;
-
-    //    int  texChannels;
-    //    stbi_uc*     pixels    = stbi_load("Resources/Textures/JunkShipTexture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
-    //
-    //    if(!pixels)
-    //    {
-    //        throw std::runtime_error("failed to load texture image!");
-    //    }
-    //
-    //    VkBuffer       stagingBuffer;
-    //    VkDeviceMemory stagingBufferMemory;
-    //    CreateBuffer(imageSize,
-    //                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-    //                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-    //                 stagingBuffer,
-    //                 stagingBufferMemory);
-    //
-    //    const VkDevice Device = RendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
-    //
-    //    void* data;
-    //    vkMapMemory(Device, stagingBufferMemory, 0, imageSize, 0, &data);
-    //    memcpy(data, pixels, static_cast<size_t>(imageSize));
-    //    vkUnmapMemory(Device, stagingBufferMemory);
-    //
-    //    stbi_image_free(pixels);
-
-    Private::CreateImage(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(),
-                         SRendererContext::Get().GetGraphicCard().GetPhysicalDevice(),
-                         texWidth,
-                         texHeight,
-                         VK_FORMAT_R8G8B8A8_SRGB,
-                         VK_IMAGE_TILING_OPTIMAL,
-                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                         m_SceneTextureImage,
-                         m_SceneTextureImageMemory);
-
-    //    TransitionImageLayout(m_SceneTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED,
-    //    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL); CopyBufferToImage(stagingBuffer, m_SceneTextureImage, static_cast<uint32_t>(texWidth),
-    //    static_cast<uint32_t>(texHeight)); TransitionImageLayout(m_SceneTextureImage,
-    //                          VK_FORMAT_R8G8B8A8_SRGB,
-    //                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    //
-    //    vkDestroyBuffer(Device, stagingBuffer, nullptr);
-    //    vkFreeMemory(Device, stagingBufferMemory, nullptr);
-}
-
-void SEditor::CreateTextureImageView()
-{
-    m_SceneTextureImageView = CreateImageView(m_SceneTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-}
-
 void SEditor::CreateTextureSampler()
 {
     VkPhysicalDeviceProperties properties {};
@@ -1054,11 +993,7 @@ void SEditor::CreateTextureSampler()
     samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-    if(vkCreateSampler(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler) !=
-       VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
+    vkCreateSampler(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &samplerInfo, nullptr, &m_TextureSampler);
 }
 
 VkImageView SEditor::CreateImageView(const VkImage image, const VkFormat format, const VkImageAspectFlags aspectFlags)
@@ -1153,7 +1088,7 @@ void SEditor::CopyBufferToImage(const VkBuffer buffer, const VkImage image, cons
 
 void SEditor::CreateCameraUbos()
 {
-    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for(size_t i = 0; i < EDITOR_MAX_FRAMES_IN_FLIGHT; i++)
     {
         m_CameraUbos[i] = SUniformBuffer::Create(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice());
     }
@@ -1186,30 +1121,30 @@ void SEditor::CreateDescriptorPool()
 
 void SEditor::CreateDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(EDITOR_MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout);
     VkDescriptorSetAllocateInfo        allocInfo {};
     allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool     = m_DescriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(EDITOR_MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts        = layouts.data();
 
-    m_DescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    m_DescriptorSets.resize(EDITOR_MAX_FRAMES_IN_FLIGHT);
     if(vkAllocateDescriptorSets(SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice(), &allocInfo, m_DescriptorSets.data()) !=
        VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for(size_t i = 0; i < EDITOR_MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo bufferInfo {};
         bufferInfo.buffer = m_CameraUbos[i]->GetBuffer();
         bufferInfo.offset = 0;
-        bufferInfo.range  = sizeof(UniformBufferObject);
+        bufferInfo.range  = sizeof(SUniformBufferObject);
 
         VkDescriptorImageInfo imageInfo {};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView   = m_SceneTextureImageView;
+        imageInfo.imageView   = m_ViewportImagesViews[i];
         imageInfo.sampler     = m_TextureSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites {};
@@ -1326,7 +1261,7 @@ void SEditor::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, con
 
 void SEditor::CreateCommandBuffers()
 {
-    m_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    m_CommandBuffers.resize(EDITOR_MAX_FRAMES_IN_FLIGHT);
 
     const VkCommandBufferAllocateInfo CmdBufferAllocInfo {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -1339,9 +1274,9 @@ void SEditor::CreateCommandBuffers()
 
 void SEditor::CreateSyncObjects()
 {
-    m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    m_ImageAvailableSemaphores.resize(EDITOR_MAX_FRAMES_IN_FLIGHT);
+    m_RenderFinishedSemaphores.resize(EDITOR_MAX_FRAMES_IN_FLIGHT);
+    m_InFlightFences.resize(EDITOR_MAX_FRAMES_IN_FLIGHT);
 
     const VkSemaphoreCreateInfo SemaphoreInfo {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -1356,7 +1291,7 @@ void SEditor::CreateSyncObjects()
 
     const VkDevice Device = SRendererContext::Get().GetDeviceAndQueues().GetLogicalDevice();
 
-    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for(size_t i = 0; i < EDITOR_MAX_FRAMES_IN_FLIGHT; i++)
     {
         vkCreateSemaphore(Device, &SemaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]);
         vkCreateSemaphore(Device, &SemaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]);

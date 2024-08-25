@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Defines.h"
+
 //
 #include <algorithm>
 #include <iostream>

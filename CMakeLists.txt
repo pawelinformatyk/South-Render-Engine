@@ -79,6 +79,7 @@ add_executable(SouthRenderEngine
         Engine/Source/Scene/SceneViewport.h
         Engine/Source/Scene/SceneDescriptorSet.cpp
         Engine/Source/Scene/SceneDescriptorSet.h
+        Engine/Source/Defines.h
 
 )
 

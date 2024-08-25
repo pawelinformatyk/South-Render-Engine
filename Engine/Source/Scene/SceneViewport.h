@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Buffers/UniformBuffer.h"
 #include "Editor/Camera.h"
 #include "Scene.h"
 #include "SceneDescriptorSet.h"
@@ -11,6 +12,13 @@
 namespace South
 {
 
+// #TODO_P: Change some things, and call recreate - potential workflow
+
+/**
+ * Renders a scene in a specified way and stores the result texture.
+ *
+ * The way is defined by shaders, drawing vertex method, camera position etc.
+ */
 class SSceneViewport
 {
 public:
@@ -25,6 +33,7 @@ public:
 protected:
     const std::weak_ptr<const SScene> Scene;
 
+    std::unique_ptr<SUniformBuffer>      CameraBuffer;
     std::unique_ptr<SSceneDescriptorSet> DescriptorSet;
     std::unique_ptr<SSceneRenderPass>    RenderPass;
     std::unique_ptr<SScenePipeline>      Pipeline;

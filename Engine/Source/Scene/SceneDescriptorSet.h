@@ -10,12 +10,14 @@ public:
      SSceneDescriptorSet();
     ~SSceneDescriptorSet();
 
+    void UpdateSets(const VkDescriptorBufferInfo& CameraBufferInfo, const VkDescriptorImageInfo& CombinedImageInfo) const;
+
     VkDescriptorSetLayout GetLayout() const;
 
 protected:
-    VkDescriptorSetLayout        Layout = nullptr;
-    VkDescriptorPool             Pool   = nullptr;
-    std::vector<VkDescriptorSet> Sets;
+    VkDescriptorSetLayout Layout = nullptr;
+    VkDescriptorPool      Pool   = nullptr;
+    VkDescriptorSet       Set    = nullptr;
 };
 
 } // namespace South

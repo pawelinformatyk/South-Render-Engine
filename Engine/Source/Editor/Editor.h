@@ -5,7 +5,7 @@
 #include "Scene/Scene.h"
 #include "vulkan/vulkan_core.h"
 
-#define MAX_FRAMES_IN_FLIGHT 2
+#define EDITOR_MAX_FRAMES_IN_FLIGHT 2
 
 namespace South
 {
@@ -67,7 +67,7 @@ private:
     VkDeviceMemory m_SceneTextureImageMemory = nullptr;
     VkImageView    m_SceneTextureImageView   = nullptr;
 
-    std::array<SUniformBuffer*, MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
+    std::array<SUniformBuffer*, EDITOR_MAX_FRAMES_IN_FLIGHT> m_CameraUbos;
 
     VkDescriptorPool             m_DescriptorPool = nullptr;
     std::vector<VkDescriptorSet> m_DescriptorSets;
@@ -106,10 +106,6 @@ private:
     VkFormat FindDepthFormat();
 
     bool HasStencilComponent(VkFormat format);
-
-    void CreateTextureImage();
-
-    void CreateTextureImageView();
 
     void CreateTextureSampler();
 

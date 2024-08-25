@@ -9,7 +9,7 @@ SUniformBuffer* SUniformBuffer::Create(const VkDevice InLogicalDev)
     const VkBufferCreateInfo BufferCi {
         .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext       = nullptr,
-        .size        = sizeof(UniformBufferObject),
+        .size        = sizeof(SUniformBufferObject),
         .usage       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
     };
@@ -41,8 +41,8 @@ void SUniformBuffer::SetData(const VkDevice InLogicalDev, const void* InData)
 {
     void* BufferData = nullptr;
 
-    vkMapMemory(InLogicalDev, m_Memory, 0, sizeof(UniformBufferObject), 0, &BufferData);
-    memcpy(BufferData, InData, sizeof(UniformBufferObject));
+    vkMapMemory(InLogicalDev, m_Memory, 0, sizeof(SUniformBufferObject), 0, &BufferData);
+    memcpy(BufferData, InData, sizeof(SUniformBufferObject));
     vkUnmapMemory(InLogicalDev, m_Memory);
 }
 
