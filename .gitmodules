@@ -11,3 +11,6 @@
 	path = Engine/ThirdParty/ImGui
 	url = git@github.com:pawelinformatyk/ImGui.git
 	branch = south-render-engine
+[submodule "Engine/ThirdParty/shaderc"]
+	path = Engine/ThirdParty/shaderc
+	url = git@github.com:google/shaderc.git
