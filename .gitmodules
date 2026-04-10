@@ -14,3 +14,6 @@
 [submodule "Engine/ThirdParty/shaderc"]
 	path = Engine/ThirdParty/shaderc
 	url = git@github.com:google/shaderc.git
+[submodule "Engine/ThirdParty/Vulkan-Headers"]
+	path = Engine/ThirdParty/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git
